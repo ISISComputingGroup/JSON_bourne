@@ -1,9 +1,12 @@
 from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
 from threading import Thread
+from time import sleep
 import re
 from get_webpage import scrape_webpage
 import json
 HOST, PORT = '', 60000
+
+_scraped_data = ''
 
 
 class MyHandler(BaseHTTPRequestHandler):
@@ -23,7 +26,7 @@ class MyHandler(BaseHTTPRequestHandler):
         result = re.search('/?callback=(\w+)&_', self.path)
         if len(result.groups()) > 0:
             callback = result.groups()[0]
-            ans = "%s(%s)" % (callback, json.dumps(scrape_webpage()))
+            ans = "%s(%s)" % (callback, json.dumps(_scraped_data))
             self.wfile.write(ans)
 
     def log_message(self, format, *args):
@@ -33,15 +36,25 @@ class MyHandler(BaseHTTPRequestHandler):
 
 
 class Server(Thread):
-
     def run(self):
         server = HTTPServer(('', PORT), MyHandler)
         server.serve_forever()
 
 
+class WebScraper(Thread):
+    def run(self):
+        while True:
+            temp_data = scrape_webpage("NDXDEMO")
+            global _scraped_data
+            _scraped_data = temp_data  # Atomic so no need to lock
+
 if __name__ == '__main__':
     try:
+        web_scraper = WebScraper()
+        web_scraper.start()
+
         server = Server()
         server.start()
     except KeyboardInterrupt as e:
         server.join()
+        web_scraper.join()
