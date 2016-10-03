@@ -1,12 +1,13 @@
 from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
 from threading import Thread
-from time import sleep
 import re
 from get_webpage import scrape_webpage
 import json
 HOST, PORT = '', 60000
 
-_scraped_data = ''
+EPICS_INSTS = ["NDXDEMO", "NDW1720", "NDLT702"]
+
+_scraped_data = dict()
 
 
 class MyHandler(BaseHTTPRequestHandler):
@@ -19,14 +20,19 @@ class MyHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Content-type', 'text/html')
         self.end_headers()
-        
+
         # Look for the callback
         # JSONP requires a response of the format "name_of_callback(json_string)"
         # e.g. myFunction({ "a": 1, "b": 2})
-        result = re.search('/?callback=(\w+)&_', self.path)
-        if len(result.groups()) > 0:
+        result = re.search('/?callback=(\w+)&', self.path)
+
+        # Look for the instrument data
+        instruments = re.search('&Instrument=(\w+)&', self.path)
+
+        if len(result.groups()) > 0 and len(instruments.groups()) > 0:
             callback = result.groups()[0]
-            ans = "%s(%s)" % (callback, json.dumps(_scraped_data))
+            inst = instruments.groups()[0]
+            ans = "%s(%s)" % (callback, json.dumps(_scraped_data[inst]))
             self.wfile.write(ans)
 
     def log_message(self, format, *args):
@@ -42,16 +48,21 @@ class Server(Thread):
 
 
 class WebScraper(Thread):
+    def __init__(self, host):
+        super(WebScraper, self).__init__()
+        self._host = host
+
     def run(self):
         while True:
-            temp_data = scrape_webpage("NDXDEMO")
+            temp_data = scrape_webpage(self._host)
             global _scraped_data
-            _scraped_data = temp_data  # Atomic so no need to lock
+            _scraped_data[self._host] = temp_data  # Atomic so no need to lock
 
 if __name__ == '__main__':
     try:
-        web_scraper = WebScraper()
-        web_scraper.start()
+        for inst in EPICS_INSTS:
+            web_scraper = WebScraper(inst)
+            web_scraper.start()
 
         server = Server()
         server.start()

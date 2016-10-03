@@ -34,6 +34,11 @@ dictInstPV = {
 var showPrivate = true
 var privateRunInfo = ["TITLE", "_USERNAME"]
 
+function getURLParameter(name) {
+    return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)
+            || [null, ''])[1].replace(/\+/g, '%20')) || null;
+}
+
 function isInArray(list, elem) {
     return list.indexOf(elem) > -1;
 }
@@ -50,7 +55,9 @@ $(document).ready(function() {
     $.ajax({
         url: "http://localhost:" + PORT + "/",
         dataType: 'jsonp',
+        data: {"Instrument": getURLParameter("Instrument")},
         jsonpCallback: "parseObject"
+
     });
 })
 
