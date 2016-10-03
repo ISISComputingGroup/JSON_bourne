@@ -5,7 +5,7 @@ from get_webpage import scrape_webpage
 import json
 HOST, PORT = '', 60000
 
-EPICS_INSTS = ["NDXDEMO", "NDW1720", "NDLT702"]
+EPICS_INSTS = ["NDXDEMO", "NDLT702"]
 
 _scraped_data = dict()
 
@@ -54,9 +54,12 @@ class WebScraper(Thread):
 
     def run(self):
         while True:
-            temp_data = scrape_webpage(self._host)
-            global _scraped_data
-            _scraped_data[self._host] = temp_data  # Atomic so no need to lock
+            try:
+                temp_data = scrape_webpage(self._host)
+                global _scraped_data
+                _scraped_data[self._host] = temp_data  # Atomic so no need to lock
+            except Exception as e:
+                raise Exception("Failed to get data from host: " + self._host)
 
 if __name__ == '__main__':
     try:
