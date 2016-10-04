@@ -1,5 +1,6 @@
 from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
 from threading import Thread
+from time import sleep
 import re
 from get_webpage import scrape_webpage
 import json
@@ -58,17 +59,21 @@ class WebScraper(Thread):
                 temp_data = scrape_webpage(self._host)
                 global _scraped_data
                 _scraped_data[self._host] = temp_data  # Atomic so no need to lock
+                sleep(3)
             except Exception as e:
                 raise Exception("Failed to get data from host: " + self._host)
 
 if __name__ == '__main__':
     try:
+        web_scrapers = []
         for inst in EPICS_INSTS:
             web_scraper = WebScraper(inst)
             web_scraper.start()
+            web_scrapers.append(web_scraper)
 
         server = Server()
         server.start()
     except KeyboardInterrupt as e:
         server.join()
-        web_scraper.join()
+        for w in web_scrapers:
+            w.join()
