@@ -1,12 +1,17 @@
-from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
-from threading import Thread
+from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+from threading import Thread, active_count
 from time import sleep
 import re
 from get_webpage import scrape_webpage
 import json
 HOST, PORT = '', 60000
 
-EPICS_INSTS = ["NDXDEMO"]
+ALL_INSTS = {"MUONFE": "NDEMUONFE"}  # Used for non NDX hosts format of {name: host}
+
+NDX_INSTS = ["DEMO"]
+
+for inst in NDX_INSTS:
+    ALL_INSTS[inst] = "NDX" + inst
 
 _scraped_data = dict()
 
@@ -27,7 +32,7 @@ class MyHandler(BaseHTTPRequestHandler):
             # Look for the instrument data
             instruments = re.search('&Instrument=(\w+)&', self.path)
 
-            if len(result.groups()) != 0 or len(instruments.groups()) != 0:
+            if len(result.groups()) != 1 or len(instruments.groups()) != 1:
                 raise ValueError()
 
             callback = result.groups()[0]
@@ -54,38 +59,45 @@ class MyHandler(BaseHTTPRequestHandler):
         return
 
 
-class Server(Thread):
-    def run(self):
-        server = HTTPServer(('', PORT), MyHandler)
-        server.serve_forever()
-
-
 class WebScraper(Thread):
-    def __init__(self, host):
+    _running = True
+
+    def __init__(self, name, host):
         super(WebScraper, self).__init__()
         self._host = host
+        self._name = name
 
     def run(self):
-        while True:
+        while self._running:
             try:
                 temp_data = scrape_webpage(self._host)
                 global _scraped_data
-                _scraped_data[self._host] = temp_data  # Atomic so no need to lock
-                sleep(3)
+                _scraped_data[self._name] = temp_data  # Atomic so no need to lock
+
+                # Lots of short waits so can stop thread more quickly
+                for i in range(3):
+                    if not self._running:
+                        return
+                    sleep(1)
             except Exception as e:
-                raise Exception("Failed to get data from host: " + self._host)
+                raise Exception("Failed to get data from instrument: " + str(self._name) + " at " + str(self._host))
 
 if __name__ == '__main__':
-    try:
-        web_scrapers = []
-        for inst in EPICS_INSTS:
-            web_scraper = WebScraper(inst)
-            web_scraper.start()
-            web_scrapers.append(web_scraper)
+    web_scrapers = []
+    for name, host in ALL_INSTS.iteritems():
+        web_scraper = WebScraper(name, host)
+        web_scraper.start()
+        web_scrapers.append(web_scraper)
 
-        server = Server()
-        server.start()
-    except KeyboardInterrupt as e:
-        server.join()
+    server = HTTPServer(('', PORT), MyHandler)
+
+    try:
+        while True:
+            server.serve_forever()
+    except KeyboardInterrupt:
+        print "Shutting down"
+        for w in web_scrapers:
+            w._running = False
+    while active_count() > 1:
         for w in web_scrapers:
             w.join()
