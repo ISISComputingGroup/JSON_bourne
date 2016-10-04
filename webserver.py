@@ -18,23 +18,35 @@ class MyHandler(BaseHTTPRequestHandler):
         This is called by BaseHTTPRequestHandler every time a client does a GET.
         The response is written to self.wfile
         """
-        self.send_response(200)
-        self.send_header('Content-type', 'text/html')
-        self.end_headers()
+        try:
+            # Look for the callback
+            # JSONP requires a response of the format "name_of_callback(json_string)"
+            # e.g. myFunction({ "a": 1, "b": 2})
+            result = re.search('/?callback=(\w+)&', self.path)
 
-        # Look for the callback
-        # JSONP requires a response of the format "name_of_callback(json_string)"
-        # e.g. myFunction({ "a": 1, "b": 2})
-        result = re.search('/?callback=(\w+)&', self.path)
+            # Look for the instrument data
+            instruments = re.search('&Instrument=(\w+)&', self.path)
 
-        # Look for the instrument data
-        instruments = re.search('&Instrument=(\w+)&', self.path)
+            if len(result.groups()) != 0 or len(instruments.groups()) != 0:
+                raise ValueError()
 
-        if len(result.groups()) > 0 and len(instruments.groups()) > 0:
             callback = result.groups()[0]
             inst = instruments.groups()[0]
+
+            if inst not in _scraped_data.keys():
+                raise ValueError()
+
             ans = "%s(%s)" % (callback, json.dumps(_scraped_data[inst]))
+
+            self.send_response(200)
+            self.send_header('Content-type', 'text/html')
+            self.end_headers()
+
             self.wfile.write(ans)
+        except ValueError as e:
+            self.send_response(400)
+        except Exception as e:
+            self.send_response(404)
 
     def log_message(self, format, *args):
         """ By overriding this method and doing nothing we disable writing to console
