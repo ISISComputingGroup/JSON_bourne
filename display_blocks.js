@@ -34,6 +34,13 @@ dictInstPV = {
 var showPrivate = true
 var privateRunInfo = ["TITLE", "_USERNAME"]
 
+function getURLParameter(name) {
+    return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)
+            || [null, ''])[1].replace(/\+/g, '%20')) || null;
+}
+
+var instrument = getURLParameter("Instrument");
+
 function isInArray(list, elem) {
     return list.indexOf(elem) > -1;
 }
@@ -48,9 +55,11 @@ function getBoolean(stringval) {
 
 $(document).ready(function() {
     $.ajax({
-        url: "http://localhost:" + PORT + "/",
+        url: "http://NDW1720:" + PORT + "/",
         dataType: 'jsonp',
+        data: {"Instrument": instrument},
         jsonpCallback: "parseObject"
+
     });
 })
 
@@ -58,7 +67,7 @@ function parseObject(obj) {
     var nodeInstTitle = document.createElement("H2")
     var nodeConfigTitle = document.createElement("H2")
 
-    nodeInstTitle.appendChild(document.createTextNode("DEMO"))
+    nodeInstTitle.appendChild(document.createTextNode(instrument))
     nodeConfigTitle.appendChild(document.createTextNode("Configuration: " + obj.config_name))
 
     document.getElementById("inst_name").appendChild(nodeInstTitle)
