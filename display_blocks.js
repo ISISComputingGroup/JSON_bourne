@@ -53,7 +53,7 @@ function getBoolean(stringval) {
 
 $(document).ready(function() {
     $.ajax({
-        url: "http://localhost:" + PORT + "/",
+        url: "http://NDW1720:" + PORT + "/",
         dataType: 'jsonp',
         data: {"Instrument": getURLParameter("Instrument")},
         jsonpCallback: "parseObject"

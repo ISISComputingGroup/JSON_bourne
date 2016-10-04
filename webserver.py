@@ -5,7 +5,7 @@ from get_webpage import scrape_webpage
 import json
 HOST, PORT = '', 60000
 
-EPICS_INSTS = ["NDXDEMO", "NDLT702"]
+EPICS_INSTS = ["NDXDEMO"]
 
 _scraped_data = dict()
 
