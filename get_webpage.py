@@ -10,11 +10,29 @@ PORT_CONFIG = 8008
 
 
 def shorten_title(title):
+    """
+    Gets a PV title by shortening its address to the last segment.
+
+    Args:
+        title: The PV address as string.
+
+    Returns: The last segment of the input PV address as string.
+
+    """
     number = title.rfind(':')
     return title[number + 1:]
 
 
 def ascii_to_string(ascii):
+    """
+    Converts a list of ascii characters into a string.
+
+    Args:
+        ascii: A list of ascii characters.
+
+    Returns: The input as string.
+
+    """
     string = ''
     for char in ascii:
         if char:
@@ -23,6 +41,15 @@ def ascii_to_string(ascii):
 
 
 def get_info(url):
+    """
+    Reads block information from a url and populates a list of block objects with it.
+
+    Args:
+        url: The block information source.
+
+    Returns: A converted list of block objects.
+
+    """
     blocks = dict()
 
     page = requests.get(url)
@@ -71,13 +98,21 @@ def get_info(url):
 
         name = shorten_title(titles[i])
         status = status_text[i]
-        block_description = (Block(name, status, value, alarm)).get_description()
-        blocks[name] = block_description
+        blocks[name] = Block(status, value, alarm, True)
 
     return blocks
 
 
 def get_instpvs(url):
+    """
+    Extracts and formats a list of relevant instrument PVs from all instrument PVs.
+
+    Args:
+        url: The source of the instrument PV information.
+
+    Returns: A trimmed list of instrument PVs.
+
+    """
     wanted = dict()
     ans = get_info(url)
 
@@ -95,25 +130,77 @@ def get_instpvs(url):
 
 
 def scrape_webpage(host="localhost"):
-    blocks_visible = get_info('http://%s:%s/group?name=BLOCKS' % (host, PORT_BLOCKS))
-    blocks_hidden = get_info('http://%s:%s/group?name=DATAWEB' % (host, PORT_BLOCKS))
-    blocks_all = dict(blocks_visible.items() + blocks_hidden.items())
+    """
+    Returns the collated information on instrument configuration, blocks and run status PVs as JSON.
 
+    Args:
+        host: The target instrument.
+
+    Returns: JSON of the instrument's configuration and status.
+
+    """
+
+    # read config
     page = requests.get('http://%s:%s/' % (host, PORT_CONFIG))
-
     corrected_page = page.content.replace("'", '"').replace("None", "null").replace("True", "true").replace("False", "false")
     config = json.loads(corrected_page)
+    block_vis = get_block_visibility(config)
+
+    # read blocks
+    blocks_log = get_info('http://%s:%s/group?name=BLOCKS' % (host, PORT_BLOCKS))
+    blocks_nolog = get_info('http://%s:%s/group?name=DATAWEB' % (host, PORT_BLOCKS))
+    blocks_all = dict(blocks_log.items() + blocks_nolog.items())
+
+    # get block visibility from config
+    for block in blocks_all:
+        blocks_all[block].set_visibility(block_vis.get(block))
+
+    blocks_all_formatted = format_blocks(blocks_all)
 
     groups = dict()
     for group in config["groups"]:
         blocks = dict()
         for block in group["blocks"]:
-            if block in blocks_all.keys():
-                blocks[block] = blocks_all[block]
+            if block in blocks_all_formatted.keys():
+                blocks[block] = blocks_all_formatted[block]
+                print blocks[block]
         groups[group["name"]] = blocks
 
     output = dict()
     output["config_name"] = config["name"]
     output["groups"] = groups
-    output["inst_pvs"] = get_instpvs('http://%s:%s/group?name=INST' % (host, PORT_INSTPV))
+    output["inst_pvs"] = format_blocks(get_instpvs('http://%s:%s/group?name=INST' % (host, PORT_INSTPV)))
     return output
+
+
+def format_blocks(blocks):
+    """
+    Converts a list of block objects into JSON.
+
+    Args:
+        blocks: A list of block objects.
+
+    Returns: A JSON list of block objects.
+
+    """
+    blocks_formatted = dict()
+    for block in blocks:
+        blocks_formatted[block] = blocks[block].get_description()
+    return blocks_formatted
+
+
+def get_block_visibility(config):
+    """
+    Creates and returns a dictionary containing for looking up the visibility of a given block.
+
+    Args:
+        config: The configuration where block information is read.
+
+    Returns: A dictionary with block-visibility as key-value pairs.
+
+    """
+    vis = dict()
+    for block in config["blocks"]:
+        vis[block["name"]] = block["visible"]
+    return vis
+
