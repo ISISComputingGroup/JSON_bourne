@@ -2,7 +2,10 @@ var PORT = 60000;
 var showPrivate = true;
 var privateRunInfo = ["TITLE", "_USERNAME"];
 var instrument = getURLParameter("Instrument");
+var nodeInstTitle = document.createElement("H2");
+var nodeConfigTitle = document.createElement("H2");
 var instrumentState;
+var showHidden;
 
 dictInstPV = {
     RUNSTATE: 'Run Status',
@@ -35,6 +38,12 @@ dictInstPV = {
     NUMSPECTRA: 'Number of Spectra'
 };
 
+/**
+ * Gets the proper display title for a PV.
+ *
+ * @param {string} title The actual title of the PV.
+ * @return {string} The title for display on the page.
+ */
 function getTitle(title) {
     if (title in dictInstPV){
         return dictInstPV[title];
@@ -42,23 +51,69 @@ function getTitle(title) {
     return title;
 }
 
+/**
+ * Checks whether a given group is the "None" group and replaces the title with "Other" if so.
+ *
+ * @param {string} title The title of the group.
+ * @return {string} The correct title for the group.
+ */
+function checkGroupNone(title) {
+    if (title === "NONE") {
+        title = "OTHER";
+    }
+    return title;
+}
+
+/**
+ * Returns the value of a parameter set in the URL.
+ *
+ * @param {string} name The name of the parameter.
+ * @return {string} The value of the parameter.
+ */
 function getURLParameter(name) {
     return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)
             || [null, ''])[1].replace(/\+/g, '%20')) || null;
 }
 
+/**
+ * Checks whether a list contains a certain element.
+ *
+ * @param list The list of elements.
+ * @param elem The element to look for in the list.
+ * @return {boolean} Whether elem is contained in list.
+ */
 function isInArray(list, elem) {
     return list.indexOf(elem) > -1;
 }
 
+/**
+ * Converts a String PV value ("YES" / "NO") into a boolean.
+ *
+ * @param stringval The string to convert.
+ * @return {boolean} The resulting boolean value.
+ */
 function getBoolean(stringval) {
-    bool = true
     if (stringval.toUpperCase() == "NO") {
-        bool = false;
+        return false;
     }
-    return bool;
+    return true;
 }
 
+/**
+ * Clears a given node of all child elements.
+ *
+ * @param node The node to be cleared.
+ */
+function clear(node) {
+    while (node.firstChild) {
+        node.removeChild(node.firstChild);
+    }
+}
+
+
+/**
+ * Fetches the latest instrument data.
+ */
 function refresh() {
     $.ajax({
     url: "http://localhost:" + PORT + "/",
@@ -69,17 +124,18 @@ function refresh() {
     });
 }
 
-$(document).ready(refresh())
-
+/**
+ * Parses fetched instrument data into a human-readable html page.
+ */
 function parseObject(obj) {
-
     // set up page
     instrumentState = obj;
+    showHidden = document.getElementById("showHidden").checked;
     showPrivate = getBoolean(instrumentState.inst_pvs["DISPLAY"]["value"]);
     delete instrumentState.inst_pvs["DISPLAY"];
 
-    var nodeInstTitle = document.createElement("H2");
-    var nodeConfigTitle = document.createElement("H2");
+    clear(nodeInstTitle);
+    clear(nodeConfigTitle);
 
     nodeInstTitle.appendChild(document.createTextNode(instrument));
     nodeConfigTitle.appendChild(document.createTextNode("Configuration: " + instrumentState.config_name));
@@ -89,62 +145,66 @@ function parseObject(obj) {
 
     // populate blocks
     var nodeGroups = document.getElementById("groups");
-    getDisplayGroups(nodeGroups, instrumentState.groups)
+    getDisplayGroups(nodeGroups, instrumentState.groups);
 
     // populate run information
-
-    var instpv_titles = Object.keys(obj.inst_pvs);
     var nodeInstPVs = document.getElementById("inst_pvs");
     var nodeInstPVList = document.createElement("UL");
+
     nodeInstPVs.appendChild(nodeInstPVList);
-
-    getDisplayBlocks(nodeInstPVList, instrumentState.inst_pvs)
+    getDisplayBlocks(nodeInstPVs, instrumentState.inst_pvs);
 }
 
-function checkTitle(title) {
-    if (title === "NONE") {
-        title = "OTHER";
-    }
-    return title;
-}
-
-
+/**
+ * Adds html elements for a list of group objects to a given node.
+ *
+ * @param node The parent node.
+ * @param groups The list of group objects to display.
+ * @return The updated node.
+ */
 function getDisplayGroups(node, groups) {
-    // clear
-    while (node.firstChild) {
-        node.removeChild(node.firstChild);
-    }
-
-    // populate
+    clear(node);
     for (var key in groups) {
-        var group = groups[key]
+        var group = groups[key];
         var nodeGroups = document.getElementById("groups");
 
-        var nodeTitle = document.createElement("H3");
-        nodeGroups.appendChild(nodeTitle);
-        nodeTitle.appendChild(document.createTextNode(checkTitle(key)));
-
         var nodeBlockList = document.createElement("UL");
-        nodeGroups.appendChild(nodeBlockList);
-
-        var blockListStyle = document.createAttribute("style");
-        blockListStyle.value = 'padding-left:20px';
-        nodeBlockList.setAttributeNode(blockListStyle);
 
         var blocks = instrumentState.groups[key];
-        node.appendChild(getDisplayBlocks(nodeBlockList, blocks));
+        var displayBlocks = getDisplayBlocks(nodeBlockList, blocks);
+
+        // Do not display empty groups
+        if (displayBlocks.childElementCount != 0) {
+            var nodeTitle = document.createElement("H3");
+            nodeGroups.appendChild(nodeTitle);
+            nodeTitle.appendChild(document.createTextNode(checkGroupNone(key)));
+            nodeGroups.appendChild(nodeBlockList);
+
+            var blockListStyle = document.createAttribute("style");
+            blockListStyle.value = 'padding-left:20px';
+            nodeBlockList.setAttributeNode(blockListStyle);
+
+            node.appendChild(displayBlocks);
+        }
     }
+    return node;
 }
 
+/**
+ * Adds html elements for a list of block objects to a given node.
+ *
+ * @param node The parent node.
+ * @param blocks The list of block objects to display.
+ * @return The updated node.
+ */
 function getDisplayBlocks(node, blocks) {
-    // clear
-    while (node.firstChild) {
-        node.removeChild(node.firstChild);
-    }
-
-    // populate
+    clear(node)
     for (var key in blocks) {
-        var block = blocks[key]
+        var block = blocks[key];
+        if(block["visibility"] == false && !showHidden){
+            continue;
+        }
+
         var value = block["value"];
         var status_text = block["status"];
         var alarm = block["alarm"];
@@ -170,7 +230,7 @@ function getDisplayBlocks(node, blocks) {
             nodeBlockStatus.appendChild(document.createTextNode("Unavailable"));
             nodeBlock.appendChild(nodeBlockStatus);
         } else {
-            nodeBlockText.nodeValue += value + "\u00A0\u00A0"
+            nodeBlockText.nodeValue += value + "\u00A0\u00A0";
                 // write alarm status if active
             if (!alarm.startsWith("null") && !alarm.startsWith("OK")) {
                 var nodeBlockAlarm = document.createElement("FONT");
@@ -185,6 +245,4 @@ function getDisplayBlocks(node, blocks) {
     return node;
 }
 
-// function toggleHidden(state) {
-//     state is bool
-// }
+$(document).ready(refresh());
