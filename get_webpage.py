@@ -163,7 +163,6 @@ def scrape_webpage(host="localhost"):
         for block in group["blocks"]:
             if block in blocks_all_formatted.keys():
                 blocks[block] = blocks_all_formatted[block]
-                print blocks[block]
         groups[group["name"]] = blocks
 
     output = dict()
