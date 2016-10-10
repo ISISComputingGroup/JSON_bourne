@@ -35,6 +35,13 @@ dictInstPV = {
     NUMSPECTRA: 'Number of Spectra'
 };
 
+function getTitle(title) {
+    if (title in dictInstPV){
+        return dictInstPV[title];
+    }
+    return title;
+}
+
 function getURLParameter(name) {
     return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)
             || [null, ''])[1].replace(/\+/g, '%20')) || null;
@@ -68,7 +75,9 @@ function parseObject(obj) {
 
     // set up page
     instrumentState = obj;
-    console.log(instrumentState);
+    showPrivate = getBoolean(instrumentState.inst_pvs["DISPLAY"]["value"]);
+    delete instrumentState.inst_pvs["DISPLAY"];
+
     var nodeInstTitle = document.createElement("H2");
     var nodeConfigTitle = document.createElement("H2");
 
@@ -83,53 +92,13 @@ function parseObject(obj) {
     getDisplayGroups(nodeGroups, instrumentState.groups)
 
     // populate run information
-    showPrivate = getBoolean(obj.inst_pvs["DISPLAY"]["value"]);
-    delete obj.inst_pvs["DISPLAY"];
 
     var instpv_titles = Object.keys(obj.inst_pvs);
     var nodeInstPVs = document.getElementById("inst_pvs");
     var nodeInstPVList = document.createElement("UL");
     nodeInstPVs.appendChild(nodeInstPVList);
 
-    for (i = 0; i < instpv_titles.length; i++) {
-        var title = instpv_titles[i];
-        var value = obj.inst_pvs[title]["value"];
-        var status_text = obj.inst_pvs[title]["status"];
-        var alarm = obj.inst_pvs[title]["alarm"];
-
-        var nodePV = document.createElement("LI");
-        var nodePVText = document.createTextNode(dictInstPV[title] + ":\u00A0\u00A0");
-        var attColour = document.createAttribute("color");
-
-        // write pv name
-        nodePV.appendChild(nodePVText);
-
-        // write status if disconnected
-        if (status_text == "Disconnected") {
-            var nodePVStatus = document.createElement("FONT");
-            attColour.value = "BlueViolet";
-            nodePVStatus.setAttributeNode(attColour);
-            nodePVStatus.appendChild(document.createTextNode(status_text.toUpperCase()));
-            nodePV.appendChild(nodePVStatus);
-        }
-        // write value if connected
-        else if ((isInArray(privateRunInfo, instpv_titles[i])) && !showPrivate) {
-            var nodePVStatus = document.createElement("I");
-            nodePVStatus.appendChild(document.createTextNode("Unavailable"));
-            nodePV.appendChild(nodePVStatus);
-        } else {
-            nodePVText.nodeValue += value + "\u00A0\u00A0"
-            // write alarm status if active
-            if (!alarm.startsWith("null") && !alarm.startsWith("OK")) {
-                var nodePVAlarm = document.createElement("FONT");
-                attColour.value = "red";
-                nodePVAlarm.setAttributeNode(attColour);
-                nodePVAlarm.appendChild(document.createTextNode("(" + alarm + ")"));
-                nodePV.appendChild(nodePVAlarm);
-            }
-        }
-        nodeInstPVList.appendChild(nodePV);
-    }
+    getDisplayBlocks(nodeInstPVList, instrumentState.inst_pvs)
 }
 
 function checkTitle(title) {
@@ -182,7 +151,7 @@ function getDisplayBlocks(node, blocks) {
 
         var nodeBlock = document.createElement("LI");
         var attColour = document.createAttribute("color");
-        var nodeBlockText = document.createTextNode(key + ":\u00A0\u00A0");
+        var nodeBlockText = document.createTextNode(getTitle(key) + ":\u00A0\u00A0");
 
         // write block name
         nodeBlock.appendChild(nodeBlockText);
@@ -196,7 +165,11 @@ function getDisplayBlocks(node, blocks) {
             nodeBlock.appendChild(nodeBlockStatus);
         }
         // write value if connected
-        else {
+        else if ((isInArray(privateRunInfo, key)) && !showPrivate) {
+            var nodeBlockStatus = document.createElement("I");
+            nodeBlockStatus.appendChild(document.createTextNode("Unavailable"));
+            nodeBlock.appendChild(nodeBlockStatus);
+        } else {
             nodeBlockText.nodeValue += value + "\u00A0\u00A0"
                 // write alarm status if active
             if (!alarm.startsWith("null") && !alarm.startsWith("OK")) {
