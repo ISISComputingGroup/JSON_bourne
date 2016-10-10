@@ -65,7 +65,10 @@ function refresh() {
 $(document).ready(refresh())
 
 function parseObject(obj) {
+
+    // set up page
     instrumentState = obj;
+    console.log(instrumentState);
     var nodeInstTitle = document.createElement("H2");
     var nodeConfigTitle = document.createElement("H2");
 
@@ -75,27 +78,9 @@ function parseObject(obj) {
     document.getElementById("inst_name").appendChild(nodeInstTitle);
     document.getElementById("config_name").appendChild(nodeConfigTitle);
 
-    // populate blocks list
-    var groupTitles = Object.keys(instrumentState.groups);
-    for (i = 0; i < groupTitles.length; i++) {
-        var groupTitle = groupTitles[i];
-        var blocks = instrumentState.groups[groupTitle];
-        var nodeGroups = document.getElementById("groups");
-
-        var nodeTitle = document.createElement("H3");
-        nodeGroups.appendChild(nodeTitle);
-        nodeTitle.appendChild(document.createTextNode(checkTitle(groupTitle)));
-
-        var nodeBlockList = document.createElement("UL");
-        nodeGroups.appendChild(nodeBlockList);
-
-        var blockListStyle = document.createAttribute("style");
-        blockListStyle.value = 'padding-left:20px';
-        nodeBlockList.setAttributeNode(blockListStyle);
-        console.log(instrumentState)
-        getDisplayBlocks(nodeBlockList, blocks)
-
-    }
+    // populate blocks
+    var nodeGroups = document.getElementById("groups");
+    getDisplayGroups(nodeGroups, instrumentState.groups)
 
     // populate run information
     showPrivate = getBoolean(obj.inst_pvs["DISPLAY"]["value"]);
@@ -155,6 +140,33 @@ function checkTitle(title) {
 }
 
 
+function getDisplayGroups(node, groups) {
+    // clear
+    while (node.firstChild) {
+        node.removeChild(node.firstChild);
+    }
+
+    // populate
+    for (var key in groups) {
+        var group = groups[key]
+        var nodeGroups = document.getElementById("groups");
+
+        var nodeTitle = document.createElement("H3");
+        nodeGroups.appendChild(nodeTitle);
+        nodeTitle.appendChild(document.createTextNode(checkTitle(key)));
+
+        var nodeBlockList = document.createElement("UL");
+        nodeGroups.appendChild(nodeBlockList);
+
+        var blockListStyle = document.createAttribute("style");
+        blockListStyle.value = 'padding-left:20px';
+        nodeBlockList.setAttributeNode(blockListStyle);
+
+        var blocks = instrumentState.groups[key];
+        node.appendChild(getDisplayBlocks(nodeBlockList, blocks));
+    }
+}
+
 function getDisplayBlocks(node, blocks) {
     // clear
     while (node.firstChild) {
@@ -197,6 +209,7 @@ function getDisplayBlocks(node, blocks) {
         }
         node.appendChild(nodeBlock);
     }
+    return node;
 }
 
 // function toggleHidden(state) {
