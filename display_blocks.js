@@ -55,7 +55,7 @@ function getBoolean(stringval) {
 
 $(document).ready(function() {
     $.ajax({
-        url: "http://130.246.39.238:" + PORT + "/",
+        url: "http://dataweb.isis.rl.ac.uk:" + PORT + "/",
         dataType: 'jsonp',
         data: {"Instrument": instrument},
         jsonpCallback: "parseObject"
