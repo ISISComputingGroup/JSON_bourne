@@ -8,7 +8,7 @@ HOST, PORT = '', 60000
 
 ALL_INSTS = {"MUONFE": "NDEMUONFE"}  # Used for non NDX hosts format of {name: host}
 
-NDX_INSTS = ["DEMO"]
+NDX_INSTS = ["DEMO", "LARMOR"]
 
 for inst in NDX_INSTS:
     ALL_INSTS[inst] = "NDX" + inst
@@ -36,10 +36,10 @@ class MyHandler(BaseHTTPRequestHandler):
                 raise ValueError()
 
             callback = result.groups()[0]
-            inst = instruments.groups()[0]
-
+            inst = instruments.groups()[0].upper()
+			
             if inst not in _scraped_data.keys():
-                raise ValueError()
+                raise ValueError(str(inst) + " not known")
 
             ans = "%s(%s)" % (callback, json.dumps(_scraped_data[inst]))
 
@@ -73,7 +73,6 @@ class WebScraper(Thread):
                 temp_data = scrape_webpage(self._host)
                 global _scraped_data
                 _scraped_data[self._name] = temp_data  # Atomic so no need to lock
-
                 # Lots of short waits so can stop thread more quickly
                 for i in range(3):
                     if not self._running:
