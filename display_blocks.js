@@ -39,7 +39,7 @@ function getURLParameter(name) {
             || [null, ''])[1].replace(/\+/g, '%20')) || null;
 }
 
-var instrument = getURLParameter("Instrument");
+var instrument = getURLParameter("instrument");
 
 function isInArray(list, elem) {
     return list.indexOf(elem) > -1;
