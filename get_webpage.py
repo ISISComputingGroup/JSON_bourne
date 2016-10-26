@@ -2,6 +2,7 @@ from lxml import html
 import requests
 import json
 from block import Block
+import logging
 
 
 PORT_INSTPV = 4812
@@ -50,9 +51,14 @@ def get_info(url):
     Returns: A converted list of block objects.
 
     """
+    try:
+        page = requests.get(url)
+    except Exception as e:
+        logging.error("URL not found: " + str(url))
+        raise e
+
     blocks = dict()
 
-    page = requests.get(url)
     tree = html.fromstring(page.content)
 
     titles = tree.xpath("//tr/th/a")
@@ -87,7 +93,11 @@ def get_info(url):
             value_index = 2
             block_split = block_raw.split(None, 2)
             value_ascii = block_split[value_index].split(", ")
-            value = ascii_to_string(value_ascii)
+            try:
+                value = ascii_to_string(value_ascii)
+            except Exception as e:
+                # Put this here for the moment, title/username need fixing anyway
+                value = "Unknown"
             alarm = "null"
         else:
             value_index = 2
@@ -132,7 +142,8 @@ def get_instpvs(url):
 def scrape_webpage(host="localhost"):
     """
     Returns the collated information on instrument configuration, blocks and run status PVs as JSON.
-
+    
+    
     Args:
         host: The target instrument.
 
@@ -169,6 +180,7 @@ def scrape_webpage(host="localhost"):
     output["config_name"] = config["name"]
     output["groups"] = groups
     output["inst_pvs"] = format_blocks(get_instpvs('http://%s:%s/group?name=INST' % (host, PORT_INSTPV)))
+
     return output
 
 

@@ -110,14 +110,12 @@ function clear(node) {
     }
 }
 
-
 /**
  * Fetches the latest instrument data.
  */
 function refresh() {
     $.ajax({
-    url: "http://localhost:" + PORT + "/",
-//    url: "http://NDW1720:" + PORT + "/",
+    url: "http://dataweb.isis.rl.ac.uk:" + PORT + "/",
     dataType: 'jsonp',
     data: {"Instrument": instrument},
     jsonpCallback: "parseObject"
