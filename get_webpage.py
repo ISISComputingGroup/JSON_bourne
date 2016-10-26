@@ -154,7 +154,15 @@ def scrape_webpage(host="localhost"):
     # read config
     page = requests.get('http://%s:%s/' % (host, PORT_CONFIG))
     corrected_page = page.content.replace("'", '"').replace("None", "null").replace("True", "true").replace("False", "false")
-    config = json.loads(corrected_page)
+    
+    try:
+        config = json.loads(corrected_page)
+    except Exception as e:
+        logging.error("JSON conversion failed: " + str(e))
+        logging.error("JSON was: " + str(config))
+        logging.error("Blocks were: " + str(blocks_all))
+        raise e
+        
     block_vis = get_block_visibility(config)
 
     # read blocks
@@ -176,10 +184,14 @@ def scrape_webpage(host="localhost"):
                 blocks[block] = blocks_all_formatted[block]
         groups[group["name"]] = blocks
 
-    output = dict()
-    output["config_name"] = config["name"]
-    output["groups"] = groups
-    output["inst_pvs"] = format_blocks(get_instpvs('http://%s:%s/group?name=INST' % (host, PORT_INSTPV)))
+    try:
+        output = dict()
+        output["config_name"] = config["name"]
+        output["groups"] = groups
+        output["inst_pvs"] = format_blocks(get_instpvs('http://%s:%s/group?name=INST' % (host, PORT_INSTPV)))
+    except Exception as e:
+        logging.error("Output construction failed " + str(e))
+        raise e
 
     return output
 
