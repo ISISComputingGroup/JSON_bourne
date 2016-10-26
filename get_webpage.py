@@ -2,6 +2,7 @@ from lxml import html
 import requests
 import json
 from block import Block
+import logging
 
 
 PORT_INSTPV = 4812
@@ -23,9 +24,14 @@ def ascii_to_string(ascii):
 
 
 def get_info(url):
+    try:
+        page = requests.get(url)
+    except Exception as e:
+        logging.error("URL not found: " + str(url))
+        raise e
+
     blocks = dict()
 
-    page = requests.get(url)
     tree = html.fromstring(page.content)
 
     titles = tree.xpath("//tr/th/a")
@@ -60,7 +66,11 @@ def get_info(url):
             value_index = 2
             block_split = block_raw.split(None, 2)
             value_ascii = block_split[value_index].split(", ")
-            value = ascii_to_string(value_ascii)
+            try:
+                value = ascii_to_string(value_ascii)
+            except Exception as e:
+                # Put this here for the moment, title/username need fixing anyway
+                value = "Unknown"
             alarm = "null"
         else:
             value_index = 2
@@ -95,25 +105,41 @@ def get_instpvs(url):
 
 
 def scrape_webpage(host="localhost"):
-    blocks_visible = get_info('http://%s:%s/group?name=BLOCKS' % (host, PORT_BLOCKS))
-    blocks_hidden = get_info('http://%s:%s/group?name=DATAWEB' % (host, PORT_BLOCKS))
-    blocks_all = dict(blocks_visible.items() + blocks_hidden.items())
+    try:
+        blocks_visible = get_info('http://%s:%s/group?name=BLOCKS' % (host, PORT_BLOCKS))
+        blocks_hidden = get_info('http://%s:%s/group?name=DATAWEB' % (host, PORT_BLOCKS))
+        blocks_all = dict(blocks_visible.items() + blocks_hidden.items())
+    except Exception as e:
+        logging.error("Failed to get archive info: " + str(e))
+        raise e
 
     page = requests.get('http://%s:%s/' % (host, PORT_CONFIG))
 
     corrected_page = page.content.replace("'", '"').replace("None", "null").replace("True", "true").replace("False", "false")
-    config = json.loads(corrected_page)
+    try:
+        config = json.loads(corrected_page)
 
-    groups = dict()
-    for group in config["groups"]:
-        blocks = dict()
-        for block in group["blocks"]:
-            if block in blocks_all.keys():
-                blocks[block] = blocks_all[block]
-        groups[group["name"]] = blocks
+        groups = dict()
+        for group in config["groups"]:
+            blocks = dict()
+            for block in group["blocks"]:
+                if block in blocks_all.keys():
+                    blocks[block] = blocks_all[block]
+            groups[group["name"]] = blocks
 
-    output = dict()
-    output["config_name"] = config["name"]
-    output["groups"] = groups
-    output["inst_pvs"] = get_instpvs('http://%s:%s/group?name=INST' % (host, PORT_INSTPV))
+    except Exception as e:
+        logging.error("JSON conversion failed: " + str(e))
+        logging.error("JSON was: " + str(config))
+        logging.error("Blocks were: " + str(blocks_all))
+        raise e
+
+    try:
+        output = dict()
+        output["config_name"] = config["name"]
+        output["groups"] = groups
+        output["inst_pvs"] = get_instpvs('http://%s:%s/group?name=INST' % (host, PORT_INSTPV))
+    except Exception as e:
+        logging.error("Output construction failed " + str(e))
+        raise e
+
     return output
