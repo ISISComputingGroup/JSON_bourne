@@ -39,7 +39,7 @@ function getURLParameter(name) {
             || [null, ''])[1].replace(/\+/g, '%20')) || null;
 }
 
-var instrument = getURLParameter("Instrument");
+var instrument = getURLParameter("instrument");
 
 function isInArray(list, elem) {
     return list.indexOf(elem) > -1;
@@ -55,7 +55,7 @@ function getBoolean(stringval) {
 
 $(document).ready(function() {
     $.ajax({
-        url: "http://NDW1720:" + PORT + "/",
+        url: "http://dataweb.isis.rl.ac.uk:" + PORT + "/",
         dataType: 'jsonp',
         data: {"Instrument": instrument},
         jsonpCallback: "parseObject"
@@ -128,9 +128,11 @@ function parseObject(obj) {
     }
 
     // populate run information
-    showPrivate = getBoolean(obj.inst_pvs["DISPLAY"]["value"])
-    delete obj.inst_pvs["DISPLAY"]
-
+	if (typeof obj.inst_pvs["DISPLAY"] !== 'undefined') {
+		showPrivate = getBoolean(obj.inst_pvs["DISPLAY"]["value"])
+		delete obj.inst_pvs["DISPLAY"]
+	}
+	
     var instpv_titles = Object.keys(obj.inst_pvs)
     var nodeInstPVs = document.getElementById("inst_pvs")
     var nodeInstPVList = document.createElement("UL")

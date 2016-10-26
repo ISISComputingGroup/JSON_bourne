@@ -1,14 +1,19 @@
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+from SocketServer import ThreadingMixIn
 from threading import Thread, active_count
 from time import sleep
 import re
 from get_webpage import scrape_webpage
 import json
+import logging
+
+logging.basicConfig(filename='JSON_bourne.log', format='%(asctime)s %(message)s', level=logging.WARN)
+
 HOST, PORT = '', 60000
 
 ALL_INSTS = {"MUONFE": "NDEMUONFE"}  # Used for non NDX hosts format of {name: host}
 
-NDX_INSTS = ["DEMO"]
+NDX_INSTS = ["DEMO", "LARMOR", "IMAT", "IRIS"]
 
 for inst in NDX_INSTS:
     ALL_INSTS[inst] = "NDX" + inst
@@ -32,14 +37,20 @@ class MyHandler(BaseHTTPRequestHandler):
             # Look for the instrument data
             instruments = re.search('&Instrument=(\w+)&', self.path)
 
+            if result is None or instruments is None:
+                raise ValueError("No instrument specified")
+
             if len(result.groups()) != 1 or len(instruments.groups()) != 1:
-                raise ValueError()
+                raise ValueError("No instrument specified")
 
             callback = result.groups()[0]
-            inst = instruments.groups()[0]
+            inst = instruments.groups()[0].upper()
+
+            # Warn level so as to avoid many log messages that come from other modules
+            logging.warn("Connected to from " + str(self.client_address) + " looking at " + str(inst))
 
             if inst not in _scraped_data.keys():
-                raise ValueError()
+                raise ValueError(str(inst) + " not known")
 
             ans = "%s(%s)" % (callback, json.dumps(_scraped_data[inst]))
 
@@ -50,8 +61,10 @@ class MyHandler(BaseHTTPRequestHandler):
             self.wfile.write(ans)
         except ValueError as e:
             self.send_response(400)
+            logging.error(e)
         except Exception as e:
             self.send_response(404)
+            logging.error(e)
 
     def log_message(self, format, *args):
         """ By overriding this method and doing nothing we disable writing to console
@@ -59,8 +72,20 @@ class MyHandler(BaseHTTPRequestHandler):
         return
 
 
+class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+    """Handle requests in a separate thread."""
+
+
 class WebScraper(Thread):
     _running = True
+    _connected = False
+
+    def wait(self, seconds):
+        # Lots of short waits so can stop thread more quickly
+        for i in range(seconds):
+            if not self._running:
+                return
+            sleep(1)
 
     def __init__(self, name, host):
         super(WebScraper, self).__init__()
@@ -73,14 +98,11 @@ class WebScraper(Thread):
                 temp_data = scrape_webpage(self._host)
                 global _scraped_data
                 _scraped_data[self._name] = temp_data  # Atomic so no need to lock
-
-                # Lots of short waits so can stop thread more quickly
-                for i in range(3):
-                    if not self._running:
-                        return
-                    sleep(1)
+                self._connected = True
+                self.wait(3)
             except Exception as e:
-                raise Exception("Failed to get data from instrument: " + str(self._name) + " at " + str(self._host))
+                logging.error("Failed to get data from instrument: " + str(self._name) + " at " + str(self._host))
+                self.wait(60)
 
 if __name__ == '__main__':
     web_scrapers = []
@@ -89,7 +111,7 @@ if __name__ == '__main__':
         web_scraper.start()
         web_scrapers.append(web_scraper)
 
-    server = HTTPServer(('', PORT), MyHandler)
+    server = ThreadedHTTPServer(('', PORT), MyHandler)
 
     try:
         while True:
