@@ -129,9 +129,12 @@ function parseObject(obj) {
     // set up page
     instrumentState = obj;
     showHidden = document.getElementById("showHidden").checked;
-    showPrivate = getBoolean(instrumentState.inst_pvs["DISPLAY"]["value"]);
-    delete instrumentState.inst_pvs["DISPLAY"];
-
+	if ("DISPLAY" in instrumentState.inst_pvs) {
+		showPrivate = getBoolean(instrumentState.inst_pvs["DISPLAY"]["value"]);
+		delete instrumentState.inst_pvs["DISPLAY"];
+	} else {
+		showPrivate = true;
+	}
     clear(nodeInstTitle);
     clear(nodeConfigTitle);
 
