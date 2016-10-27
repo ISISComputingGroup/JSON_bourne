@@ -1,4 +1,11 @@
-var PORT = 60000
+var PORT = 60000;
+var showPrivate = true;
+var privateRunInfo = ["TITLE", "_USERNAME"];
+var instrument = getURLParameter("Instrument");
+var nodeInstTitle = document.createElement("H2");
+var nodeConfigTitle = document.createElement("H2");
+var instrumentState;
+var showHidden;
 
 dictInstPV = {
     RUNSTATE: 'Run Status',
@@ -29,159 +36,214 @@ dictInstPV = {
     MONITORTO: 'Monitor To',
     NUMTIMECHANNELS: 'Number of Time Channels',
     NUMSPECTRA: 'Number of Spectra'
+};
+
+/**
+ * Gets the proper display title for a PV.
+ *
+ * @param {string} title The actual title of the PV.
+ * @return {string} The title for display on the page.
+ */
+function getTitle(title) {
+    if (title in dictInstPV){
+        return dictInstPV[title];
+    }
+    return title;
 }
 
-var showPrivate = true
-var privateRunInfo = ["TITLE", "_USERNAME"]
+/**
+ * Checks whether a given group is the "None" group and replaces the title with "Other" if so.
+ *
+ * @param {string} title The title of the group.
+ * @return {string} The correct title for the group.
+ */
+function checkGroupNone(title) {
+    if (title === "NONE") {
+        title = "OTHER";
+    }
+    return title;
+}
 
+/**
+ * Returns the value of a parameter set in the URL.
+ *
+ * @param {string} name The name of the parameter.
+ * @return {string} The value of the parameter.
+ */
 function getURLParameter(name) {
     return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)
             || [null, ''])[1].replace(/\+/g, '%20')) || null;
 }
 
-var instrument = getURLParameter("instrument");
-
+/**
+ * Checks whether a list contains a certain element.
+ *
+ * @param list The list of elements.
+ * @param elem The element to look for in the list.
+ * @return {boolean} Whether elem is contained in list.
+ */
 function isInArray(list, elem) {
     return list.indexOf(elem) > -1;
 }
 
+/**
+ * Converts a String PV value ("YES" / "NO") into a boolean.
+ *
+ * @param stringval The string to convert.
+ * @return {boolean} The resulting boolean value.
+ */
 function getBoolean(stringval) {
-    bool = true
     if (stringval.toUpperCase() == "NO") {
-        bool = false
+        return false;
     }
-    return bool
+    return true;
 }
 
-$(document).ready(function() {
-    $.ajax({
-        url: "http://dataweb.isis.rl.ac.uk:" + PORT + "/",
-        dataType: 'jsonp',
-        data: {"Instrument": instrument},
-        jsonpCallback: "parseObject"
-
-    });
-})
-
-function parseObject(obj) {
-    var nodeInstTitle = document.createElement("H2")
-    var nodeConfigTitle = document.createElement("H2")
-
-    nodeInstTitle.appendChild(document.createTextNode(instrument))
-    nodeConfigTitle.appendChild(document.createTextNode("Configuration: " + obj.config_name))
-
-    document.getElementById("inst_name").appendChild(nodeInstTitle)
-    document.getElementById("config_name").appendChild(nodeConfigTitle)
-
-    // populate blocks list
-    var group_titles = Object.keys(obj.groups)
-    for (i = 0; i < group_titles.length; i++) {
-        var title = group_titles[i]
-        var block_titles = Object.keys(obj.groups[title])
-        var nodeGroups = document.getElementById("groups")
-
-        var nodeTitle = document.createElement("H3")
-        nodeGroups.appendChild(nodeTitle)
-        nodeTitle.appendChild(document.createTextNode(checkTitle(title)))
-
-        var nodeBlockList = document.createElement("UL")
-        nodeGroups.appendChild(nodeBlockList)
-
-        var blockListStyle = document.createAttribute("style")
-        blockListStyle.value = 'padding-left:20px'
-        nodeBlockList.setAttributeNode(blockListStyle)
-
-        for (j = 0; j < block_titles.length; j++) {
-            var block_value = obj.groups[title][block_titles[j]]["value"]
-            var status_text = obj.groups[title][block_titles[j]]["status"]
-            var alarm = obj.groups[title][block_titles[j]]["alarm"]
-
-            var nodeBlock = document.createElement("LI")
-            var attColour = document.createAttribute("color")
-            var nodeBlockText = document.createTextNode(block_titles[j] + ":\u00A0\u00A0")
-
-            // write block name
-            nodeBlock.appendChild(nodeBlockText)
-
-            // write status if disconnected
-            if (status_text == "Disconnected") {
-                var nodeBlockStatus = document.createElement("FONT")
-                attColour.value = "BlueViolet"
-                nodeBlockStatus.setAttributeNode(attColour)
-                nodeBlockStatus.appendChild(document.createTextNode(status_text.toUpperCase()))
-                nodeBlock.appendChild(nodeBlockStatus)
-            }
-            // write value if connected
-            else {
-                nodeBlockText.nodeValue += block_value + "\u00A0\u00A0"
-                    // write alarm status if active
-                if (!alarm.startsWith("null") && !alarm.startsWith("OK")) {
-                    var nodeBlockAlarm = document.createElement("FONT")
-                    attColour.value = "red"
-                    nodeBlockAlarm.setAttributeNode(attColour)
-                    nodeBlockAlarm.appendChild(document.createTextNode("(" + alarm + ")"))
-                    nodeBlock.appendChild(nodeBlockAlarm)
-                }
-            }
-            nodeBlockList.appendChild(nodeBlock)
-        }
+/**
+ * Clears a given node of all child elements.
+ *
+ * @param node The node to be cleared.
+ */
+function clear(node) {
+    while (node.firstChild) {
+        node.removeChild(node.firstChild);
     }
+}
+
+/**
+ * Fetches the latest instrument data.
+ */
+function refresh() {
+    $.ajax({
+    url: "http://dataweb.isis.rl.ac.uk:" + PORT + "/",
+    dataType: 'jsonp',
+    data: {"Instrument": instrument},
+    jsonpCallback: "parseObject"
+    });
+}
+
+/**
+ * Parses fetched instrument data into a human-readable html page.
+ */
+function parseObject(obj) {
+    // set up page
+    instrumentState = obj;
+    showHidden = document.getElementById("showHidden").checked;
+	if ("DISPLAY" in instrumentState.inst_pvs) {
+		showPrivate = getBoolean(instrumentState.inst_pvs["DISPLAY"]["value"]);
+		delete instrumentState.inst_pvs["DISPLAY"];
+	} else {
+		showPrivate = true;
+	}
+    clear(nodeInstTitle);
+    clear(nodeConfigTitle);
+
+    nodeInstTitle.appendChild(document.createTextNode(instrument));
+    nodeConfigTitle.appendChild(document.createTextNode("Configuration: " + instrumentState.config_name));
+
+    document.getElementById("inst_name").appendChild(nodeInstTitle);
+    document.getElementById("config_name").appendChild(nodeConfigTitle);
+
+    // populate blocks
+    var nodeGroups = document.getElementById("groups");
+    getDisplayGroups(nodeGroups, instrumentState.groups);
 
     // populate run information
-	if (typeof obj.inst_pvs["DISPLAY"] !== 'undefined') {
-		showPrivate = getBoolean(obj.inst_pvs["DISPLAY"]["value"])
-		delete obj.inst_pvs["DISPLAY"]
-	}
-	
-    var instpv_titles = Object.keys(obj.inst_pvs)
-    var nodeInstPVs = document.getElementById("inst_pvs")
-    var nodeInstPVList = document.createElement("UL")
-    nodeInstPVs.appendChild(nodeInstPVList)
+    var nodeInstPVs = document.getElementById("inst_pvs");
+    var nodeInstPVList = document.createElement("UL");
 
-    for (i = 0; i < instpv_titles.length; i++) {
-        var title = instpv_titles[i]
-        var value = obj.inst_pvs[title]["value"]
-        var status_text = obj.inst_pvs[title]["status"]
-        var alarm = obj.inst_pvs[title]["alarm"]
+    nodeInstPVs.appendChild(nodeInstPVList);
+    getDisplayBlocks(nodeInstPVs, instrumentState.inst_pvs);
+}
 
-        var nodePV = document.createElement("LI")
-        var nodePVText = document.createTextNode(dictInstPV[title] + ":\u00A0\u00A0")
-        var attColour = document.createAttribute("color")
+/**
+ * Adds html elements for a list of group objects to a given node.
+ *
+ * @param node The parent node.
+ * @param groups The list of group objects to display.
+ * @return The updated node.
+ */
+function getDisplayGroups(node, groups) {
+    clear(node);
+    for (var key in groups) {
+        var group = groups[key];
+        var nodeGroups = document.getElementById("groups");
 
-        // write pv name
-        nodePV.appendChild(nodePVText)
+        var nodeBlockList = document.createElement("UL");
+
+        var blocks = instrumentState.groups[key];
+        var displayBlocks = getDisplayBlocks(nodeBlockList, blocks);
+
+        // Do not display empty groups
+        if (displayBlocks.childElementCount != 0) {
+            var nodeTitle = document.createElement("H3");
+            nodeGroups.appendChild(nodeTitle);
+            nodeTitle.appendChild(document.createTextNode(checkGroupNone(key)));
+            nodeGroups.appendChild(nodeBlockList);
+
+            var blockListStyle = document.createAttribute("style");
+            blockListStyle.value = 'padding-left:20px';
+            nodeBlockList.setAttributeNode(blockListStyle);
+
+            node.appendChild(displayBlocks);
+        }
+    }
+    return node;
+}
+
+/**
+ * Adds html elements for a list of block objects to a given node.
+ *
+ * @param node The parent node.
+ * @param blocks The list of block objects to display.
+ * @return The updated node.
+ */
+function getDisplayBlocks(node, blocks) {
+    clear(node)
+    for (var key in blocks) {
+        var block = blocks[key];
+        if(block["visibility"] == false && !showHidden){
+            continue;
+        }
+
+        var value = block["value"];
+        var status_text = block["status"];
+        var alarm = block["alarm"];
+
+        var nodeBlock = document.createElement("LI");
+        var attColour = document.createAttribute("color");
+        var nodeBlockText = document.createTextNode(getTitle(key) + ":\u00A0\u00A0");
+
+        // write block name
+        nodeBlock.appendChild(nodeBlockText);
 
         // write status if disconnected
         if (status_text == "Disconnected") {
-            var nodePVStatus = document.createElement("FONT")
-            attColour.value = "BlueViolet"
-            nodePVStatus.setAttributeNode(attColour)
-            nodePVStatus.appendChild(document.createTextNode(status_text.toUpperCase()))
-            nodePV.appendChild(nodePVStatus)
+            var nodeBlockStatus = document.createElement("FONT");
+            attColour.value = "BlueViolet";
+            nodeBlockStatus.setAttributeNode(attColour);
+            nodeBlockStatus.appendChild(document.createTextNode(status_text.toUpperCase()));
+            nodeBlock.appendChild(nodeBlockStatus);
         }
         // write value if connected
-        else if ((isInArray(privateRunInfo, instpv_titles[i])) && !showPrivate) {
-            var nodePVStatus = document.createElement("I")
-            nodePVStatus.appendChild(document.createTextNode("Unavailable"))
-            nodePV.appendChild(nodePVStatus)
+        else if ((isInArray(privateRunInfo, key)) && !showPrivate) {
+            var nodeBlockStatus = document.createElement("I");
+            nodeBlockStatus.appendChild(document.createTextNode("Unavailable"));
+            nodeBlock.appendChild(nodeBlockStatus);
         } else {
-            nodePVText.nodeValue += value + "\u00A0\u00A0"
-            // write alarm status if active
+            nodeBlockText.nodeValue += value + "\u00A0\u00A0";
+                // write alarm status if active
             if (!alarm.startsWith("null") && !alarm.startsWith("OK")) {
-                var nodePVAlarm = document.createElement("FONT")
-                attColour.value = "red"
-                nodePVAlarm.setAttributeNode(attColour)
-                nodePVAlarm.appendChild(document.createTextNode("(" + alarm + ")"))
-                nodePV.appendChild(nodePVAlarm)
+                var nodeBlockAlarm = document.createElement("FONT");
+                attColour.value = "red";
+                nodeBlockAlarm.setAttributeNode(attColour);
+                nodeBlockAlarm.appendChild(document.createTextNode("(" + alarm + ")"));
+                nodeBlock.appendChild(nodeBlockAlarm);
             }
         }
-        nodeInstPVList.appendChild(nodePV)
+        node.appendChild(nodeBlock);
     }
+    return node;
 }
 
-function checkTitle(title) {
-    if (title === "NONE") {
-        title = "OTHER"
-    }
-    return title
-}
+$(document).ready(refresh());

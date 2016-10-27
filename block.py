@@ -18,7 +18,7 @@
 class Block:
     """ Class holding Block details. Used for displaying in dataweb"""
 
-    def __init__(self, name, status, value, alarm):
+    def __init__(self, status, value, alarm, visibility):
         """
         Standard constructor.
 
@@ -28,18 +28,10 @@ class Block:
             value: the current block value
             alarm: the alarm status
         """
-        self.name = name
         self.status = status
         self.value = value
         self.alarm = alarm
-        
-    def get_name(self):
-        """ Returns the block name. """
-        return self.name
-
-    def set_name(self, name):
-        """ Sets the block name. """
-        self.name = name
+        self.visibility = visibility
 
     def get_status(self):
         """ Returns the block status. """
@@ -65,11 +57,19 @@ class Block:
         """ Sets the block alarm state. """
         self.alarm = alarm
 
+    def get_visibility(self):
+        """ Returns the block's visibility """
+        return self.visibility
+
+    def set_visibility(self, visibility):
+        """ Sets the block's visibility. """
+        self.visibility = visibility
+
     def get_description(self):
         """ Returns the full description of this BoolStr object. """
         ans = dict()
-        #ans["name"] = self.name
         ans["status"] = self.status
         ans["value"] = self.value
         ans["alarm"] = self.alarm
+        ans["visibility"] = self.visibility
         return ans
