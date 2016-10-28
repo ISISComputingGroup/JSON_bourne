@@ -247,3 +247,5 @@ function getDisplayBlocks(node, blocks) {
 }
 
 $(document).ready(refresh());
+
+setInterval(refresh, 5000);
