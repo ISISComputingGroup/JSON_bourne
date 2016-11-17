@@ -82,19 +82,29 @@ def get_info(url):
 
     for i in range(len(titles)):
         block_raw = info[i].text
-        null_block = block_raw is "null"
-        if null_block:
+
+        def datetime_string_to_datetime(date_and_time_with_nanoseconds):
+            return datetime.strptime(date_and_time_with_nanoseconds[:-3],"%Y/%m/%d %H:%M:%S.%f")
+
+        def date_string_and_time_string_to_datetime(date,time_with_nanoseconds):
+            return datetime_string_to_datetime(date + " " + time_with_nanoseconds)
+
+        if block_raw is "null":
                 value = "null"
                 alarm = "null"
                 change_datetime = NULL_DATE
         elif "DAE:STARTTIME.VAL" in titles[i]:
+            change_datetime_index = 0
             value_index = 1
             alarm_index = 2
             block_split = block_raw.split("\t", 2)
             value = block_split[value_index]
             alarm = block_split[alarm_index]
+            change_datetime = datetime_string_to_datetime(block_split[change_datetime_index])
         elif "DAE:TITLE.VAL" in titles[i] or "DAE:_USERNAME.VAL" in titles[i]:
             # Title and user name are ascii codes spaced by ", "
+            change_date_index = 0
+            change_time_index = 1
             value_index = 2
             block_split = block_raw.split(None, 2)
             value_ascii = block_split[value_index].split(", ")
@@ -104,18 +114,18 @@ def get_info(url):
                 # Put this here for the moment, title/username need fixing anyway
                 value = "Unknown"
             alarm = "null"
+            change_datetime = date_string_and_time_string_to_datetime(block_split[change_date_index],
+                                                                      block_split[change_time_index])
         else:
+            change_date_index = 0
+            change_time_index = 1
             value_index = 2
             alarm_index = 3
             block_split = block_raw.split(None, 3)
             value = block_split[value_index]
             alarm = block_split[alarm_index]
-
-        if not null_block:
-            datetime_index = 0
-            datetime_format = "%Y/%m/%d %H:%M:%S.%f"
-            # Strip off the nanoseconds. Python can't handle it and we don't need it for current purposes.
-            change_datetime = datetime.strptime(block_split[datetime_index][:-3],datetime_format)
+            change_datetime = date_string_and_time_string_to_datetime(block_split[change_date_index],
+                                                                      block_split[change_time_index])
 
         name = shorten_title(titles[i])
         status = status_text[i]
