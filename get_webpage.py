@@ -3,11 +3,14 @@ import requests
 import json
 from block import Block
 import logging
+from datetime import datetime
 
 
 PORT_INSTPV = 4812
 PORT_BLOCKS = 4813
 PORT_CONFIG = 8008
+
+NULL_DATE = datetime(1970,1,1)
 
 
 def shorten_title(title):
@@ -79,9 +82,11 @@ def get_info(url):
 
     for i in range(len(titles)):
         block_raw = info[i].text
-        if block_raw == "null":
+        null_block = block_raw is "null"
+        if null_block:
                 value = "null"
                 alarm = "null"
+                change_datetime = NULL_DATE
         elif "DAE:STARTTIME.VAL" in titles[i]:
             value_index = 1
             alarm_index = 2
@@ -106,9 +111,15 @@ def get_info(url):
             value = block_split[value_index]
             alarm = block_split[alarm_index]
 
+        if not null_block:
+            datetime_index = 0
+            datetime_format = "%Y/%m/%d %H:%M:%S.%f"
+            # Strip off the nanoseconds. Python can't handle it and we don't need it for current purposes.
+            change_datetime = datetime.strptime(block_split[datetime_index][:-3],datetime_format)
+
         name = shorten_title(titles[i])
         status = status_text[i]
-        blocks[name] = Block(status, value, alarm, True)
+        blocks[name] = Block(status, value, alarm, True, change_datetime)
 
     return blocks
 
