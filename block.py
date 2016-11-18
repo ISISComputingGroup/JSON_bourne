@@ -14,8 +14,6 @@
 # https://www.eclipse.org/org/documents/epl-v10.php or
 # http://opensource.org/licenses/eclipse-1.0.php
 
-from datetime import datetime
-
 class Block:
     """ Class holding Block details. Used for displaying in dataweb"""
 

@@ -15,7 +15,6 @@
 # http://opensource.org/licenses/eclipse-1.0.php
 
 import unittest
-from datetime import datetime
 from block import Block
 
 
