@@ -81,7 +81,6 @@ class Block:
         ans["value"] = self.value
         ans["alarm"] = self.alarm
         ans["visibility"] = self.visibility
-        ans["updated"] = self.update_datetime
         return ans
 
     @staticmethod
