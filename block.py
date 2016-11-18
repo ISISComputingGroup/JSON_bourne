@@ -29,6 +29,7 @@ class Block:
             value: the current block value
             alarm: the alarm status
         """
+        
         self.status = status
         self.value = value
         self.alarm = alarm
@@ -107,7 +108,7 @@ class Block:
         alarm_index = 2
 
         if block_raw in [None, "", "null"]:
-            return Block(null_string, null_string, null_string, True, null_date)
+            return Block(status, null_string, null_string, True, null_date)
 
         def title_is_for_hexed_values(t):
             return any([hexed_title in t for hexed_title in ["DAE:TITLE.VAL", "DAE:_USERNAME.VAL"]])

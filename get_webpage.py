@@ -41,8 +41,6 @@ def get_info(url):
         logging.error("URL not found: " + str(url))
         raise e
 
-    blocks = dict()
-
     tree = html.fromstring(page.content)
 
     titles = tree.xpath("//tr/th/a")
@@ -61,7 +59,8 @@ def get_info(url):
 
     info = tree.xpath("//table[2]/tbody/tr/td[3]")
 
-    return {shorten_title(titles[i]): Block.from_raw(titles[i], status_text[i], info[i].text) for i in range(len(titles))}
+    return {shorten_title(titles[i]):
+                Block.from_raw(titles[i], status_text[i], info[i].text) for i in range(len(titles))}
 
 
 def get_instpvs(url):
