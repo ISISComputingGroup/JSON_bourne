@@ -101,7 +101,8 @@ class Block:
 
             def ascii_to_string(raw_string):
                 try:
-                    return ''.join(chr(int(c)) for c in raw_string.split(", "))
+                    # Split the list by csv, remove empty strings, and try to convert each char as an int to ascii
+                    return ''.join(chr(int(c)) for c in filter(None,raw_string.split(", ")))
                 except ValueError:
                     return raw_string
 
@@ -115,4 +116,4 @@ class Block:
                      get_value_from_raw(tab_split_elements),
                      get_alarm_from_raw(tab_split_elements),
                      True)
-    
+
