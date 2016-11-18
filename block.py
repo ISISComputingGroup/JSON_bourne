@@ -14,6 +14,7 @@
 # https://www.eclipse.org/org/documents/epl-v10.php or
 # http://opensource.org/licenses/eclipse-1.0.php
 
+from datetime import datetime
 
 class Block:
     """ Class holding Block details. Used for displaying in dataweb"""
@@ -82,3 +83,72 @@ class Block:
         ans["visibility"] = self.visibility
         ans["changed"] = self.change_datetime
         return ans
+
+    @staticmethod
+    def get_from_raw(title, status, block_raw):
+        """
+        Converts raw block text into a block object
+
+        Args:
+            title: The block title
+            status: The block status
+            block_raw: The raw block string
+
+        Returns: A block object containing the relevant raw information
+        """
+
+        def ascii_to_string(ascii):
+            string = ''
+            for char in ascii:
+                if char:
+                    string += chr(int(char))
+            return string
+
+        def datetime_string_to_datetime(date_and_time_with_nanoseconds):
+            return datetime.strptime(date_and_time_with_nanoseconds[:-3], "%Y/%m/%d %H:%M:%S.%f")
+
+        def date_string_and_time_string_to_datetime(date, time_with_nanoseconds):
+            return datetime_string_to_datetime(date + " " + time_with_nanoseconds)
+
+        null_date = datetime(1970, 1, 1)
+        null_string = "null"
+
+        if block_raw is null_string:
+            value = null_string
+            alarm = null_string
+            change_datetime = null_date
+        elif "DAE:STARTTIME.VAL" in title:
+            change_datetime_index = 0
+            value_index = 1
+            alarm_index = 2
+            block_split = block_raw.split("\t", 2)
+            value = block_split[value_index]
+            alarm = block_split[alarm_index]
+            change_datetime = datetime_string_to_datetime(block_split[change_datetime_index])
+        elif "DAE:TITLE.VAL" in title or "DAE:_USERNAME.VAL" in title:
+            # Title and user name are ascii codes spaced by ", "
+            change_date_index = 0
+            change_time_index = 1
+            value_index = 2
+            block_split = block_raw.split(None, 2)
+            value_ascii = block_split[value_index].split(", ")
+            try:
+                value = ascii_to_string(value_ascii)
+            except Exception as e:
+                # Put this here for the moment, title/username need fixing anyway
+                value = "Unknown"
+            alarm = "null"
+            change_datetime = date_string_and_time_string_to_datetime(block_split[change_date_index],
+                                                                      block_split[change_time_index])
+        else:
+            change_date_index = 0
+            change_time_index = 1
+            value_index = 2
+            alarm_index = 3
+            block_split = block_raw.split(None, 3)
+            value = block_split[value_index]
+            alarm = block_split[alarm_index]
+            change_datetime = date_string_and_time_string_to_datetime(block_split[change_date_index],
+                                                                      block_split[change_time_index])
+
+        return Block(status, value, alarm, True, change_datetime)

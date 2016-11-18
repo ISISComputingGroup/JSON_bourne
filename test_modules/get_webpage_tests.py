@@ -16,7 +16,8 @@
 
 import unittest
 
-class TestWebScraper(unittest.TestCase):
+
+class TestGetWebpage(unittest.TestCase):
 
     def setUp(self):
         pass

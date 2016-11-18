@@ -10,8 +10,6 @@ PORT_INSTPV = 4812
 PORT_BLOCKS = 4813
 PORT_CONFIG = 8008
 
-NULL_DATE = datetime(1970,1,1)
-
 
 def shorten_title(title):
     """
@@ -25,23 +23,6 @@ def shorten_title(title):
     """
     number = title.rfind(':')
     return title[number + 1:]
-
-
-def ascii_to_string(ascii):
-    """
-    Converts a list of ascii characters into a string.
-
-    Args:
-        ascii: A list of ascii characters.
-
-    Returns: The input as string.
-
-    """
-    string = ''
-    for char in ascii:
-        if char:
-            string += chr(int(char))
-    return string
 
 
 def get_info(url):
@@ -80,58 +61,7 @@ def get_info(url):
 
     info = tree.xpath("//table[2]/tbody/tr/td[3]")
 
-    for i in range(len(titles)):
-        block_raw = info[i].text
-
-        def datetime_string_to_datetime(date_and_time_with_nanoseconds):
-            return datetime.strptime(date_and_time_with_nanoseconds[:-3],"%Y/%m/%d %H:%M:%S.%f")
-
-        def date_string_and_time_string_to_datetime(date,time_with_nanoseconds):
-            return datetime_string_to_datetime(date + " " + time_with_nanoseconds)
-
-        if block_raw is "null":
-                value = "null"
-                alarm = "null"
-                change_datetime = NULL_DATE
-        elif "DAE:STARTTIME.VAL" in titles[i]:
-            change_datetime_index = 0
-            value_index = 1
-            alarm_index = 2
-            block_split = block_raw.split("\t", 2)
-            value = block_split[value_index]
-            alarm = block_split[alarm_index]
-            change_datetime = datetime_string_to_datetime(block_split[change_datetime_index])
-        elif "DAE:TITLE.VAL" in titles[i] or "DAE:_USERNAME.VAL" in titles[i]:
-            # Title and user name are ascii codes spaced by ", "
-            change_date_index = 0
-            change_time_index = 1
-            value_index = 2
-            block_split = block_raw.split(None, 2)
-            value_ascii = block_split[value_index].split(", ")
-            try:
-                value = ascii_to_string(value_ascii)
-            except Exception as e:
-                # Put this here for the moment, title/username need fixing anyway
-                value = "Unknown"
-            alarm = "null"
-            change_datetime = date_string_and_time_string_to_datetime(block_split[change_date_index],
-                                                                      block_split[change_time_index])
-        else:
-            change_date_index = 0
-            change_time_index = 1
-            value_index = 2
-            alarm_index = 3
-            block_split = block_raw.split(None, 3)
-            value = block_split[value_index]
-            alarm = block_split[alarm_index]
-            change_datetime = date_string_and_time_string_to_datetime(block_split[change_date_index],
-                                                                      block_split[change_time_index])
-
-        name = shorten_title(titles[i])
-        status = status_text[i]
-        blocks[name] = Block(status, value, alarm, True, change_datetime)
-
-    return blocks
+    return {shorten_title(titles[i]): Block.get_from_raw(titles[i],status_text[i],info[i].text) for i in range(len(titles))}
 
 
 def get_instpvs(url):

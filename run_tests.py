@@ -22,7 +22,7 @@ import unittest
 import xmlrunner
 import argparse
 
-from test_modules.web_scraper_tests import TestWebScraper
+from test_modules.get_webpage_tests import TestGetWebpage
 
 DEFAULT_DIRECTORY = os.path.join('.','test-reports')
 
@@ -35,7 +35,7 @@ if __name__ == '__main__':
     xml_dir = args.output_dir[0]
 
     # Load tests from test suites
-    web_scraper_suite = unittest.TestLoader().loadTestsFromTestCase(TestWebScraper)
+    web_scraper_suite = unittest.TestLoader().loadTestsFromTestCase(TestGetWebpage)
 
     print "\n\n------ BEGINNING BLOCKSERVER UNIT TESTS ------"
 
