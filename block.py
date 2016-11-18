@@ -75,7 +75,7 @@ class Block:
         return ans
 
     @staticmethod
-    def from_raw(title, status, block_raw):
+    def from_raw(status, block_raw):
         """
         Converts raw block text into a block object
 
@@ -98,10 +98,7 @@ class Block:
         if block_raw in [None, "", "null"]:
             return Block(status, null_string, null_string, True)
 
-        def title_is_for_hexed_values(t):
-            return any([hexed_title in t for hexed_title in ["DAE:TITLE.VAL", "DAE:_USERNAME.VAL"]])
-
-        def get_value_from_raw(raw):
+        def get_value_from_raw(elements):
 
             def ascii_chars_to_string(ascii):
                 try:
@@ -110,28 +107,28 @@ class Block:
                     return unknown_value
 
             try:
-                elements = raw.split("\t")
                 # Hexed string, no alarm value
                 if len(elements)-1 < alarm_index:
-                    block_value = ascii_chars_to_string(raw.split("\t")[value_index].split(", "))
+                    block_value = ascii_chars_to_string(elements[value_index].split(", "))
                 else:
-                    block_value = raw.split("\t")[value_index]
+                    block_value = elements[value_index]
             except:
                 block_value = unknown_value
             return block_value
 
-        def get_alarm_from_raw(raw, block_title):
+        def get_alarm_from_raw(elements):
             try:
-                if title_is_for_hexed_values(block_title):
+                if len(elements)-1 < alarm_index:
                     block_alarm = null_string
                 else:
-                    block_alarm = raw.split("\t")[alarm_index]
+                    block_alarm = elements[alarm_index]
             except:
                 block_alarm = unknown_alarm
             return block_alarm
 
+        tab_split_elements = block_raw.split("\t")
         return Block(status,
-                     get_value_from_raw(block_raw),
-                     get_alarm_from_raw(block_raw, title),
+                     get_value_from_raw(tab_split_elements),
+                     get_alarm_from_raw(tab_split_elements),
                      True)
     

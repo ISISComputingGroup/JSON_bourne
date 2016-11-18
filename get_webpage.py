@@ -63,8 +63,7 @@ def get_info(url):
 
     info = tree.xpath("//table[2]/tbody/tr/td[3]")
 
-    return {shorten_title(titles[i]):
-                Block.from_raw(titles[i], status_text[i], info[i].text) for i in range(len(titles))}
+    return {shorten_title(titles[i]): Block.from_raw(status_text[i], info[i].text) for i in range(len(titles))}
 
 
 def get_instpvs(url):
