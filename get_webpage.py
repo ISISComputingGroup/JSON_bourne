@@ -179,14 +179,14 @@ def get_instrument_time(host_instrument):
     Gets the instrument time from a specific host instrument via channel access
 
     Args:
-        blocks: A list of block objects.
+        host_instrument: The name of the host instrument
 
-    Returns: A JSON list of block objects.
+    Returns: The instrument time as a string
 
     """
 
     unable_to_determine_instrument_time = "Unknown"
-    incomming_datetime_format = "%m/%d/%Y %H:%M:%S"
+    incoming_datetime_format = "%m/%d/%Y %H:%M:%S"
     desired_datetime_format = "%Y/%m/%d %H:%M:%S"
 
     _set_env()
@@ -196,7 +196,7 @@ def get_instrument_time(host_instrument):
 
     try:
         instrument_datetime = datetime.strptime(ca.get_pv_value(pv_prefix+"CS:IOC:INSTETC_01:DEVIOS:TOD",True),
-                                                incomming_datetime_format)
+                                                incoming_datetime_format)
     except Exception as e:
         logging.error("Unable to generate instrument time: " + e.message)
         return unable_to_determine_instrument_time
