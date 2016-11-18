@@ -2,8 +2,12 @@ from lxml import html
 import requests
 import json
 from block import Block
-import logging
 from datetime import datetime
+import logging
+import zlib
+import os
+import ast
+from genie_python.genie_cachannel_wrapper import CaChannelWrapper as ca
 
 
 PORT_INSTPV = 4812
@@ -138,11 +142,66 @@ def scrape_webpage(host="localhost"):
         output["config_name"] = config["name"]
         output["groups"] = groups
         output["inst_pvs"] = format_blocks(get_instpvs('http://%s:%s/group?name=INST' % (host, PORT_INSTPV)))
+        output["instrument_time"] = get_instrument_time(host)
     except Exception as e:
         logging.error("Output construction failed " + str(e))
         raise e
 
     return output
+
+
+def _set_env():
+    epics_ca_addr_list = "EPICS_CA_ADDR_LIST"
+    """ If we're not in an EPICS terminal, add the address list to the set of
+    environment keys """
+    if epics_ca_addr_list not in os.environ.keys():
+        os.environ[epics_ca_addr_list] = "127.255.255.255 130.246.51.255"
+
+
+def _get_pv_prefix(host_instrument):
+    try:
+        instruments_list = ast.literal_eval(zlib.decompress(ca.get_pv_value("CS:INSTLIST",True).decode("hex")))
+    except Exception as e:
+        logging.error("Unable to get PV prefix: " + e.message)
+        return None
+
+    pv_prefix = None
+    for instrument_dict in instruments_list:
+        if instrument_dict["name"].upper() == host_instrument.upper() or instrument_dict["hostName"].upper() == host_instrument.upper():
+            pv_prefix = instrument_dict["pvPrefix"]
+            break
+
+    return pv_prefix
+
+
+def get_instrument_time(host_instrument):
+    """
+    Gets the instrument time from a specific host instrument via channel access
+
+    Args:
+        blocks: A list of block objects.
+
+    Returns: A JSON list of block objects.
+
+    """
+
+    unable_to_determine_instrument_time = "Unknown"
+    incomming_datetime_format = "%m/%d/%Y %H:%M:%S"
+    desired_datetime_format = "%Y/%m/%d %H:%M:%S"
+
+    _set_env()
+    pv_prefix = _get_pv_prefix(host_instrument)
+    if pv_prefix is None:
+        return unable_to_determine_instrument_time
+
+    try:
+        instrument_datetime = datetime.strptime(ca.get_pv_value(pv_prefix+"CS:IOC:INSTETC_01:DEVIOS:TOD",True),
+                                                incomming_datetime_format)
+    except Exception as e:
+        logging.error("Unable to generate instrument time: " + e.message)
+        return unable_to_determine_instrument_time
+
+    return instrument_datetime.strftime(desired_datetime_format)
 
 
 def format_blocks(blocks):
