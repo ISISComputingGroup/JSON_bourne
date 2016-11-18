@@ -28,31 +28,22 @@ class TestGetWebpage(unittest.TestCase):
 
     def test_GIVEN_empty_status_WHEN_block_from_raw_THEN_returned_block_has_empty_status(self):
         empty_string = ""
-        self.assertEqual(empty_string, Block.from_raw("title", empty_string, "raw").get_status())
+        self.assertEqual(empty_string, Block.from_raw(empty_string, "raw").get_status())
 
     def test_GIVEN_none_status_WHEN_block_from_raw_THEN_returned_block_has_none_status(self):
         none_object = None
-        self.assertEqual(none_object, Block.from_raw("title", none_object, "raw").get_status())
+        self.assertEqual(none_object, Block.from_raw(none_object, "raw").get_status())
 
     def test_GIVEN_null_status_WHEN_block_from_raw_THEN_returned_block_has_null_status(self):
         null_string = "null"
-        self.assertEqual(null_string, Block.from_raw("title", null_string, "raw").get_status())
-
-    def test_GIVEN_empty_value_WHEN_block_from_raw_THEN_block_returned(self):
-        self.assertIsNotNone(Block.from_raw("", "status", "raw"))
-
-    def test_GIVEN_none_title_WHEN_block_from_raw_THEN_block_returned(self):
-        self.assertIsNotNone(Block.from_raw(None, "status", "raw"))
-
-    def test_GIVEN_null_title_WHEN_block_from_raw_THEN_block_returned(self):
-        self.assertIsNotNone(Block.from_raw("null", "status", "raw"))
+        self.assertEqual(null_string, Block.from_raw(null_string, "raw").get_status())
 
     def _test_GIVEN_object_WHEN_block_from_raw_THEN_default_constructor_values_used(self, raw_object):
         # Arrange
         null_string = "null"
 
         # Act
-        test_block = Block.from_raw("title", "status", raw_object)
+        test_block = Block.from_raw("status", raw_object)
 
         # Assert
         self.assertEqual(null_string,test_block.get_alarm())
@@ -70,7 +61,7 @@ class TestGetWebpage(unittest.TestCase):
 
     @staticmethod
     def _get_block_from_raw_standard_value_string():
-        return Block.from_raw("title", "status", TestGetWebpage._get_standard_value_string())
+        return Block.from_raw("status", TestGetWebpage._get_standard_value_string())
 
     def test_GIVEN_standard_format_input_WHEN_block_from_raw_THEN_returned_block_has_expected_alarm(self):
         self.assertEqual(TestGetWebpage._get_dict_of_standard_values()["alarm"],
@@ -92,7 +83,7 @@ class TestGetWebpage(unittest.TestCase):
 
     @staticmethod
     def _get_block_from_raw_dae_title_value_string():
-        return Block.from_raw("IN:DEMO:DAE:TITLE.VAL", "status", TestGetWebpage._get_dae_title_value_string())
+        return Block.from_raw("status", TestGetWebpage._get_dae_title_value_string())
 
     def test_GIVEN_dae_title_format_input_WHEN_block_from_raw_THEN_returned_block_has_null_string_alarm(self):
         self.assertEqual("null", TestGetWebpage._get_block_from_raw_dae_title_value_string().get_alarm())
@@ -115,7 +106,7 @@ class TestGetWebpage(unittest.TestCase):
 
     @staticmethod
     def _get_block_from_raw_start_time_value_string():
-        return Block.from_raw("IN:DEMO:DAE:STARTTIME.VAL", "status", TestGetWebpage._get_start_time_value_string())
+        return Block.from_raw("status", TestGetWebpage._get_start_time_value_string())
 
     def test_GIVEN_start_time_format_input_WHEN_block_from_raw_THEN_returned_block_has_expected_alarm(self):
         self.assertEqual(TestGetWebpage._get_dict_of_start_time_values()["alarm"],

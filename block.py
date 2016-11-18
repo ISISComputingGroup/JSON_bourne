@@ -88,7 +88,6 @@ class Block:
         """
 
         unknown_value = "Unknown"
-        unknown_alarm = unknown_value
         null_string = "null"
 
         # Index in relation to tab separators
@@ -100,31 +99,16 @@ class Block:
 
         def get_value_from_raw(elements):
 
-            def ascii_chars_to_string(ascii):
+            def ascii_to_string(raw_string):
                 try:
-                    return ''.join(chr(int(c)) for c in ascii)
+                    return ''.join(chr(int(c)) for c in raw_string.split(", "))
                 except ValueError:
-                    return unknown_value
+                    return raw_string
 
-            try:
-                # Hexed string, no alarm value
-                if len(elements)-1 < alarm_index:
-                    block_value = ascii_chars_to_string(elements[value_index].split(", "))
-                else:
-                    block_value = elements[value_index]
-            except:
-                block_value = unknown_value
-            return block_value
+            return ascii_to_string(elements[value_index]) if len(elements) > value_index else unknown_value
 
         def get_alarm_from_raw(elements):
-            try:
-                if len(elements)-1 < alarm_index:
-                    block_alarm = null_string
-                else:
-                    block_alarm = elements[alarm_index]
-            except:
-                block_alarm = unknown_alarm
-            return block_alarm
+            return elements[alarm_index] if len(elements) > alarm_index else null_string
 
         tab_split_elements = block_raw.split("\t")
         return Block(status,
