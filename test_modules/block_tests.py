@@ -73,12 +73,12 @@ class TestGetWebpage(unittest.TestCase):
     @staticmethod
     def _get_dict_of_standard_values():
         return {"date": "2016/11/18", "time": "12:26:30.732319800",
-                "value": "40.000", "alarm": "OK", "other": "OK"}
+                "value": "40.000", "alarm": "OK, OK"}
 
     @staticmethod
     def _get_standard_value_string():
         args = TestGetWebpage._get_dict_of_standard_values()
-        return args["date"] + " " + args["time"] + "\t" + args["value"] + "\t" + args["alarm"] + ", " + args["other"]
+        return args["date"] + " " + args["time"] + "\t" + args["value"] + "\t" + args["alarm"]
 
     @staticmethod
     def _get_block_from_raw_standard_value_string():
@@ -137,13 +137,12 @@ class TestGetWebpage(unittest.TestCase):
     @staticmethod
     def _get_dict_of_start_time_values():
         return {"date": "2016/11/18", "time": "12:26:30.732319800",
-                "value": "Fri 18-Nov-2016 11:22:32", "alarm": "OK",
-                "other": "O"}
+                "value": "Fri 18-Nov-2016 11:22:32", "alarm": "OK, OK"}
 
     @staticmethod
     def _get_start_time_value_string():
         args = TestGetWebpage._get_dict_of_start_time_values()
-        return args["date"] + " " + args["time"] + "\t" + args["value"] + "\t" + args["alarm"] + ", " + args["other"]
+        return args["date"] + " " + args["time"] + "\t" + args["value"] + "\t" + args["alarm"]
 
     @staticmethod
     def _get_block_from_raw_start_time_value_string():
