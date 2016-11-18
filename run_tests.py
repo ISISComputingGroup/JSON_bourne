@@ -22,7 +22,7 @@ import unittest
 import xmlrunner
 import argparse
 
-from test_modules.get_webpage_tests import TestGetWebpage
+from test_modules.block_tests import TestGetWebpage
 
 DEFAULT_DIRECTORY = os.path.join('.','test-reports')
 

@@ -85,7 +85,7 @@ class Block:
         return ans
 
     @staticmethod
-    def get_from_raw(title, status, block_raw):
+    def from_raw(title, status, block_raw):
         """
         Converts raw block text into a block object
 
@@ -98,25 +98,42 @@ class Block:
         """
 
         def ascii_to_string(ascii):
-            string = ''
-            for char in ascii:
-                if char:
-                    string += chr(int(char))
-            return string
-
-        def datetime_string_to_datetime(date_and_time_with_nanoseconds):
-            return datetime.strptime(date_and_time_with_nanoseconds[:-3], "%Y/%m/%d %H:%M:%S.%f")
-
-        def date_string_and_time_string_to_datetime(date, time_with_nanoseconds):
-            return datetime_string_to_datetime(date + " " + time_with_nanoseconds)
+            try:
+                return ''.join(chr(int(c)) for c in ascii)
+            except ValueError:
+                return ascii
 
         null_date = datetime(1970, 1, 1)
         null_string = "null"
 
-        if block_raw is null_string:
-            value = null_string
-            alarm = null_string
-            change_datetime = null_date
+        value = null_string
+        alarm = null_string
+        date = null_date
+
+        date_index = 0
+        time_index = 1
+        value_index = 2
+        alarm_index = 3
+
+        if block_raw in [None, "","null"]:
+            pass
+        else:
+            words = block_raw.split(" ")
+            if len(words)>max(date_index,time_index):
+                try:
+                    date = datetime.strptime(words[0] + " " + words[1][:-3], "%Y/%m/%d %H:%M:%S.%f")
+                except ValueError:
+                    print "Unexpected date time format in raw string: " + block_raw
+            if len(words)>=value_index:
+                try:
+                    value = ascii_to_string(words[value_index])
+                except ValueError:
+                    print "Unable to convert value to ascii: " + words[value_index]
+                    value = "Unknown"
+            if len(words)>alarm_index:
+                alarm = words[alarm_index]
+
+        """
         elif "DAE:STARTTIME.VAL" in title:
             change_datetime_index = 0
             value_index = 1
@@ -150,5 +167,6 @@ class Block:
             alarm = block_split[alarm_index]
             change_datetime = date_string_and_time_string_to_datetime(block_split[change_date_index],
                                                                       block_split[change_time_index])
+        """
 
-        return Block(status, value, alarm, True, change_datetime)
+        return Block(status, value, alarm, True, date)

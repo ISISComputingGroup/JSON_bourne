@@ -61,7 +61,7 @@ def get_info(url):
 
     info = tree.xpath("//table[2]/tbody/tr/td[3]")
 
-    return {shorten_title(titles[i]): Block.get_from_raw(titles[i],status_text[i],info[i].text) for i in range(len(titles))}
+    return {shorten_title(titles[i]): Block.from_raw(titles[i], status_text[i], info[i].text) for i in range(len(titles))}
 
 
 def get_instpvs(url):
@@ -111,7 +111,6 @@ def scrape_webpage(host="localhost"):
     except Exception as e:
         logging.error("JSON conversion failed: " + str(e))
         logging.error("JSON was: " + str(config))
-        logging.error("Blocks were: " + str(blocks_all))
         raise e
         
     block_vis = get_block_visibility(config)
