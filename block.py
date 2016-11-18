@@ -19,7 +19,7 @@ from datetime import datetime
 class Block:
     """ Class holding Block details. Used for displaying in dataweb"""
 
-    def __init__(self, status, value, alarm, visibility, change_datetime):
+    def __init__(self, status, value, alarm, visibility, update_datetime):
         """
         Standard constructor.
 
@@ -33,7 +33,7 @@ class Block:
         self.value = value
         self.alarm = alarm
         self.visibility = visibility
-        self.change_datetime = change_datetime
+        self.update_datetime = update_datetime
 
     def get_status(self):
         """ Returns the block status. """
@@ -67,12 +67,12 @@ class Block:
         """ Sets the block's visibility. """
         self.visibility = visibility
 
-    def get_change_datetime(self):
+    def get_update_datetime(self):
         """ Returns the datetime of the block's last change"""
-        return self.change_datetime
+        return self.update_datetime
 
-    def set_change_datetime(self,change_datetime):
-        self.change_datetime = change_datetime
+    def set_update_datetime(self, change_datetime):
+        self.update_datetime = change_datetime
 
     def get_description(self):
         """ Returns the full description of this BoolStr object. """
@@ -81,7 +81,7 @@ class Block:
         ans["value"] = self.value
         ans["alarm"] = self.alarm
         ans["visibility"] = self.visibility
-        ans["changed"] = self.change_datetime
+        ans["updated"] = self.update_datetime
         return ans
 
     @staticmethod
@@ -97,76 +97,69 @@ class Block:
         Returns: A block object containing the relevant raw information
         """
 
-        def ascii_to_string(ascii):
-            try:
-                return ''.join(chr(int(c)) for c in ascii)
-            except ValueError:
-                return ascii
-
+        unknown_value = "Unknown"
+        unknown_alarm = unknown_value
         null_date = datetime(1970, 1, 1)
         null_string = "null"
 
-        value = null_string
-        alarm = null_string
-        date = null_date
-
-        date_index = 0
-        time_index = 1
-        value_index = 2
-        alarm_index = 3
-
         if block_raw in [None, "","null"]:
-            pass
-        else:
-            words = block_raw.split(" ")
-            if len(words)>max(date_index,time_index):
-                try:
-                    date = datetime.strptime(words[0] + " " + words[1][:-3], "%Y/%m/%d %H:%M:%S.%f")
-                except ValueError:
-                    print "Unexpected date time format in raw string: " + block_raw
-            if len(words)>=value_index:
-                try:
-                    value = ascii_to_string(words[value_index])
-                except ValueError:
-                    print "Unable to convert value to ascii: " + words[value_index]
-                    value = "Unknown"
-            if len(words)>alarm_index:
-                alarm = words[alarm_index]
+            return Block(null_string,null_string,null_string,True,null_date)
 
-        """
-        elif "DAE:STARTTIME.VAL" in title:
-            change_datetime_index = 0
-            value_index = 1
-            alarm_index = 2
-            block_split = block_raw.split("\t", 2)
-            value = block_split[value_index]
-            alarm = block_split[alarm_index]
-            change_datetime = datetime_string_to_datetime(block_split[change_datetime_index])
-        elif "DAE:TITLE.VAL" in title or "DAE:_USERNAME.VAL" in title:
-            # Title and user name are ascii codes spaced by ", "
-            change_date_index = 0
-            change_time_index = 1
-            value_index = 2
-            block_split = block_raw.split(None, 2)
-            value_ascii = block_split[value_index].split(", ")
+        def title_is_for_hexed_values(t):
+            return any([hexed_title in t for hexed_title in ["DAE:TITLE.VAL","DAE:_USERNAME.VAL"]])
+
+        def title_is_for_start_time(t):
+            return "DAE:STARTTIME.VAL" in t
+
+        def get_value_from_raw(raw, block_title):
+
+            def ascii_chars_to_string(ascii):
+                try:
+                    return ''.join(chr(int(c)) for c in ascii)
+                except ValueError as e:
+                    return unknown_value
+
             try:
-                value = ascii_to_string(value_ascii)
-            except Exception as e:
-                # Put this here for the moment, title/username need fixing anyway
-                value = "Unknown"
-            alarm = "null"
-            change_datetime = date_string_and_time_string_to_datetime(block_split[change_date_index],
-                                                                      block_split[change_time_index])
-        else:
-            change_date_index = 0
-            change_time_index = 1
-            value_index = 2
-            alarm_index = 3
-            block_split = block_raw.split(None, 3)
-            value = block_split[value_index]
-            alarm = block_split[alarm_index]
-            change_datetime = date_string_and_time_string_to_datetime(block_split[change_date_index],
-                                                                      block_split[change_time_index])
-        """
+                value_index = 2
+                if title_is_for_hexed_values(block_title):
+                    block_value = ascii_chars_to_string(raw.split(None,value_index)[value_index].split(", "))
+                elif title_is_for_start_time(block_title):
+                    number_of_elements = 3
+                    block_value = " ".join(raw.replace("\t", " ").
+                                           split(" ")[value_index:value_index+number_of_elements])
+                else:
+                    block_value = raw.split(" ")[value_index]
+            except:
+                block_value = unknown_value
+            return block_value
 
-        return Block(status, value, alarm, True, date)
+        def get_alarm_from_raw(raw, block_title):
+            try:
+                if title_is_for_hexed_values(block_title):
+                    block_alarm = null_string
+                elif title_is_for_start_time(block_title):
+                    block_index = 5
+                    block_alarm = raw.replace("\t", " ").split(" ")[block_index].split(",")[0]
+                else:
+                    block_index = 3
+                    block_alarm = raw.split(" ")[block_index]
+            except:
+                block_alarm = unknown_alarm
+            return block_alarm
+
+        def get_datetime_from_raw(raw):
+            try:
+                words = raw.replace("\t"," ").split(" ")
+                date_index = 0
+                time_index = 1
+                number_of_nanosecond_characters = 3
+                return datetime.strptime(words[date_index] + " " + words[time_index][:-number_of_nanosecond_characters],
+                                         "%Y/%m/%d %H:%M:%S.%f")
+            except:
+                return null_date
+
+        return Block(status,
+                     get_value_from_raw(block_raw,title),
+                     get_alarm_from_raw(block_raw,title),
+                     True,
+                     get_datetime_from_raw(block_raw))
