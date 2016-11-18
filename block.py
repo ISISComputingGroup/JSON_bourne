@@ -119,15 +119,12 @@ class Block:
                     return unknown_value
 
             try:
-                value_index = 2
-                if title_is_for_hexed_values(block_title):
-                    block_value = ascii_chars_to_string(raw.split(None,value_index)[value_index].split(", "))
-                elif title_is_for_start_time(block_title):
-                    number_of_elements = 3
-                    block_value = " ".join(raw.replace("\t", " ").
-                                           split(" ")[value_index:value_index+number_of_elements])
+                elements = raw.split("\t")
+                # Hexed string, no alarm value
+                if len(elements) == 2:
+                    block_value = ascii_chars_to_string(raw.split("\t")[1].split(", "))
                 else:
-                    block_value = raw.split(" ")[value_index]
+                    block_value = raw.split("\t")[1]
             except:
                 block_value = unknown_value
             return block_value
@@ -136,24 +133,15 @@ class Block:
             try:
                 if title_is_for_hexed_values(block_title):
                     block_alarm = null_string
-                elif title_is_for_start_time(block_title):
-                    block_index = 5
-                    block_alarm = raw.replace("\t", " ").split(" ")[block_index].split(",")[0]
                 else:
-                    block_index = 3
-                    block_alarm = raw.split(" ")[block_index]
+                    block_alarm = raw.split("\t")[2].split(", ")[0]
             except:
                 block_alarm = unknown_alarm
             return block_alarm
 
         def get_datetime_from_raw(raw):
             try:
-                words = raw.replace("\t"," ").split(" ")
-                date_index = 0
-                time_index = 1
-                number_of_nanosecond_characters = 3
-                return datetime.strptime(words[date_index] + " " + words[time_index][:-number_of_nanosecond_characters],
-                                         "%Y/%m/%d %H:%M:%S.%f")
+                return datetime.strptime(raw.split("\t")[0][:-3],"%Y/%m/%d %H:%M:%S.%f")
             except:
                 return null_date
 

@@ -73,12 +73,12 @@ class TestGetWebpage(unittest.TestCase):
     @staticmethod
     def _get_dict_of_standard_values():
         return {"date": "2016/11/18", "time": "12:26:30.732319800",
-                "value": "40.000", "connected": "OK", "alarm": "OK"}
+                "value": "40.000", "alarm": "OK", "other": "OK"}
 
     @staticmethod
     def _get_standard_value_string():
-        return " ".join([TestGetWebpage._get_dict_of_standard_values()[key]
-                         for key in ["date","time","value", "connected", "alarm"]])
+        args = TestGetWebpage._get_dict_of_standard_values()
+        return args["date"] + " " + args["time"] + "\t" + args["value"] + "\t" + args["alarm"] + ", " + args["other"]
 
     @staticmethod
     def _get_block_from_raw_standard_value_string():
@@ -108,8 +108,9 @@ class TestGetWebpage(unittest.TestCase):
 
     @staticmethod
     def _get_dae_title_value_string():
-        return " ".join([TestGetWebpage._get_dict_of_dae_title_values()[key] for key in ["date","time"]] +
-                        [", ".join([str(v) for v in TestGetWebpage._get_dict_of_dae_title_values()["values"]])])
+        args = TestGetWebpage._get_dict_of_dae_title_values()
+        return args["date"] + " " + args["time"] + "\t" + ", ".join([str(v) for v in args["values"]])
+
 
     @staticmethod
     def _get_block_from_raw_dae_title_value_string():
