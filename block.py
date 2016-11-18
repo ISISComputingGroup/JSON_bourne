@@ -106,18 +106,18 @@ class Block:
         value_index = 1
         alarm_index = 2
 
-        if block_raw in [None, "","null"]:
-            return Block(null_string,null_string,null_string,True,null_date)
+        if block_raw in [None, "", "null"]:
+            return Block(null_string, null_string, null_string, True, null_date)
 
         def title_is_for_hexed_values(t):
-            return any([hexed_title in t for hexed_title in ["DAE:TITLE.VAL","DAE:_USERNAME.VAL"]])
+            return any([hexed_title in t for hexed_title in ["DAE:TITLE.VAL", "DAE:_USERNAME.VAL"]])
 
-        def get_value_from_raw(raw, block_title):
+        def get_value_from_raw(raw):
 
             def ascii_chars_to_string(ascii):
                 try:
                     return ''.join(chr(int(c)) for c in ascii)
-                except ValueError as e:
+                except ValueError:
                     return unknown_value
 
             try:
@@ -136,7 +136,7 @@ class Block:
                 if title_is_for_hexed_values(block_title):
                     block_alarm = null_string
                 else:
-                    block_alarm = raw.split("\t")[alarm_index].split(", ")[0]
+                    block_alarm = raw.split("\t")[alarm_index]
             except:
                 block_alarm = unknown_alarm
             return block_alarm
@@ -144,12 +144,13 @@ class Block:
         def get_datetime_from_raw(raw):
             try:
                 # Strip the 3 nanosecond characters from the end of the string, not support by datetime
-                return datetime.strptime(raw.split("\t")[0][:-3],"%Y/%m/%d %H:%M:%S.%f")
+                return datetime.strptime(raw.split("\t")[datetime_index][:-3], "%Y/%m/%d %H:%M:%S.%f")
             except:
                 return null_date
 
         return Block(status,
-                     get_value_from_raw(block_raw,title),
-                     get_alarm_from_raw(block_raw,title),
+                     get_value_from_raw(block_raw),
+                     get_alarm_from_raw(block_raw, title),
                      True,
                      get_datetime_from_raw(block_raw))
+    
