@@ -106,10 +106,7 @@ class Block:
 
         def title_is_for_hexed_values(t):
             return any([hexed_title in t for hexed_title in ["DAE:TITLE.VAL","DAE:_USERNAME.VAL"]])
-
-        def title_is_for_start_time(t):
-            return "DAE:STARTTIME.VAL" in t
-
+        
         def get_value_from_raw(raw, block_title):
 
             def ascii_chars_to_string(ascii):
