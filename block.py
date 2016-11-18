@@ -19,7 +19,7 @@ from datetime import datetime
 class Block:
     """ Class holding Block details. Used for displaying in dataweb"""
 
-    def __init__(self, status, value, alarm, visibility, update_datetime):
+    def __init__(self, status, value, alarm, visibility):
         """
         Standard constructor.
 
@@ -34,7 +34,6 @@ class Block:
         self.value = value
         self.alarm = alarm
         self.visibility = visibility
-        self.update_datetime = update_datetime
 
     def get_status(self):
         """ Returns the block status. """
@@ -68,13 +67,6 @@ class Block:
         """ Sets the block's visibility. """
         self.visibility = visibility
 
-    def get_update_datetime(self):
-        """ Returns the datetime of the block's last change"""
-        return self.update_datetime
-
-    def set_update_datetime(self, change_datetime):
-        self.update_datetime = change_datetime
-
     def get_description(self):
         """ Returns the full description of this BoolStr object. """
         ans = dict()
@@ -99,16 +91,14 @@ class Block:
 
         unknown_value = "Unknown"
         unknown_alarm = unknown_value
-        null_date = datetime(1970, 1, 1)
         null_string = "null"
 
         # Index in relation to tab separators
-        datetime_index = 0
         value_index = 1
         alarm_index = 2
 
         if block_raw in [None, "", "null"]:
-            return Block(status, null_string, null_string, True, null_date)
+            return Block(status, null_string, null_string, True)
 
         def title_is_for_hexed_values(t):
             return any([hexed_title in t for hexed_title in ["DAE:TITLE.VAL", "DAE:_USERNAME.VAL"]])
@@ -142,16 +132,8 @@ class Block:
                 block_alarm = unknown_alarm
             return block_alarm
 
-        def get_datetime_from_raw(raw):
-            try:
-                # Strip the 3 nanosecond characters from the end of the string, not support by datetime
-                return datetime.strptime(raw.split("\t")[datetime_index][:-3], "%Y/%m/%d %H:%M:%S.%f")
-            except:
-                return null_date
-
         return Block(status,
                      get_value_from_raw(block_raw),
                      get_alarm_from_raw(block_raw, title),
-                     True,
-                     get_datetime_from_raw(block_raw))
+                     True)
     

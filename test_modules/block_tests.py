@@ -51,7 +51,6 @@ class TestGetWebpage(unittest.TestCase):
     def _test_GIVEN_object_WHEN_block_from_raw_THEN_default_constructor_values_used(self, raw_object):
         # Arrange
         null_string = "null"
-        null_date = datetime(1970,1,1)
 
         # Act
         test_block = Block.from_raw("title", "status", raw_object)
@@ -59,16 +58,6 @@ class TestGetWebpage(unittest.TestCase):
         # Assert
         self.assertEqual(null_string,test_block.get_alarm())
         self.assertEqual(null_string,test_block.get_value())
-        self.assertEqual(null_date, test_block.get_update_datetime())
-
-    def test_GIVEN_empty_raw_block_WHEN_block_from_raw_THEN_returned_block_null_string_value_and_alarm_and_1_1_1970_date(self):
-        self._test_GIVEN_object_WHEN_block_from_raw_THEN_default_constructor_values_used("")
-
-    def test_GIVEN_none_raw_block_WHEN_block_from_raw_THEN_returned_block_null_string_value_and_alarm_and_1_1_1970_date(self):
-        self._test_GIVEN_object_WHEN_block_from_raw_THEN_default_constructor_values_used("null")
-
-    def test_GIVEN_null_raw_block_WHEN_block_from_raw_THEN_returned_block_null_string_value_and_alarm_and_1_1_1970_date(self):
-        self._test_GIVEN_object_WHEN_block_from_raw_THEN_default_constructor_values_used(None)
 
     @staticmethod
     def _get_dict_of_standard_values():
@@ -92,15 +81,6 @@ class TestGetWebpage(unittest.TestCase):
         self.assertEqual(TestGetWebpage._get_dict_of_standard_values()["value"],
                          TestGetWebpage._get_block_from_raw_standard_value_string().get_value())
 
-    def test_GIVEN_standard_format_input_WHEN_block_from_raw_THEN_returned_block_has_expected_date(self):
-        self.assertEqual(TestGetWebpage._get_dict_of_standard_values()["date"],
-                         TestGetWebpage._get_block_from_raw_standard_value_string().
-                         get_update_datetime().strftime("%Y/%m/%d"))
-
-    def test_GIVEN_standard_format_input_WHEN_block_from_raw_THEN_returned_block_has_time_stripped_of_nanoseconds(self):
-        self.assertEqual(TestGetWebpage._get_dict_of_standard_values()["time"][:-3],
-                         str(TestGetWebpage._get_block_from_raw_standard_value_string().get_update_datetime().time()))
-
     @staticmethod
     def _get_dict_of_dae_title_values():
         return {"date": "2016/11/18", "time": "12:26:30.732319800",
@@ -110,7 +90,6 @@ class TestGetWebpage(unittest.TestCase):
     def _get_dae_title_value_string():
         args = TestGetWebpage._get_dict_of_dae_title_values()
         return args["date"] + " " + args["time"] + "\t" + ", ".join([str(v) for v in args["values"]])
-
 
     @staticmethod
     def _get_block_from_raw_dae_title_value_string():
@@ -124,15 +103,6 @@ class TestGetWebpage(unittest.TestCase):
             "".join(chr(int(i)) for i in TestGetWebpage._get_dict_of_dae_title_values()["values"]),
             TestGetWebpage._get_block_from_raw_dae_title_value_string().get_value()
         )
-
-    def test_GIVEN_dae_title_format_input_WHEN_block_from_raw_THEN_returned_block_has_expected_date(self):
-        self.assertEqual(TestGetWebpage._get_dict_of_dae_title_values()["date"],
-                         TestGetWebpage._get_block_from_raw_dae_title_value_string().
-                         get_update_datetime().strftime("%Y/%m/%d"))
-
-    def test_GIVEN_dae_title_format_input_WHEN_block_from_raw_THEN_returned_block_has_time_stripped_of_nanoseconds(self):
-        self.assertEqual(TestGetWebpage._get_dict_of_dae_title_values()["time"][:-3],
-                         str(TestGetWebpage._get_block_from_raw_dae_title_value_string().get_update_datetime().time()))
 
     @staticmethod
     def _get_dict_of_start_time_values():
@@ -155,15 +125,6 @@ class TestGetWebpage(unittest.TestCase):
     def test_GIVEN_start_time_format_input_WHEN_block_from_raw_THEN_returned_block_has_expected_value(self):
         self.assertEqual(TestGetWebpage._get_dict_of_start_time_values()["value"],
             TestGetWebpage._get_block_from_raw_start_time_value_string().get_value())
-
-    def test_GIVEN_start_time_format_input_WHEN_block_from_raw_THEN_returned_block_has_expected_date(self):
-        self.assertEqual(TestGetWebpage._get_dict_of_start_time_values()["date"],
-                         TestGetWebpage._get_block_from_raw_start_time_value_string().
-                         get_update_datetime().strftime("%Y/%m/%d"))
-
-    def test_GIVEN_start_time_format_input_WHEN_block_from_raw_THEN_returned_block_has_time_stripped_of_nanoseconds(self):
-        self.assertEqual(TestGetWebpage._get_dict_of_start_time_values()["time"][:-3],
-                         str(TestGetWebpage._get_block_from_raw_start_time_value_string().get_update_datetime().time()))
 
 
 if __name__ == '__main__':
