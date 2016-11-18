@@ -101,12 +101,17 @@ class Block:
         null_date = datetime(1970, 1, 1)
         null_string = "null"
 
+        # Index in relation to tab separators
+        datetime_index = 0
+        value_index = 1
+        alarm_index = 2
+
         if block_raw in [None, "","null"]:
             return Block(null_string,null_string,null_string,True,null_date)
 
         def title_is_for_hexed_values(t):
             return any([hexed_title in t for hexed_title in ["DAE:TITLE.VAL","DAE:_USERNAME.VAL"]])
-        
+
         def get_value_from_raw(raw, block_title):
 
             def ascii_chars_to_string(ascii):
@@ -118,10 +123,10 @@ class Block:
             try:
                 elements = raw.split("\t")
                 # Hexed string, no alarm value
-                if len(elements) == 2:
-                    block_value = ascii_chars_to_string(raw.split("\t")[1].split(", "))
+                if len(elements)-1 < alarm_index:
+                    block_value = ascii_chars_to_string(raw.split("\t")[value_index].split(", "))
                 else:
-                    block_value = raw.split("\t")[1]
+                    block_value = raw.split("\t")[value_index]
             except:
                 block_value = unknown_value
             return block_value
@@ -131,13 +136,14 @@ class Block:
                 if title_is_for_hexed_values(block_title):
                     block_alarm = null_string
                 else:
-                    block_alarm = raw.split("\t")[2].split(", ")[0]
+                    block_alarm = raw.split("\t")[alarm_index].split(", ")[0]
             except:
                 block_alarm = unknown_alarm
             return block_alarm
 
         def get_datetime_from_raw(raw):
             try:
+                # Strip the 3 nanosecond characters from the end of the string, not support by datetime
                 return datetime.strptime(raw.split("\t")[0][:-3],"%Y/%m/%d %H:%M:%S.%f")
             except:
                 return null_date
