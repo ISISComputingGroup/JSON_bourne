@@ -131,8 +131,8 @@ function parseObject(obj) {
     instrumentState = obj;
 
     clear(nodeInstrumentTime);
-    nodeInstrumentTime.appendChild(document.createTextNode("Instrument time: " + instrumentState.InstrumentTime));
-    document.getElementById("start_time").appendChild(nodeInstrumentTime);
+    nodeInstrumentTime.appendChild(document.createTextNode("Instrument time: " + instrumentState.instrument_time));
+    document.getElementById("instrument_time").appendChild(nodeInstrumentTime);
 
     showHidden = document.getElementById("showHidden").checked;
 	if ("DISPLAY" in instrumentState.inst_pvs) {
