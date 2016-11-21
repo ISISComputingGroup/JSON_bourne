@@ -28,7 +28,6 @@ class Block:
             value: the current block value
             alarm: the alarm status
         """
-
         self.status = status
         self.value = value
         self.alarm = alarm
