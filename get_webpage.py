@@ -181,7 +181,7 @@ def _get_pv_prefix(host_instrument, channel_access, inst_list_pv="CS:INSTLIST"):
         instruments_list = ast.literal_eval(zlib.decompress(channel_access.
                                                             get_pv_value(inst_list_pv,True).decode("hex")))
     except Exception as e:
-        logging.error("Unable to get PV prefix: " + e.message)
+        logging.error("Unable to get PV prefix for instrument %s" % host_instrument)
         return None
 
     pv_prefix = None
@@ -200,6 +200,7 @@ def get_instrument_time(host_instrument, ca=CaChannelWrapper):
 
     Args:
         host_instrument: The name of the host instrument
+        ca: Channel access library
 
     Returns: The instrument time as a string
 
