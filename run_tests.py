@@ -22,7 +22,8 @@ import unittest
 import xmlrunner
 import argparse
 
-from test_modules.block_tests import TestGetWebpage
+from test_modules.block_tests import TestBlock
+from test_modules.get_webpage_tests import TestGetWebpage
 
 DEFAULT_DIRECTORY = os.path.join('.','test-reports')
 
@@ -35,15 +36,14 @@ if __name__ == '__main__':
     xml_dir = args.output_dir[0]
 
     # Load tests from test suites
-    web_scraper_suite = unittest.TestLoader().loadTestsFromTestCase(TestGetWebpage)
+    block_suite = unittest.TestLoader().loadTestsFromTestCase(TestBlock)
+    get_webpage_suite = unittest.TestLoader().loadTestsFromTestCase(TestGetWebpage)
 
     print "\n\n------ BEGINNING BLOCKSERVER UNIT TESTS ------"
 
     ret_vals = list()
-    ret_vals.append(xmlrunner.XMLTestRunner(output=xml_dir).run(web_scraper_suite).wasSuccessful())
-
-    # Site specific tests
-    ret_vals.append(xmlrunner.XMLTestRunner(output=xml_dir).run(web_scraper_suite).wasSuccessful())
+    ret_vals.append(xmlrunner.XMLTestRunner(output=xml_dir).run(block_suite).wasSuccessful())
+    ret_vals.append(xmlrunner.XMLTestRunner(output=xml_dir).run(get_webpage_suite).wasSuccessful())
 
     print "------ BLOCKSERVER UNIT TESTS COMPLETE ------\n\n"
     # Return failure exit code if a test failed

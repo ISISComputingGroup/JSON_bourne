@@ -7,7 +7,7 @@ import logging
 import zlib
 import os
 import ast
-from genie_python.genie_cachannel_wrapper import CaChannelWrapper as ca
+from genie_python.genie_cachannel_wrapper import CaChannelWrapper
 
 
 PORT_INSTPV = 4812
@@ -149,31 +149,52 @@ def scrape_webpage(host="localhost"):
     return output
 
 
-def _set_env():
-    epics_ca_addr_list = "EPICS_CA_ADDR_LIST"
-    """ If we're not in an EPICS terminal, add the address list to the set of
-    environment keys """
-    if epics_ca_addr_list not in os.environ.keys():
-        os.environ[epics_ca_addr_list] = "127.255.255.255 130.246.51.255"
+def _set_env(environment_variables=os.environ, epics_ca_ip="127.255.255.255 130.246.51.255",
+             epics_ca_key="EPICS_CA_ADDR_LIST"):
+    """
+    If we're not in an EPICS terminal, add the address list to the set of
+    environment keys.
+
+    Args:
+        environment_variables: The current list of Python environment variables
+        epics_ca_ip: The IP address for EPICS channel access
+        epics_ca_key: The name of the environment variable for the channel access ip
+
+    """
+    if epics_ca_key not in environment_variables.keys():
+        environment_variables[epics_ca_key] = epics_ca_ip
 
 
-def _get_pv_prefix(host_instrument):
+def _get_pv_prefix(host_instrument, channel_access, inst_list_pv="CS:INSTLIST"):
+    """
+    Get the PV prefix for a specified host instrument
+
+    Args:
+        host_instrument: The name of the instrument whose PV prefix we want
+        channel_access: Library to access PVs via channel access. Must support get_pv_value
+        inst_list_pv: The PV of the instrument list
+
+    Return:
+        string: PV prefix for the instrument
+    """
     try:
-        instruments_list = ast.literal_eval(zlib.decompress(ca.get_pv_value("CS:INSTLIST",True).decode("hex")))
+        instruments_list = ast.literal_eval(zlib.decompress(channel_access.
+                                                            get_pv_value(inst_list_pv,True).decode("hex")))
     except Exception as e:
         logging.error("Unable to get PV prefix: " + e.message)
         return None
 
     pv_prefix = None
     for instrument_dict in instruments_list:
-        if instrument_dict["name"].upper() == host_instrument.upper() or instrument_dict["hostName"].upper() == host_instrument.upper():
+        if instrument_dict["name"].upper() == host_instrument.upper() or \
+                        instrument_dict["hostName"].upper() == host_instrument.upper():
             pv_prefix = instrument_dict["pvPrefix"]
             break
 
     return pv_prefix
 
 
-def get_instrument_time(host_instrument):
+def get_instrument_time(host_instrument, ca=CaChannelWrapper):
     """
     Gets the instrument time from a specific host instrument via channel access
 
@@ -189,7 +210,7 @@ def get_instrument_time(host_instrument):
     desired_datetime_format = "%Y/%m/%d %H:%M:%S"
 
     _set_env()
-    pv_prefix = _get_pv_prefix(host_instrument)
+    pv_prefix = _get_pv_prefix(host_instrument, ca)
     if pv_prefix is None:
         return unable_to_determine_instrument_time
 

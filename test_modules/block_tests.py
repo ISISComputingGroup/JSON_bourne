@@ -18,7 +18,7 @@ import unittest
 from block import Block
 
 
-class TestGetWebpage(unittest.TestCase):
+class TestBlock(unittest.TestCase):
 
     def setUp(self):
         pass
@@ -56,20 +56,20 @@ class TestGetWebpage(unittest.TestCase):
 
     @staticmethod
     def _get_standard_value_string():
-        args = TestGetWebpage._get_dict_of_standard_values()
+        args = TestBlock._get_dict_of_standard_values()
         return args["date"] + " " + args["time"] + "\t" + args["value"] + "\t" + args["alarm"]
 
     @staticmethod
     def _get_block_from_raw_standard_value_string():
-        return Block.from_raw("status", TestGetWebpage._get_standard_value_string())
+        return Block.from_raw("status", TestBlock._get_standard_value_string())
 
     def test_GIVEN_standard_format_input_WHEN_block_from_raw_THEN_returned_block_has_expected_alarm(self):
-        self.assertEqual(TestGetWebpage._get_dict_of_standard_values()["alarm"],
-                         TestGetWebpage._get_block_from_raw_standard_value_string().get_alarm())
+        self.assertEqual(TestBlock._get_dict_of_standard_values()["alarm"],
+                         TestBlock._get_block_from_raw_standard_value_string().get_alarm())
 
     def test_GIVEN_standard_format_input_WHEN_block_from_raw_THEN_returned_block_has_expected_value(self):
-        self.assertEqual(TestGetWebpage._get_dict_of_standard_values()["value"],
-                         TestGetWebpage._get_block_from_raw_standard_value_string().get_value())
+        self.assertEqual(TestBlock._get_dict_of_standard_values()["value"],
+                         TestBlock._get_block_from_raw_standard_value_string().get_value())
 
     @staticmethod
     def _get_dict_of_dae_title_values():
@@ -78,20 +78,20 @@ class TestGetWebpage(unittest.TestCase):
 
     @staticmethod
     def _get_dae_title_value_string():
-        args = TestGetWebpage._get_dict_of_dae_title_values()
+        args = TestBlock._get_dict_of_dae_title_values()
         return args["date"] + " " + args["time"] + "\t" + ", ".join([str(v) for v in args["values"]])
 
     @staticmethod
     def _get_block_from_raw_dae_title_value_string():
-        return Block.from_raw("status", TestGetWebpage._get_dae_title_value_string())
+        return Block.from_raw("status", TestBlock._get_dae_title_value_string())
 
     def test_GIVEN_dae_title_format_input_WHEN_block_from_raw_THEN_returned_block_has_null_string_alarm(self):
-        self.assertEqual("null", TestGetWebpage._get_block_from_raw_dae_title_value_string().get_alarm())
+        self.assertEqual("null", TestBlock._get_block_from_raw_dae_title_value_string().get_alarm())
 
     def test_GIVEN_dae_title_format_input_WHEN_block_from_raw_THEN_value_of_returned_block_is_string_of_original_ascii_values(self):
         self.assertEqual(
-            "".join(chr(int(i)) for i in TestGetWebpage._get_dict_of_dae_title_values()["values"]),
-            TestGetWebpage._get_block_from_raw_dae_title_value_string().get_value()
+            "".join(chr(int(i)) for i in TestBlock._get_dict_of_dae_title_values()["values"]),
+            TestBlock._get_block_from_raw_dae_title_value_string().get_value()
         )
 
     @staticmethod
@@ -101,20 +101,20 @@ class TestGetWebpage(unittest.TestCase):
 
     @staticmethod
     def _get_start_time_value_string():
-        args = TestGetWebpage._get_dict_of_start_time_values()
+        args = TestBlock._get_dict_of_start_time_values()
         return args["date"] + " " + args["time"] + "\t" + args["value"] + "\t" + args["alarm"]
 
     @staticmethod
     def _get_block_from_raw_start_time_value_string():
-        return Block.from_raw("status", TestGetWebpage._get_start_time_value_string())
+        return Block.from_raw("status", TestBlock._get_start_time_value_string())
 
     def test_GIVEN_start_time_format_input_WHEN_block_from_raw_THEN_returned_block_has_expected_alarm(self):
-        self.assertEqual(TestGetWebpage._get_dict_of_start_time_values()["alarm"],
-                         TestGetWebpage._get_block_from_raw_start_time_value_string().get_alarm())
+        self.assertEqual(TestBlock._get_dict_of_start_time_values()["alarm"],
+                         TestBlock._get_block_from_raw_start_time_value_string().get_alarm())
 
     def test_GIVEN_start_time_format_input_WHEN_block_from_raw_THEN_returned_block_has_expected_value(self):
-        self.assertEqual(TestGetWebpage._get_dict_of_start_time_values()["value"],
-            TestGetWebpage._get_block_from_raw_start_time_value_string().get_value())
+        self.assertEqual(TestBlock._get_dict_of_start_time_values()["value"],
+                         TestBlock._get_block_from_raw_start_time_value_string().get_value())
 
 
 if __name__ == '__main__':
