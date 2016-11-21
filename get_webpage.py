@@ -177,19 +177,21 @@ def _get_pv_prefix(host_instrument, channel_access, inst_list_pv="CS:INSTLIST"):
     Return:
         string: PV prefix for the instrument
     """
+
+    pv_prefix = "TE:%s:" % host_instrument
+
     try:
         instruments_list = ast.literal_eval(zlib.decompress(channel_access.
                                                             get_pv_value(inst_list_pv,True).decode("hex")))
     except Exception as e:
-        logging.error("Unable to get PV prefix for instrument %s" % host_instrument)
-        return None
-
-    pv_prefix = None
-    for instrument_dict in instruments_list:
-        if instrument_dict["name"].upper() == host_instrument.upper() or \
-                        instrument_dict["hostName"].upper() == host_instrument.upper():
-            pv_prefix = instrument_dict["pvPrefix"]
-            break
+        logging.error("Unable to get instrument list, assuming PV prefix is %s"
+                      % pv_prefix)
+    else:
+        for instrument_dict in instruments_list:
+            if instrument_dict["name"].upper() == host_instrument.upper() or \
+                            instrument_dict["hostName"].upper() == host_instrument.upper():
+                pv_prefix = instrument_dict["pvPrefix"]
+                break
 
     return pv_prefix
 
@@ -212,8 +214,6 @@ def get_instrument_time(host_instrument, ca=CaChannelWrapper):
 
     _set_env()
     pv_prefix = _get_pv_prefix(host_instrument, ca)
-    if pv_prefix is None:
-        return unable_to_determine_instrument_time
 
     try:
         instrument_datetime = datetime.strptime(ca.get_pv_value(pv_prefix+"CS:IOC:INSTETC_01:DEVIOS:TOD",True),

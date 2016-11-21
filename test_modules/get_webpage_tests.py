@@ -78,6 +78,32 @@ class TestGetWebpage(unittest.TestCase):
         # Assert
         self.assertEqual("IN:MUONFE:", _get_pv_prefix("NDEMUONFE", ca, inst_list_key))
 
+    def test_GIVEN_hexed_compressed_sample_inst_list_WHEN_host_name_is_unknown_THEN_pv_prefix_has_TE_prefixed(self):
+        # Arrange
+        ca = CaMock()
+        inst_list_key = "INSTLIST"
+        ca.set_pv_value(inst_list_key,INST_LIST_21_11_16)
+
+        # Assert
+        self.assertEqual("TE:NDW1234:",_get_pv_prefix("NDW1234", ca, inst_list_key))
+
+    def test_GIVEN_unknown_host_name_WHEN_instrument_time_requested_THEN_answer_is_unknown(self):
+        self.assertEqual("Unknown",get_instrument_time("NDW1234",CaMock()))
+
+    def test_GIVEN_known_instrument_WHEN_instrument_time_requested_THEN_instrument_time_returned(self):
+
+        # Arrange
+        from datetime import datetime as dt
+        instrument_time = dt.now()
+
+        ca = CaMock()
+        ca.set_pv_value("CS:INSTLIST",INST_LIST_21_11_16)
+        ca.set_pv_value("IN:DEMO:CS:IOC:INSTETC_01:DEVIOS:TOD",instrument_time.strftime("%m/%d/%Y %H:%M:%S"))
+
+        # Act/Assert
+        self.assertEqual(instrument_time.strftime("%Y/%m/%d %H:%M:%S"),get_instrument_time("DEMO",ca))
+
+
 if __name__ == '__main__':
     # Run tests
     unittest.main()
