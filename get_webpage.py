@@ -2,12 +2,7 @@ from lxml import html
 import requests
 import json
 from block import Block
-from datetime import datetime
 import logging
-import zlib
-import os
-import ast
-from genie_python.genie_cachannel_wrapper import CaChannelWrapper
 
 
 PORT_INSTPV = 4812
@@ -29,6 +24,13 @@ def shorten_title(title):
     return title[number + 1:]
 
 
+def _get_html_tree_from_url(url):
+    try:
+        return html.fromstring(requests.get(url).content)
+    except Exception as e:
+        logging.error("Unable to get URL tree from: " + str(url))
+        raise e
+
 def get_info(url):
     """
     Reads block information from a url and populates a list of block objects with it.
@@ -39,13 +41,7 @@ def get_info(url):
     Returns: A converted list of block objects.
 
     """
-    try:
-        page = requests.get(url)
-    except Exception as e:
-        logging.error("URL not found: " + str(url))
-        raise e
-
-    tree = html.fromstring(page.content)
+    tree = _get_html_tree_from_url(url)
 
     titles = tree.xpath("//tr/th/a")
     titles = [t.text for t in titles]
@@ -149,80 +145,35 @@ def scrape_webpage(host="localhost"):
     return output
 
 
-def _set_env(environment_variables=os.environ, epics_ca_ip="127.255.255.255 130.246.51.255",
-             epics_ca_key="EPICS_CA_ADDR_LIST"):
-    """
-    If we're not in an EPICS terminal, add the address list to the set of
-    environment keys.
-
-    Args:
-        environment_variables: The current list of Python environment variables
-        epics_ca_ip: The IP address for EPICS channel access
-        epics_ca_key: The name of the environment variable for the channel access ip
-
-    """
-    if epics_ca_key not in environment_variables.keys():
-        environment_variables[epics_ca_key] = epics_ca_ip
-
-
-def _get_pv_prefix(host_instrument, channel_access, inst_list_pv="CS:INSTLIST"):
-    """
-    Get the PV prefix for a specified host instrument
-
-    Args:
-        host_instrument: The name of the instrument whose PV prefix we want
-        channel_access: Library to access PVs via channel access. Must support get_pv_value
-        inst_list_pv: The PV of the instrument list
-
-    Return:
-        string: PV prefix for the instrument
-    """
-
-    pv_prefix = "TE:%s:" % host_instrument
-
-    try:
-        instruments_list = ast.literal_eval(zlib.decompress(channel_access.
-                                                            get_pv_value(inst_list_pv,True).decode("hex")))
-    except Exception as e:
-        logging.error("Unable to get instrument list, assuming PV prefix is %s"
-                      % pv_prefix)
-    else:
-        for instrument_dict in instruments_list:
-            if instrument_dict["name"].upper() == host_instrument.upper() or \
-                            instrument_dict["hostName"].upper() == host_instrument.upper():
-                pv_prefix = instrument_dict["pvPrefix"]
-                break
-
-    return pv_prefix
-
-
-def get_instrument_time(host_instrument, ca=CaChannelWrapper):
+def get_instrument_time(host_instrument,get_tree=_get_html_tree_from_url):
     """
     Gets the instrument time from a specific host instrument via channel access
 
     Args:
         host_instrument: The name of the host instrument
-        ca: Channel access library
+        get_tree: The method to get the html tree from a specified URL
 
     Returns: The instrument time as a string
 
     """
 
-    unable_to_determine_instrument_time = "Unknown"
-    incoming_datetime_format = "%m/%d/%Y %H:%M:%S"
-    desired_datetime_format = "%Y/%m/%d %H:%M:%S"
-
-    _set_env()
-    pv_prefix = _get_pv_prefix(host_instrument, ca)
+    # What we will return if we can't work out the instrument time
+    instrument_time = "Unknown"
 
     try:
-        instrument_datetime = datetime.strptime(ca.get_pv_value(pv_prefix+"CS:IOC:INSTETC_01:DEVIOS:TOD",True),
-                                                incoming_datetime_format)
-    except Exception as e:
-        logging.error("Unable to generate instrument time: " + e.message)
-        return unable_to_determine_instrument_time
-
-    return instrument_datetime.strftime(desired_datetime_format)
+        tree = get_tree('http://%s:%s/main' % (host_instrument, PORT_BLOCKS))
+        headers = tree.xpath("//table/tbody/tr/th")
+        info = tree.xpath("//table/tbody/tr/td")
+        assert(len(headers)==len(info))
+    except:
+        logging.error("Unable to read extweb data for instrument time for instrument: %s" % host_instrument)
+    else:
+        instrument_times = [info[i].text for i in range(len(info)) if headers[i].text=="Last Written"]
+        if len(instrument_times) is 1:
+            instrument_time = instrument_times.pop().strip()
+        else:
+            logging.error("Unable to determine instrument time from extweb data for instrument: %s" % host_instrument)
+    return instrument_time
 
 
 def format_blocks(blocks):
