@@ -3,6 +3,7 @@ var showPrivate = true;
 var privateRunInfo = ["TITLE", "_USERNAME"];
 var instrument = getURLParameter("Instrument");
 var nodeInstTitle = document.createElement("H2");
+var nodeInstrumentTime = document.createElement("H2");
 var nodeConfigTitle = document.createElement("H2");
 var instrumentState;
 var showHidden;
@@ -128,13 +129,21 @@ function refresh() {
 function parseObject(obj) {
     // set up page
     instrumentState = obj;
+
+    clear(nodeInstrumentTime);
+    instrumentTime = instrumentState.instrument_time;
+    if (instrumentTime!==undefined) {
+        nodeInstrumentTime.appendChild(document.createTextNode("Instrument time: " + instrumentState.instrument_time));
+        document.getElementById("instrument_time").appendChild(nodeInstrumentTime);
+    }
+
     showHidden = document.getElementById("showHidden").checked;
-	if ("DISPLAY" in instrumentState.inst_pvs) {
-		showPrivate = getBoolean(instrumentState.inst_pvs["DISPLAY"]["value"]);
-		delete instrumentState.inst_pvs["DISPLAY"];
-	} else {
-		showPrivate = true;
-	}
+    if ("DISPLAY" in instrumentState.inst_pvs) {
+        showPrivate = getBoolean(instrumentState.inst_pvs["DISPLAY"]["value"]);
+        delete instrumentState.inst_pvs["DISPLAY"];
+    } else {
+        showPrivate = true;
+    }
     clear(nodeInstTitle);
     clear(nodeConfigTitle);
 

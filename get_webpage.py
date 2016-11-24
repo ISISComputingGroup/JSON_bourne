@@ -24,22 +24,12 @@ def shorten_title(title):
     return title[number + 1:]
 
 
-def ascii_to_string(ascii):
-    """
-    Converts a list of ascii characters into a string.
-
-    Args:
-        ascii: A list of ascii characters.
-
-    Returns: The input as string.
-
-    """
-    string = ''
-    for char in ascii:
-        if char:
-            string += chr(int(char))
-    return string
-
+def _get_html_tree_from_url(url):
+    try:
+        return html.fromstring(requests.get(url).content)
+    except Exception as e:
+        logging.error("Unable to get URL tree from: " + str(url))
+        raise e
 
 def get_info(url):
     """
@@ -51,15 +41,7 @@ def get_info(url):
     Returns: A converted list of block objects.
 
     """
-    try:
-        page = requests.get(url)
-    except Exception as e:
-        logging.error("URL not found: " + str(url))
-        raise e
-
-    blocks = dict()
-
-    tree = html.fromstring(page.content)
+    tree = _get_html_tree_from_url(url)
 
     titles = tree.xpath("//tr/th/a")
     titles = [t.text for t in titles]
@@ -77,40 +59,7 @@ def get_info(url):
 
     info = tree.xpath("//table[2]/tbody/tr/td[3]")
 
-    for i in range(len(titles)):
-        block_raw = info[i].text
-        if block_raw == "null":
-                value = "null"
-                alarm = "null"
-        elif "DAE:STARTTIME.VAL" in titles[i]:
-            value_index = 1
-            alarm_index = 2
-            block_split = block_raw.split("\t", 2)
-            value = block_split[value_index]
-            alarm = block_split[alarm_index]
-        elif "DAE:TITLE.VAL" in titles[i] or "DAE:_USERNAME.VAL" in titles[i]:
-            # Title and user name are ascii codes spaced by ", "
-            value_index = 2
-            block_split = block_raw.split(None, 2)
-            value_ascii = block_split[value_index].split(", ")
-            try:
-                value = ascii_to_string(value_ascii)
-            except Exception as e:
-                # Put this here for the moment, title/username need fixing anyway
-                value = "Unknown"
-            alarm = "null"
-        else:
-            value_index = 2
-            alarm_index = 3
-            block_split = block_raw.split(None, 3)
-            value = block_split[value_index]
-            alarm = block_split[alarm_index]
-
-        name = shorten_title(titles[i])
-        status = status_text[i]
-        blocks[name] = Block(status, value, alarm, True)
-
-    return blocks
+    return {shorten_title(titles[i]): Block.from_raw(status_text[i], info[i].text) for i in range(len(titles))}
 
 
 def get_instpvs(url):
@@ -160,7 +109,6 @@ def scrape_webpage(host="localhost"):
     except Exception as e:
         logging.error("JSON conversion failed: " + str(e))
         logging.error("JSON was: " + str(config))
-        logging.error("Blocks were: " + str(blocks_all))
         raise e
         
     block_vis = get_block_visibility(config)
@@ -189,11 +137,43 @@ def scrape_webpage(host="localhost"):
         output["config_name"] = config["name"]
         output["groups"] = groups
         output["inst_pvs"] = format_blocks(get_instpvs('http://%s:%s/group?name=INST' % (host, PORT_INSTPV)))
+        output["instrument_time"] = get_instrument_time(host)
     except Exception as e:
         logging.error("Output construction failed " + str(e))
         raise e
 
     return output
+
+
+def get_instrument_time(host_instrument,get_tree=_get_html_tree_from_url):
+    """
+    Gets the instrument time from a specific host instrument via channel access
+
+    Args:
+        host_instrument: The name of the host instrument
+        get_tree: The method to get the html tree from a specified URL
+
+    Returns: The instrument time as a string
+
+    """
+
+    # What we will return if we can't work out the instrument time
+    instrument_time = "Unknown"
+
+    try:
+        tree = get_tree('http://%s:%s/main' % (host_instrument, PORT_BLOCKS))
+        headers = tree.xpath("//table/tbody/tr/th")
+        info = tree.xpath("//table/tbody/tr/td")
+        assert(len(headers)==len(info))
+    except:
+        logging.error("Unable to read extweb data for instrument time for instrument: %s" % host_instrument)
+    else:
+        instrument_times = [info[i].text for i in range(len(info)) if headers[i].text=="Last Written"]
+        if len(instrument_times) is 1:
+            instrument_time = instrument_times.pop().strip()
+        else:
+            logging.error("Unable to determine instrument time from extweb data for instrument: %s" % host_instrument)
+    return instrument_time
 
 
 def format_blocks(blocks):

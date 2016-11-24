@@ -120,6 +120,7 @@ if __name__ == '__main__':
         print "Shutting down"
         for w in web_scrapers:
             w._running = False
-    while active_count() > 1:
-        for w in web_scrapers:
-            w.join()
+
+    # Joining a thread is sufficient as it will only return once complete
+    for w in web_scrapers:
+        w.join()
