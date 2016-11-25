@@ -1,6 +1,6 @@
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from SocketServer import ThreadingMixIn
-from threading import Thread, active_count
+from threading import Thread, active_count, RLock
 from time import sleep
 import re
 from get_webpage import scrape_webpage
@@ -19,6 +19,7 @@ for inst in NDX_INSTS:
     ALL_INSTS[inst] = "NDX" + inst
 
 _scraped_data = dict()
+_scraped_data_lock = RLock()
 
 
 class MyHandler(BaseHTTPRequestHandler):
@@ -49,10 +50,13 @@ class MyHandler(BaseHTTPRequestHandler):
             # Warn level so as to avoid many log messages that come from other modules
             logging.warn("Connected to from " + str(self.client_address) + " looking at " + str(inst))
 
-            if inst not in _scraped_data.keys():
-                raise ValueError(str(inst) + " not known")
-
-            ans = "%s(%s)" % (callback, json.dumps(_scraped_data[inst]))
+            with _scraped_data_lock:
+                if inst not in _scraped_data.keys():
+                    raise ValueError(str(inst) + " not known")
+                try:
+                    ans = "%s(%s)" % (callback, _scraped_data[inst])
+                except Exception as err:
+                    raise ValueError("Unable to convert instrument data to JSON: %s" % err.message)
 
             self.send_response(200)
             self.send_header('Content-type', 'text/html')
@@ -97,7 +101,8 @@ class WebScraper(Thread):
             try:
                 temp_data = scrape_webpage(self._host)
                 global _scraped_data
-                _scraped_data[self._name] = temp_data  # Atomic so no need to lock
+                with _scraped_data_lock:
+                    _scraped_data[self._name] = temp_data  # Atomic so no need to lock
                 self._connected = True
                 self.wait(3)
             except Exception as e:
