@@ -54,7 +54,17 @@ class MyHandler(BaseHTTPRequestHandler):
                 if inst not in _scraped_data.keys():
                     raise ValueError(str(inst) + " not known")
                 try:
-                    ans = "%s(%s)" % (callback, _scraped_data[inst])
+                    def convert_to_string(data):
+                        import collections
+                        if isinstance(data, basestring):
+                            return str(data)
+                        elif isinstance(data, collections.Mapping):
+                            return dict(map(convert_to_string, data.iteritems()))
+                        elif isinstance(data, collections.Iterable):
+                            return type(data)(map(convert_to_string, data))
+                        else:
+                            return str(data)
+                    ans = "%s(%s)" % (callback, convert_to_string(_scraped_data[inst]))
                 except Exception as err:
                     raise ValueError("Unable to convert instrument data to JSON: %s" % err.message)
 
