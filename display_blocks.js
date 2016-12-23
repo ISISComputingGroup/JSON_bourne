@@ -6,6 +6,7 @@ var nodeInstTitle = document.createElement("H2");
 var nodeConfigTitle = document.createElement("H2");
 var instrumentState;
 var showHidden;
+var timeout = 1000;
 
 dictInstPV = {
     RUNSTATE: 'Run Status',
@@ -114,18 +115,28 @@ function clear(node) {
  * Fetches the latest instrument data.
  */
 function refresh() {
-    $.ajax({
-    url: "http://dataweb.isis.rl.ac.uk:" + PORT + "/",
-    dataType: 'jsonp',
-    data: {"Instrument": instrument},
-    jsonpCallback: "parseObject"
-    });
+	$.ajax({
+		url: "http://dataweb.isis.rl.ac.uk:" + PORT + "/",
+		dataType: 'jsonp',
+		data: {"Instrument": instrument},
+		timeout: timeout,
+		error: function(xhr, status, error){ 
+			window.location.replace("error.html")
+		},
+		success: function(data){ 
+			if(data == null){
+				error();
+			}
+			parseObject(data);
+		}
+	});
 }
 
 /**
  * Parses fetched instrument data into a human-readable html page.
  */
 function parseObject(obj) {
+	
     // set up page
     instrumentState = obj;
     showHidden = document.getElementById("showHidden").checked;
@@ -242,6 +253,7 @@ function getDisplayBlocks(node, blocks) {
             }
         }
         node.appendChild(nodeBlock);
+		instrumentIsValid = true;
     }
     return node;
 }
