@@ -124,9 +124,6 @@ function refresh() {
 			window.location.replace("error.html")
 		},
 		success: function(data){ 
-			if(data == null){
-				error();
-			}
 			parseObject(data);
 		}
 	});
@@ -135,8 +132,7 @@ function refresh() {
 /**
  * Parses fetched instrument data into a human-readable html page.
  */
-function parseObject(obj) {
-	
+function parseObject(obj) {	
     // set up page
     instrumentState = obj;
     showHidden = document.getElementById("showHidden").checked;
