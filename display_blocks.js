@@ -161,6 +161,8 @@ function parseObject(obj) {
 
     nodeInstPVs.appendChild(nodeInstPVList);
     getDisplayBlocks(nodeInstPVs, instrumentState.inst_pvs);
+	
+	setVisibilityMode('block');
 }
 
 /**
@@ -174,17 +176,20 @@ function displayError(error) {
     nodeInstTitle.appendChild(document.createTextNode(instrument));
     nodeConfigTitle.appendChild(document.createTextNode("Could not connect to " + instrument + ", check IBEX server is running."));
 
-	if(document.getElementById("inst_name") != null){
-		document.getElementById("inst_name").appendChild(nodeInstTitle);
-	} else {
-		alert("Document wasnt ready: " + error);
-	}
-	if(document.getElementById("config_name") != null){
-		document.getElementById("config_name").appendChild(nodeConfigTitle);
-	} else {
-		alert("Document wasnt ready: " + error);
-	}
+	document.getElementById("inst_name").appendChild(nodeInstTitle);
+	document.getElementById("config_name").appendChild(nodeConfigTitle);
+	
+	setVisibilityMode('none');
 }
+
+/*
+ *  Sets the visibility of the run information, blocks and checkbox
+ */
+ function setVisibilityMode(mode){
+	document.getElementById("run_information").style.display = mode;
+	document.getElementById("blocks").style.display = mode;
+	document.getElementById("showHiddenContainer").style.display = mode;
+ }
 
 /**
  * Adds html elements for a list of group objects to a given node.
