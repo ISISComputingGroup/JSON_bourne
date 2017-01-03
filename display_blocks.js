@@ -121,7 +121,7 @@ function refresh() {
 		data: {"Instrument": instrument},
 		timeout: timeout,
 		error: function(xhr, status, error){ 
-			window.location.replace("error.html")
+			displayError(error);
 		},
 		success: function(data){ 
 			parseObject(data);
@@ -161,6 +161,29 @@ function parseObject(obj) {
 
     nodeInstPVs.appendChild(nodeInstPVList);
     getDisplayBlocks(nodeInstPVs, instrumentState.inst_pvs);
+}
+
+/**
+ * Display an error when connection to server couldn't be made.
+ */
+function displayError(error) {
+
+    clear(nodeInstTitle);
+    clear(nodeConfigTitle);
+
+    nodeInstTitle.appendChild(document.createTextNode(instrument));
+    nodeConfigTitle.appendChild(document.createTextNode("Could not connect to " + instrument + ", check IBEX server is running."));
+
+	if(document.getElementById("inst_name") != null){
+		document.getElementById("inst_name").appendChild(nodeInstTitle);
+	} else {
+		alert("Document wasnt ready: " + error);
+	}
+	if(document.getElementById("config_name") != null){
+		document.getElementById("config_name").appendChild(nodeConfigTitle);
+	} else {
+		alert("Document wasnt ready: " + error);
+	}
 }
 
 /**
@@ -252,6 +275,11 @@ function getDisplayBlocks(node, blocks) {
     }
     return node;
 }
+
+
+// At the start, assume we can't connect
+// This will update when a connection is made
+$(window).on('ready', displayError("called by window.on('ready')"));
 
 $(document).ready(refresh());
 
