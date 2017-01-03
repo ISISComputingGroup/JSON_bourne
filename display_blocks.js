@@ -121,7 +121,7 @@ function refresh() {
 		data: {"Instrument": instrument},
 		timeout: timeout,
 		error: function(xhr, status, error){ 
-			displayError(error);
+			displayError();
 		},
 		success: function(data){ 
 			parseObject(data);
@@ -168,7 +168,7 @@ function parseObject(obj) {
 /**
  * Display an error when connection to server couldn't be made.
  */
-function displayError(error) {
+function displayError() {
 
     clear(nodeInstTitle);
     clear(nodeConfigTitle);
@@ -284,7 +284,7 @@ function getDisplayBlocks(node, blocks) {
 
 // At the start, assume we can't connect
 // This will update when a connection is made
-$(window).on('ready', displayError("called by window.on('ready')"));
+$(document).ready(displayError());
 
 $(document).ready(refresh());
 
