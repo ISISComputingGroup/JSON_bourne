@@ -6,6 +6,7 @@ var nodeInstTitle = document.createElement("H2");
 var nodeConfigTitle = document.createElement("H2");
 var instrumentState;
 var showHidden;
+var timeout = 1000;
 
 dictInstPV = {
     RUNSTATE: 'Run Status',
@@ -114,12 +115,18 @@ function clear(node) {
  * Fetches the latest instrument data.
  */
 function refresh() {
-    $.ajax({
-    url: "http://dataweb.isis.rl.ac.uk:" + PORT + "/",
-    dataType: 'jsonp',
-    data: {"Instrument": instrument},
-    jsonpCallback: "parseObject"
-    });
+	$.ajax({
+		url: "http://dataweb.isis.rl.ac.uk:" + PORT + "/",
+		dataType: 'jsonp',
+		data: {"Instrument": instrument},
+		timeout: timeout,
+		error: function(xhr, status, error){ 
+			displayError();
+		},
+		success: function(data){ 
+			parseObject(data);
+		}
+	});
 }
 
 /**
@@ -154,7 +161,35 @@ function parseObject(obj) {
 
     nodeInstPVs.appendChild(nodeInstPVList);
     getDisplayBlocks(nodeInstPVs, instrumentState.inst_pvs);
+	
+	setVisibilityMode('block');
 }
+
+/**
+ * Display an error when connection to server couldn't be made.
+ */
+function displayError() {
+
+    clear(nodeInstTitle);
+    clear(nodeConfigTitle);
+
+    nodeInstTitle.appendChild(document.createTextNode(instrument));
+    nodeConfigTitle.appendChild(document.createTextNode("Could not connect to " + instrument + ", check IBEX server is running."));
+
+	document.getElementById("inst_name").appendChild(nodeInstTitle);
+	document.getElementById("config_name").appendChild(nodeConfigTitle);
+	
+	setVisibilityMode('none');
+}
+
+/*
+ *  Sets the visibility of the run information, blocks and checkbox
+ */
+ function setVisibilityMode(mode){
+	document.getElementById("run_information").style.display = mode;
+	document.getElementById("blocks").style.display = mode;
+	document.getElementById("showHiddenContainer").style.display = mode;
+ }
 
 /**
  * Adds html elements for a list of group objects to a given node.
@@ -245,6 +280,11 @@ function getDisplayBlocks(node, blocks) {
     }
     return node;
 }
+
+
+// At the start, assume we can't connect
+// This will update when a connection is made
+$(document).ready(displayError());
 
 $(document).ready(refresh());
 
