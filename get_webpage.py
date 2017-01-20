@@ -77,6 +77,9 @@ def get_info(url):
 
     info = tree.xpath("//table[2]/tbody/tr/td[3]")
 
+    assert(len(titles) == len(status_text))
+    assert(len(titles) == len(info))
+
     for i in range(len(titles)):
         block_raw = info[i].text
         if block_raw == "null":
@@ -100,11 +103,14 @@ def get_info(url):
                 value = "Unknown"
             alarm = "null"
         else:
-            value_index = 2
-            alarm_index = 3
-            block_split = block_raw.split(None, 3)
-            value = block_split[value_index]
-            alarm = block_split[alarm_index]
+            try:
+                value_index = 2
+                alarm_index = 3
+                block_split = block_raw.split(None, 3)
+                value = block_split[value_index]
+                alarm = block_split[alarm_index]
+            except Exception as e:
+                logging.error("Title: " + str(titles[i]) + " Raw: " + str(block_raw) + " Value: " + str(value) + " Alram: " + str(alarm))
 
         name = shorten_title(titles[i])
         status = status_text[i]
@@ -162,19 +168,22 @@ def scrape_webpage(host="localhost"):
         logging.error("JSON was: " + str(config))
         logging.error("Blocks were: " + str(blocks_all))
         raise e
-        
-    block_vis = get_block_visibility(config)
 
-    # read blocks
-    blocks_log = get_info('http://%s:%s/group?name=BLOCKS' % (host, PORT_BLOCKS))
-    blocks_nolog = get_info('http://%s:%s/group?name=DATAWEB' % (host, PORT_BLOCKS))
-    blocks_all = dict(blocks_log.items() + blocks_nolog.items())
+    try:
+        block_vis = get_block_visibility(config)
 
-    # get block visibility from config
-    for block in blocks_all:
-        blocks_all[block].set_visibility(block_vis.get(block))
+        # read blocks
+        blocks_log = get_info('http://%s:%s/group?name=BLOCKS' % (host, PORT_BLOCKS))
+        blocks_nolog = get_info('http://%s:%s/group?name=DATAWEB' % (host, PORT_BLOCKS))
+        blocks_all = dict(blocks_log.items() + blocks_nolog.items())
 
-    blocks_all_formatted = format_blocks(blocks_all)
+        # get block visibility from config
+        for block in blocks_all:
+            blocks_all[block].set_visibility(block_vis.get(block))
+
+        blocks_all_formatted = format_blocks(blocks_all)
+    except Exception as e:
+        logging.error("Failed to read blocks: " + str(e))
 
     groups = dict()
     for group in config["groups"]:
@@ -201,14 +210,15 @@ def format_blocks(blocks):
     Converts a list of block objects into JSON.
 
     Args:
-        blocks: A list of block objects.
+        blocks: A dictionary of block names to block objects.
 
-    Returns: A JSON list of block objects.
+    Returns: A JSON dictionary of block names to block descriptions.
 
     """
     blocks_formatted = dict()
-    for block in blocks:
-        blocks_formatted[block] = blocks[block].get_description()
+    for name, block in blocks.items():
+        blocks_formatted[name] = block.get_description()
+
     return blocks_formatted
 
 
