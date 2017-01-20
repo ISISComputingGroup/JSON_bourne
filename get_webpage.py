@@ -81,40 +81,44 @@ def get_info(url):
     assert(len(titles) == len(info))
 
     for i in range(len(titles)):
-        block_raw = info[i].text
-        if block_raw == "null":
-                value = "null"
+        try:
+            block_raw = info[i].text
+            if block_raw == "null":
+                    value = "null"
+                    alarm = "null"
+            elif "DAE:STARTTIME.VAL" in titles[i]:
+                value_index = 1
+                alarm_index = 2
+                block_split = block_raw.split("\t", 2)
+                value = block_split[value_index]
+                alarm = block_split[alarm_index]
+            elif "DAE:TITLE.VAL" in titles[i] or "DAE:_USERNAME.VAL" in titles[i]:
+                # Title and user name are ascii codes spaced by ", "
+                value_index = 2
+                block_split = block_raw.split(None, 2)
+                value_ascii = block_split[value_index].split(", ")
+                try:
+                    value = ascii_to_string(value_ascii)
+                except Exception as e:
+                    # Put this here for the moment, title/username need fixing anyway
+                    value = "Unknown"
                 alarm = "null"
-        elif "DAE:STARTTIME.VAL" in titles[i]:
-            value_index = 1
-            alarm_index = 2
-            block_split = block_raw.split("\t", 2)
-            value = block_split[value_index]
-            alarm = block_split[alarm_index]
-        elif "DAE:TITLE.VAL" in titles[i] or "DAE:_USERNAME.VAL" in titles[i]:
-            # Title and user name are ascii codes spaced by ", "
-            value_index = 2
-            block_split = block_raw.split(None, 2)
-            value_ascii = block_split[value_index].split(", ")
-            try:
-                value = ascii_to_string(value_ascii)
-            except Exception as e:
-                # Put this here for the moment, title/username need fixing anyway
-                value = "Unknown"
-            alarm = "null"
-        else:
-            try:
+            else:
                 value_index = 2
                 alarm_index = 3
                 block_split = block_raw.split(None, 3)
-                value = block_split[value_index]
-                alarm = block_split[alarm_index]
-            except Exception as e:
-                logging.error("Title: " + str(titles[i]) + " Raw: " + str(block_raw) + " Value: " + str(value) + " Alram: " + str(alarm))
+                if len(block_split) < 4:
+                    # Missing a value
+                    continue
+                else:
+                    value = block_split[value_index]
+                    alarm = block_split[alarm_index]
 
-        name = shorten_title(titles[i])
-        status = status_text[i]
-        blocks[name] = Block(status, value, alarm, True)
+            name = shorten_title(titles[i])
+            status = status_text[i]
+            blocks[name] = Block(status, value, alarm, True)
+        except Exception as e:
+            logging.error("Unable to decode " + str(titles[i]))
 
     return blocks
 
