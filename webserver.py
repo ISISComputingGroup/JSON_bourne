@@ -106,7 +106,8 @@ class WebScraper(Thread):
                 self._connected = True
                 self.wait(3)
             except Exception as e:
-                logging.error("Failed to get data from instrument: " + str(self._name) + " at " + str(self._host))
+                logging.error("Failed to get data from instrument: " + str(self._name) + " at " + str(self._host) +
+                              " error was: " + str(e))
                 self.wait(60)
 
 if __name__ == '__main__':
