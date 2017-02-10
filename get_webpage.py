@@ -162,17 +162,18 @@ def convert_seconds(block):
     """
     seconds = 0
     minutes = 0
+    hours = 0
     old_value = block.get_value()
-    if int(old_value) < 60:
+    seconds = int(old_value) % 60
+    minutes = int(old_value) / 60
+    hours = minutes / 60
+    minutes %= 60
+
+    if hours == 0 and minutes == 0:
         block.set_value(old_value + " s")
-    else:
-        minutes = int(old_value) / 60
-        seconds = int(old_value) % 60
-    if minutes < 60:
+    elif hours == 0:
         block.set_value(str(minutes) + " min " + str(seconds) + " s")
     else:
-        hours = minutes / 60
-        minutes %= 60
         block.set_value(str(hours) + " hr " + str(minutes) + " min " + str(seconds) + " s")
 
 
