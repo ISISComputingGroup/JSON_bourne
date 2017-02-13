@@ -146,7 +146,35 @@ def get_instpvs(url):
         if pv + ".VAL" in ans:
             wanted[pv] = ans[pv + ".VAL"]
 
+    convert_seconds(wanted["RUNDURATION"])
+    convert_seconds(wanted["RUNDURATION_PD"])
+
     return wanted
+
+
+def convert_seconds(block):
+    """
+    Receives the value from the block and converts to hours, minutes and seconds.
+
+    Args:
+        block: the block to convert
+
+    """
+    seconds = 0
+    minutes = 0
+    hours = 0
+    old_value = block.get_value()
+    seconds = int(old_value) % 60
+    minutes = int(old_value) / 60
+    hours = minutes / 60
+    minutes %= 60
+
+    if hours == 0 and minutes == 0:
+        block.set_value(old_value + " s")
+    elif hours == 0:
+        block.set_value(str(minutes) + " min " + str(seconds) + " s")
+    else:
+        block.set_value(str(hours) + " hr " + str(minutes) + " min " + str(seconds) + " s")
 
 
 def scrape_webpage(host="localhost"):
