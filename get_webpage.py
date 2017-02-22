@@ -111,10 +111,8 @@ def get_info(url):
                 value_ascii = block_split[value_index].split(", ")
                 try:
                     value = ascii_to_string(value_ascii)
-                    print value
                 except Exception as e:
                     # Put this here for the moment, title/username need fixing anyway
-                    value = "Unknown"
                     print e
                 alarm = "null"
             else:
