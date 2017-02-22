@@ -113,7 +113,7 @@ def get_info(url):
                     value = ascii_to_string(value_ascii)
                 except Exception as e:
                     # Put this here for the moment, title/username need fixing anyway
-                    print e
+                    value = "Unknown"
                 alarm = "null"
             else:
                 value_index = 2
