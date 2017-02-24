@@ -36,8 +36,20 @@ def ascii_to_string(ascii):
     """
     string = ''
     for char in ascii:
-        if char:
-            string += chr(int(char))
+        # Filters out non-numeric ascii codes (e.g. with a "," at the end)
+        char = filter(lambda x: x in '0123456789', char)
+
+        # If char is empty after filtering
+        if len(char) == 0:
+            continue
+
+        # Convert char to int
+        char = int(char)
+
+        # Avoids printing nulls
+        if char > 0:
+            string += chr(char)
+
     return string
 
 
