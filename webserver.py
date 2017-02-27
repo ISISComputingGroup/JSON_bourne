@@ -87,7 +87,8 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 
 class WebScraper(Thread):
     _running = True
-    _connected = False
+    _previously_failed = False
+    _tries_since_logged = 0
 
     def wait(self, seconds):
         # Lots of short waits so can stop thread more quickly
@@ -104,15 +105,21 @@ class WebScraper(Thread):
     def run(self):
         while self._running:
             try:
+                self._tries_since_logged += 1
                 temp_data = scrape_webpage(self._host)
                 global _scraped_data
                 with _scraped_data_lock:
                     _scraped_data[self._name] = temp_data  # Atomic so no need to lock
-                self._connected = True
+                if self._previously_failed:
+                    logger.info("Reconnected with " + str(self._name))
+                self._previously_failed = False
                 self.wait(3)
             except Exception as e:
-                logger.error("Failed to get data from instrument: " + str(self._name) + " at " + str(self._host) +
+                if not self._previously_failed or self._tries_since_logged > 60:
+                    logger.error("Failed to get data from instrument: " + str(self._name) + " at " + str(self._host) +
                               " error was: " + str(e))
+                    self._previously_failed = True
+                    self._tries_since_logged = 0
                 self.wait(60)
 
 if __name__ == '__main__':
