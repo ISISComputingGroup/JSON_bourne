@@ -111,7 +111,7 @@ class WebScraper(Thread):
                 with _scraped_data_lock:
                     _scraped_data[self._name] = temp_data  # Atomic so no need to lock
                 if self._previously_failed:
-                    logger.info("Reconnected with " + str(self._name))
+                    logger.error("Reconnected with " + str(self._name))
                 self._previously_failed = False
                 self.wait(3)
             except Exception as e:
