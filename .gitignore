@@ -1,1 +1,4 @@
 /log/*.log
+/log/*.log.*
+JSON_bourne.log
+*.pyc
