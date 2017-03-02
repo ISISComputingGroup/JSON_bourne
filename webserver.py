@@ -9,7 +9,7 @@ from logging.handlers import TimedRotatingFileHandler
 import logging
 
 logger = logging.getLogger('JSON_bourne')
-handler = TimedRotatingFileHandler('log\JSON_bourne.log', when='midnight')
+handler = TimedRotatingFileHandler('log\JSON_bourne.log', when='midnight', backupCount=30)
 handler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
 logger.setLevel(logging.WARNING)
 logger.addHandler(handler)
@@ -25,6 +25,10 @@ for inst in NDX_INSTS:
 
 _scraped_data = dict()
 _scraped_data_lock = RLock()
+
+WAIT_BETWEEN_UPDATES = 3
+WAIT_BETWEEN_FAILED_UPDATES = 60
+RETRIES_BETWEEN_LOGS = 60
 
 
 class MyHandler(BaseHTTPRequestHandler):
@@ -113,14 +117,14 @@ class WebScraper(Thread):
                 if self._previously_failed:
                     logger.error("Reconnected with " + str(self._name))
                 self._previously_failed = False
-                self.wait(3)
+                self.wait(WAIT_BETWEEN_UPDATES)
             except Exception as e:
-                if not self._previously_failed or self._tries_since_logged > 60:
+                if not self._previously_failed or self._tries_since_logged >= RETRIES_BETWEEN_LOGS:
                     logger.error("Failed to get data from instrument: " + str(self._name) + " at " + str(self._host) +
                               " error was: " + str(e))
                     self._previously_failed = True
                     self._tries_since_logged = 0
-                self.wait(60)
+                self.wait(WAIT_BETWEEN_FAILED_UPDATES)
 
 if __name__ == '__main__':
     web_scrapers = []
