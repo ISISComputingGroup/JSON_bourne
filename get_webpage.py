@@ -173,9 +173,8 @@ def convert_seconds(block):
         block: the block to convert
 
     """
-    seconds = 0
-    minutes = 0
-    hours = 0
+    if not block.isConnected():
+        return
     old_value = block.get_value()
     seconds = int(old_value) % 60
     minutes = int(old_value) / 60
