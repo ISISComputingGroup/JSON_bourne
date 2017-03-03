@@ -4,6 +4,7 @@ import json
 from block import Block
 import logging
 
+logger = logging.getLogger('JSON_bourne')
 
 PORT_INSTPV = 4812
 PORT_BLOCKS = 4813
@@ -66,7 +67,7 @@ def get_info(url):
     try:
         page = requests.get(url)
     except Exception as e:
-        logging.error("URL not found: " + str(url))
+        logger.error("URL not found: " + str(url))
         raise e
 
     blocks = dict()
@@ -130,7 +131,7 @@ def get_info(url):
             status = status_text[i]
             blocks[name] = Block(status, value, alarm, True)
         except Exception as e:
-            logging.error("Unable to decode " + str(titles[i]))
+            logger.error("Unable to decode " + str(titles[i]))
 
     return blocks
 
@@ -225,7 +226,7 @@ def scrape_webpage(host="localhost"):
 
         blocks_all_formatted = format_blocks(blocks_all)
     except Exception as e:
-        logging.error("Failed to read blocks: " + str(e))
+        logger.error("Failed to read blocks: " + str(e))
 
     groups = dict()
     for group in config["groups"]:
@@ -241,7 +242,7 @@ def scrape_webpage(host="localhost"):
         output["groups"] = groups
         output["inst_pvs"] = format_blocks(get_instpvs('http://%s:%s/group?name=INST' % (host, PORT_INSTPV)))
     except Exception as e:
-        logging.error("Output construction failed " + str(e))
+        logger.error("Output construction failed " + str(e))
         raise e
 
     return output
