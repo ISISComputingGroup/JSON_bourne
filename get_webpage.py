@@ -208,8 +208,8 @@ def scrape_webpage(host="localhost"):
     try:
         config = json.loads(corrected_page)
     except Exception as e:
-        logging.error("JSON conversion failed: " + str(e))
-        logging.error("JSON was: " + str(config))
+        logger.error("JSON conversion failed: " + str(e))
+        logger.error("JSON was: " + str(config))
         raise e
 
     try:
