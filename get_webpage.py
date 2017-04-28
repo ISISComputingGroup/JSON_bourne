@@ -20,8 +20,22 @@ def shorten_title(title):
     Returns: The last segment of the input PV address as string.
 
     """
-    number = title.rfind(':')
-    return title[number + 1:]
+    title = title.split(':')
+    rc_name = "RC"
+    value_name = ["HIGH.VAL", "LOW.VAL", "INRANGE.VAL", "ENABLED.VAL"]
+    title_list = []
+
+    if rc_name in title:
+        title_list.append(title[-3])
+        title_list.append(rc_name)
+        for name in value_name:
+            if name in title:
+                title_list.append(name)
+                title = ':'.join(title_list)
+                return title
+    else:
+        title = title[-1]
+        return title
 
 
 def ascii_to_string(ascii):
@@ -116,14 +130,37 @@ def get_info(url):
 
             name = shorten_title(titles[i])
             status = status_text[i]
-            blocks[name] = Block(status, value, alarm, True)
+            blocks[name] = Block(name, status, value, alarm, True)
         except Exception as e:
             logging.error("Unable to decode " + str(titles[i]))
 
     return blocks
 
 
-def get_instpvs(url):
+def set_rc_values_for_block_from_pvs(block_object, pvs):
+    """Search pvs for RC values for given block and return them"""
+    block_name = block_object.get_name()
+    items = pvs.items()
+
+    for k, v in items:
+        if k is not None:
+            test_block_name = k.split(':')[0]
+            if block_name == test_block_name:
+                if "LOW.VAL" == k.split(':')[-1]:
+                    block_object.set_rc_low(v.get_value())
+                if "HIGH.VAL" == k.split(':')[-1]:
+                    block_object.set_rc_high(v.get_value())
+                if "INRANGE.VAL" == k.split(':')[-1]:
+                    block_object.set_rc_inrange(v.get_value())
+
+
+def set_rc_values_for_blocks(block_objects, pvs):
+    """Set all RC values for all the given blocks"""
+    for object in block_objects:
+        set_rc_values_for_block_from_pvs(object,pvs)
+
+
+def get_instpvs(url, blocks_all):
     """
     Extracts and formats a list of relevant instrument PVs from all instrument PVs.
 
@@ -134,6 +171,7 @@ def get_instpvs(url):
 
     """
     wanted = dict()
+    rc = dict()
     ans = get_info(url)
 
     required_pvs = ["RUNSTATE", "RUNNUMBER", "_RBNUMBER", "TITLE", "DISPLAY", "_USERNAME", "STARTTIME",
@@ -142,6 +180,15 @@ def get_instpvs(url):
                     "TOTALCOUNTS", "DAETIMINGSOURCE", "MONITORCOUNTS", "MONITORSPECTRUM", "MONITORFROM", "MONITORTO",
                     "NUMTIMECHANNELS", "NUMSPECTRA"]
 
+    #rc_pvs = []
+    print blocks_all.values()[0]
+
+    try:
+        set_rc_values_for_blocks(blocks_all.values(), ans)
+    except Exception as e:
+        logging.error("Error in setting rc values for blocks: " + str(e))
+
+    print blocks_all.values()[0]
     for pv in required_pvs:
         if pv + ".VAL" in ans:
             wanted[pv] = ans[pv + ".VAL"]
@@ -184,13 +231,14 @@ def scrape_webpage(host="localhost"):
         # get block visibility from config
         for block in blocks_all:
             blocks_all[block].set_visibility(block_vis.get(block))
-
-        blocks_all_formatted = format_blocks(blocks_all)
     except Exception as e:
         logging.error("Failed to read blocks: " + str(e))
 
+    inst_pvs = format_blocks(get_instpvs('http://%s:%s/group?name=INST' % (host, PORT_INSTPV), blocks_all))
+
     groups = dict()
     for group in config["groups"]:
+        blocks_all_formatted = format_blocks(blocks_all)
         blocks = dict()
         for block in group["blocks"]:
             if block in blocks_all_formatted.keys():
@@ -201,7 +249,7 @@ def scrape_webpage(host="localhost"):
         output = dict()
         output["config_name"] = config["name"]
         output["groups"] = groups
-        output["inst_pvs"] = format_blocks(get_instpvs('http://%s:%s/group?name=INST' % (host, PORT_INSTPV)))
+        output["inst_pvs"] = inst_pvs
     except Exception as e:
         logging.error("Output construction failed " + str(e))
         raise e

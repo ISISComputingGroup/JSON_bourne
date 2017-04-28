@@ -116,7 +116,7 @@ function clear(node) {
  */
 function refresh() {
 	$.ajax({
-		url: "http://dataweb.isis.rl.ac.uk:" + PORT + "/",
+		url: "http://localhost:" + PORT + "/",
 		dataType: 'jsonp',
 		data: {"Instrument": instrument},
 		timeout: timeout,
@@ -240,7 +240,8 @@ function getDisplayBlocks(node, blocks) {
         if(block["visibility"] == false && !showHidden){
             continue;
         }
-
+        
+        var rc_inrange = block["rc_inrange"];
         var value = block["value"];
         var status_text = block["status"];
         var alarm = block["alarm"];
@@ -267,6 +268,21 @@ function getDisplayBlocks(node, blocks) {
             nodeBlock.appendChild(nodeBlockStatus);
         } else {
             nodeBlockText.nodeValue += value + "\u00A0\u00A0";
+            if (rc_inrange != "null") {
+                if (rc_inrange == "YES") {
+                    var nodeBlockInrange = document.createElement("FONT");
+                    attColour.value = "Green";
+                    nodeBlockInrange.setAttributeNode(attColour);
+                    nodeBlockInrange.appendChild(document.createTextNode("\u2713"));
+                    nodeBlock.appendChild(nodeBlockInrange);    
+                } else if (rc_inrange == "NO") {
+                    var nodeBlockInrange = document.createElement("FONT");
+                    attColour.value = "Red";
+                    nodeBlockInrange.setAttributeNode(attColour);
+                    nodeBlockInrange.appendChild(document.createTextNode("\u274C"));
+                    nodeBlock.appendChild(nodeBlockInrange);
+                }
+            }
                 // write alarm status if active
             if (!alarm.startsWith("null") && !alarm.startsWith("OK")) {
                 var nodeBlockAlarm = document.createElement("FONT");
