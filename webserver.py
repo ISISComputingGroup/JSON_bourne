@@ -62,6 +62,8 @@ class MyHandler(BaseHTTPRequestHandler):
             with _scraped_data_lock:
                 if inst not in _scraped_data.keys():
                     raise ValueError(str(inst) + " not known")
+                if _scraped_data[inst] == "":
+                    raise ValueError("Instrument has become unavailable")
                 try:
                     ans = "%s(%s)" % (callback, json.dumps(_scraped_data[inst]))
                 except Exception as err:
@@ -107,13 +109,13 @@ class WebScraper(Thread):
         self._name = name
 
     def run(self):
+        global _scraped_data
         while self._running:
             try:
                 self._tries_since_logged += 1
                 temp_data = scrape_webpage(self._host)
-                global _scraped_data
                 with _scraped_data_lock:
-                    _scraped_data[self._name] = temp_data  # Atomic so no need to lock
+                    _scraped_data[self._name] = temp_data
                 if self._previously_failed:
                     logger.error("Reconnected with " + str(self._name))
                 self._previously_failed = False
@@ -124,6 +126,8 @@ class WebScraper(Thread):
                               " error was: " + str(e))
                     self._previously_failed = True
                     self._tries_since_logged = 0
+                with _scraped_data_lock:
+                    _scraped_data[self._name] = ""
                 self.wait(WAIT_BETWEEN_FAILED_UPDATES)
 
 if __name__ == '__main__':
