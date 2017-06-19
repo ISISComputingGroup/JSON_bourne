@@ -5,21 +5,30 @@ from time import sleep
 import re
 from get_webpage import scrape_webpage
 import json
+from logging.handlers import TimedRotatingFileHandler
 import logging
 
-logging.basicConfig(filename='JSON_bourne.log', format='%(asctime)s %(message)s', level=logging.WARN)
+logger = logging.getLogger('JSON_bourne')
+handler = TimedRotatingFileHandler('log\JSON_bourne.log', when='midnight', backupCount=30)
+handler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
+logger.setLevel(logging.WARNING)
+logger.addHandler(handler)
 
 HOST, PORT = '', 60000
 
 ALL_INSTS = {"MUONFE": "NDEMUONFE"}  # Used for non NDX hosts format of {name: host}
 
-NDX_INSTS = ["DEMO", "LARMOR", "IMAT", "IRIS"]
+NDX_INSTS = ["DEMO", "LARMOR", "IMAT", "IRIS", "VESUVIO", "ALF", "ZOOM", "POLARIS", "HRPD"]
 
 for inst in NDX_INSTS:
     ALL_INSTS[inst] = "NDX" + inst
 
 _scraped_data = dict()
 _scraped_data_lock = RLock()
+
+WAIT_BETWEEN_UPDATES = 3
+WAIT_BETWEEN_FAILED_UPDATES = 60
+RETRIES_BETWEEN_LOGS = 60
 
 
 class MyHandler(BaseHTTPRequestHandler):
@@ -48,11 +57,13 @@ class MyHandler(BaseHTTPRequestHandler):
             inst = instruments.groups()[0].upper()
 
             # Warn level so as to avoid many log messages that come from other modules
-            logging.warn("Connected to from " + str(self.client_address) + " looking at " + str(inst))
+            logger.warn("Connected to from " + str(self.client_address) + " looking at " + str(inst))
 
             with _scraped_data_lock:
                 if inst not in _scraped_data.keys():
                     raise ValueError(str(inst) + " not known")
+                if _scraped_data[inst] == "":
+                    raise ValueError("Instrument has become unavailable")
                 try:
                     ans = "%s(%s)" % (callback, json.dumps(_scraped_data[inst]))
                 except Exception as err:
@@ -65,10 +76,10 @@ class MyHandler(BaseHTTPRequestHandler):
             self.wfile.write(ans)
         except ValueError as e:
             self.send_response(400)
-            logging.error(e)
+            logger.error(e)
         except Exception as e:
             self.send_response(404)
-            logging.error(e)
+            logger.error(e)
 
     def log_message(self, format, *args):
         """ By overriding this method and doing nothing we disable writing to console
@@ -82,7 +93,8 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 
 class WebScraper(Thread):
     _running = True
-    _connected = False
+    _previously_failed = False
+    _tries_since_logged = 0
 
     def wait(self, seconds):
         # Lots of short waits so can stop thread more quickly
@@ -97,18 +109,26 @@ class WebScraper(Thread):
         self._name = name
 
     def run(self):
+        global _scraped_data
         while self._running:
             try:
+                self._tries_since_logged += 1
                 temp_data = scrape_webpage(self._host)
-                global _scraped_data
                 with _scraped_data_lock:
-                    _scraped_data[self._name] = temp_data  # Atomic so no need to lock
-                self._connected = True
-                self.wait(3)
+                    _scraped_data[self._name] = temp_data
+                if self._previously_failed:
+                    logger.error("Reconnected with " + str(self._name))
+                self._previously_failed = False
+                self.wait(WAIT_BETWEEN_UPDATES)
             except Exception as e:
-                logging.error("Failed to get data from instrument: " + str(self._name) + " at " + str(self._host) +
+                if not self._previously_failed or self._tries_since_logged >= RETRIES_BETWEEN_LOGS:
+                    logger.error("Failed to get data from instrument: " + str(self._name) + " at " + str(self._host) +
                               " error was: " + str(e))
-                self.wait(60)
+                    self._previously_failed = True
+                    self._tries_since_logged = 0
+                with _scraped_data_lock:
+                    _scraped_data[self._name] = ""
+                self.wait(WAIT_BETWEEN_FAILED_UPDATES)
 
 if __name__ == '__main__':
     web_scrapers = []

@@ -101,6 +101,12 @@ class Block:
         """ Sets the block's inrange status. """
         self.inrange = value
 
+    def isConnected(self):
+        """
+        :return Whether this block is connected
+        """
+        return self.status == "Connected"
+
     def get_description(self):
         """ Returns the full description of this BoolStr object. """
         ans = dict()

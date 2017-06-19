@@ -4,6 +4,7 @@ import json
 from block import Block
 import logging
 
+logger = logging.getLogger('JSON_bourne')
 
 PORT_INSTPV = 4812
 PORT_BLOCKS = 4813
@@ -50,8 +51,20 @@ def ascii_to_string(ascii):
     """
     string = ''
     for char in ascii:
-        if char:
-            string += chr(int(char))
+        # Filters out non-numeric ascii codes (e.g. with a "," at the end)
+        char = filter(lambda x: x in '0123456789', char)
+
+        # If char is empty after filtering
+        if len(char) == 0:
+            continue
+
+        # Convert char to int
+        char = int(char)
+
+        # Avoids printing nulls
+        if char > 0:
+            string += chr(char)
+
     return string
 
 
@@ -68,7 +81,7 @@ def get_info(url):
     try:
         page = requests.get(url)
     except Exception as e:
-        logging.error("URL not found: " + str(url))
+        logger.error("URL not found: " + str(url))
         raise e
 
     blocks = dict()
@@ -132,7 +145,7 @@ def get_info(url):
             status = status_text[i]
             blocks[name] = Block(name, status, value, alarm, True)
         except Exception as e:
-            logging.error("Unable to decode " + str(titles[i]))
+            logger.error("Unable to decode " + str(titles[i]))
 
     return blocks
 
@@ -193,7 +206,34 @@ def get_instpvs(url, blocks_all):
         if pv + ".VAL" in ans:
             wanted[pv] = ans[pv + ".VAL"]
 
+    convert_seconds(wanted["RUNDURATION"])
+    convert_seconds(wanted["RUNDURATION_PD"])
+
     return wanted
+
+
+def convert_seconds(block):
+    """
+    Receives the value from the block and converts to hours, minutes and seconds.
+
+    Args:
+        block: the block to convert
+
+    """
+    if not block.isConnected():
+        return
+    old_value = block.get_value()
+    seconds = int(old_value) % 60
+    minutes = int(old_value) / 60
+    hours = minutes / 60
+    minutes %= 60
+
+    if hours == 0 and minutes == 0:
+        block.set_value(old_value + " s")
+    elif hours == 0:
+        block.set_value(str(minutes) + " min " + str(seconds) + " s")
+    else:
+        block.set_value(str(hours) + " hr " + str(minutes) + " min " + str(seconds) + " s")
 
 
 def scrape_webpage(host="localhost"):
@@ -215,9 +255,8 @@ def scrape_webpage(host="localhost"):
     try:
         config = json.loads(corrected_page)
     except Exception as e:
-        logging.error("JSON conversion failed: " + str(e))
-        logging.error("JSON was: " + str(config))
-        logging.error("Blocks were: " + str(blocks_all))
+        logger.error("JSON conversion failed: " + str(e))
+        logger.error("JSON was: " + str(config))
         raise e
 
     try:
@@ -232,7 +271,7 @@ def scrape_webpage(host="localhost"):
         for block in blocks_all:
             blocks_all[block].set_visibility(block_vis.get(block))
     except Exception as e:
-        logging.error("Failed to read blocks: " + str(e))
+        logger.error("Failed to read blocks: " + str(e))
 
     inst_pvs = format_blocks(get_instpvs('http://%s:%s/group?name=INST' % (host, PORT_INSTPV), blocks_all))
 
@@ -251,7 +290,7 @@ def scrape_webpage(host="localhost"):
         output["groups"] = groups
         output["inst_pvs"] = inst_pvs
     except Exception as e:
-        logging.error("Output construction failed " + str(e))
+        logger.error("Output construction failed " + str(e))
         raise e
 
     return output
