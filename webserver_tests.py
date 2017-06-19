@@ -95,7 +95,7 @@ class TestWebServer(unittest.TestCase):
         # Assert
         self.assertEquals(rc_values, 10)
 
-    def test_get_one_rc_value_for_block(self):
+    def test_get_one_rc_value_for_block_with_similar_name(self):
         # Arrange
         test_block = "NEW_BLOCK"
         test_pvs = {"NEW_BLOCK:RC:LOW.VAL": 10, "NOT_NEW_BLOCK:RC:LOW.VAL": 100, "OLD_BLOCK:RC:LOW.VAL": 7}
@@ -106,7 +106,7 @@ class TestWebServer(unittest.TestCase):
         # Assert
         self.assertEquals(rc_values, 10)
 
-    def test_get_one_rc_value_for_block(self):
+    def test_get_one_rc_value_for_block_from_object(self):
         # Arrange
         test_block = "NEW_BLOCK"
         test_pvs = {"NEW_BLOCK:RC:LOW.VAL": Block("", "", 10, "", ""),
@@ -119,7 +119,7 @@ class TestWebServer(unittest.TestCase):
         # Assert
         self.assertEquals(rc_values, 10)
 
-    def test_get_one_rc_value_for_block(self):
+    def test_get_one_rc_value_for_block_from_object_with_similar_name(self):
         # Arrange
         test_block = "NEW_BLOCK"
         test_pvs = {"NEW_BLOCK:RC:LOW.VAL": Block("", "", 10, "", ""),
@@ -179,7 +179,7 @@ class TestWebServer(unittest.TestCase):
         self.assertEquals(description["rc_high"], 100)
         self.assertEquals(description["rc_inrange"], False)
 
-    def test_when_rc_values_given_block_description_contains_rc_values(self):
+    def test_when_rc_values_not_given_block_description_do_not_contain_rc_values(self):
         # Arrange
         test_block = Block("TEST", "", "", "", "")
 
