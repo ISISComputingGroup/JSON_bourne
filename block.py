@@ -101,7 +101,7 @@ class Block:
         """ Sets the block's inrange status. """
         self.inrange = value
 
-    def isConnected(self):
+    def is_connected(self):
         """
         :return Whether this block is connected
         """

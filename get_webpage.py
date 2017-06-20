@@ -216,7 +216,7 @@ def convert_seconds(block):
         block: the block to convert
 
     """
-    if not block.isConnected():
+    if not block.is_connected():
         return
     old_value = block.get_value()
     seconds = int(old_value) % 60
