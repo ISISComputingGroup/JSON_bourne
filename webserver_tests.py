@@ -1,6 +1,8 @@
 import unittest
 from block import Block
-from get_block_details import shorten_rc_title, get_rc_values_for_block, get_rc_values_for_block_from_object, set_rc_values_for_block_from_pvs, set_rc_values_for_blocks
+from get_block_details import (shorten_rc_title, get_rc_values_for_block,
+get_rc_values_for_block_from_object, set_rc_values_for_block_from_pvs,
+set_rc_values_for_blocks, parse_block, shorten_title)
 
 
 class TestWebServer(unittest.TestCase):
@@ -267,6 +269,57 @@ class TestWebServer(unittest.TestCase):
         # Assert
         self.assertEquals(test_blocks[0].get_rc_low(), 10)
         self.assertEquals(test_blocks[1].get_rc_low(), 100)
+
+
+    def test_parse_block_with_valid_string(self):
+        # Arrange
+        title = "TE:NDW1720:PARS:USER:S4.VAL" 
+        status = "Connected"
+        test_string = "1970/01/01 01:00:00.000000000           INVALID,\
+        UDF_ALARM"
+        expected_block = Block(shorten_title(title), status, "INVALID",
+        "UDF_ALARM", True)
+
+        # Act
+        block = parse_block(test_string, title, status)
+
+        # Assert
+        self.assertTrue(block is not None)
+        self.assertEquals(block.get_name(), expected_block.get_name())
+        self.assertEquals(block.get_status(), expected_block.get_status())
+        self.assertEquals(block.get_value(), expected_block.get_value())
+        self.assertEquals(block.get_alarm(), expected_block.get_alarm())
+
+    def test_parse_block_with_valid_null_string(self):
+        # Arrange
+        title = "TE:NDW1720:PARS:USER:S4.VAL" 
+        status = "Connected"
+        test_string = "null"
+        expected_block = Block(shorten_title(title), status, "null",
+        "null", True)
+
+        # Act
+        block = parse_block(test_string, title, status)
+
+        # Assert
+        self.assertTrue(block is not None)
+        self.assertEquals(block.get_name(), expected_block.get_name())
+        self.assertEquals(block.get_status(), expected_block.get_status())
+        self.assertEquals(block.get_value(), expected_block.get_value())
+        self.assertEquals(block.get_alarm(), expected_block.get_alarm())
+
+    def test_parse_block_with_invalid_string(self):
+        # Arrange
+        title = "TE:NDW1720:PARS:USER:S4.VAL" 
+        status = "Connected"
+        test_string = "1970/01/01 01:00:00.000000000"
+
+        # Act
+        block = parse_block(test_string, title, status)
+
+        # Assert
+        self.assertTrue(block is None)
+
 
 if __name__ == '__main__':
     unittest.main()

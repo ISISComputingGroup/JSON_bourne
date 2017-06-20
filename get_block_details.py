@@ -182,7 +182,7 @@ def parse_block(block_raw, title, status):
         # Missing a value
         return None
 
-    value = block_split[2]
+    value = block_split[2].strip(",")
     alarm = block_split[3]
 
     return Block(name, status, value, alarm, True)
