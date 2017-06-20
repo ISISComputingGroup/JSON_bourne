@@ -1,6 +1,6 @@
 import unittest
 from block import Block
-from get_block_details import (set_rc_values_for_block_from_pvs,
+from block_utils import (set_rc_values_for_block_from_pvs,
         set_rc_values_for_blocks, shorten_title)
 
 

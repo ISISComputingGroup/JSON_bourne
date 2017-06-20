@@ -2,6 +2,8 @@ from lxml import html
 import requests
 import json
 from block import Block
+from block_utils import (set_rc_values_for_block_from_pvs,
+        set_rc_values_for_blocks, shorten_title)
 import logging
 
 logger = logging.getLogger('JSON_bourne')
@@ -9,35 +11,6 @@ logger = logging.getLogger('JSON_bourne')
 PORT_INSTPV = 4812
 PORT_BLOCKS = 4813
 PORT_CONFIG = 8008
-
-
-def shorten_title(title):
-    """
-    Gets a PV title by shortening its address to the last segment.
-
-    Args:
-        title: The PV address as string.
-
-    Returns: The last segment of the input PV address as string.
-
-    """
-    title = title.split(':')
-    rc_name = "RC"
-    value_name = ["HIGH.VAL", "LOW.VAL", "INRANGE.VAL", "ENABLED.VAL"]
-    title_list = []
-
-    if rc_name in title:
-        title_list.append(title[-3])
-        title_list.append(rc_name)
-        for name in value_name:
-            if name in title:
-                title_list.append(name)
-                title = ':'.join(title_list)
-                return title
-    else:
-        title = title[-1]
-        return title
-
 
 def ascii_to_string(ascii):
     """
@@ -148,29 +121,6 @@ def get_info(url):
             logger.error("Unable to decode " + str(titles[i]))
 
     return blocks
-
-
-def set_rc_values_for_block_from_pvs(block_object, pvs):
-    """Search pvs for RC values for given block and return them"""
-    block_name = block_object.get_name()
-    items = pvs.items()
-
-    for k, v in items:
-        if k is not None:
-            test_block_name = k.split(':')[0]
-            if block_name == test_block_name:
-                if "LOW.VAL" == k.split(':')[-1]:
-                    block_object.set_rc_low(v.get_value())
-                if "HIGH.VAL" == k.split(':')[-1]:
-                    block_object.set_rc_high(v.get_value())
-                if "INRANGE.VAL" == k.split(':')[-1]:
-                    block_object.set_rc_inrange(v.get_value())
-
-
-def set_rc_values_for_blocks(block_objects, pvs):
-    """Set all RC values for all the given blocks"""
-    for object in block_objects:
-        set_rc_values_for_block_from_pvs(object,pvs)
 
 
 def get_instpvs(url, blocks_all):
