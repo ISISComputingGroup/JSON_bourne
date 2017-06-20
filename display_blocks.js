@@ -256,46 +256,64 @@ function getDisplayBlocks(node, blocks) {
 
         // write status if disconnected
         if (status_text == "Disconnected") {
-            var nodeBlockStatus = document.createElement("FONT");
-            attColour.value = "BlueViolet";
-            nodeBlockStatus.setAttributeNode(attColour);
-            nodeBlockStatus.appendChild(document.createTextNode(status_text.toUpperCase()));
-            nodeBlock.appendChild(nodeBlockStatus);
+		    writeStatus(nodeBlock, attColour, status_text);
         }
-        // write value if connected
+        // write value if is private
         else if ((isInArray(privateRunInfo, key)) && !showPrivate) {
-            var nodeBlockStatus = document.createElement("I");
-            nodeBlockStatus.appendChild(document.createTextNode("Unavailable"));
-            nodeBlock.appendChild(nodeBlockStatus);
+		    writePrivateValue(nodeBlock);
+        // write value, range info & alarms
         } else {
             nodeBlockText.nodeValue += value + "\u00A0\u00A0";
+            // write range information about the PV
             if (rc_inrange != "null") {
-                if (rc_inrange == "YES") {
-                    var nodeBlockInrange = document.createElement("FONT");
-                    attColour.value = "Green";
-                    nodeBlockInrange.setAttributeNode(attColour);
-                    nodeBlockInrange.appendChild(document.createTextNode("\u2713"));
-                    nodeBlock.appendChild(nodeBlockInrange);    
-                } else if (rc_inrange == "NO") {
-                    var nodeBlockInrange = document.createElement("FONT");
-                    attColour.value = "Red";
-                    nodeBlockInrange.setAttributeNode(attColour);
-                    nodeBlockInrange.appendChild(document.createTextNode("\u274C"));
-                    nodeBlock.appendChild(nodeBlockInrange);
-                }
+                writeRangeInfo(nodeBlock, attColour);
             }
-                // write alarm status if active
+            // write alarm status if active
             if (!alarm.startsWith("null") && !alarm.startsWith("OK")) {
-                var nodeBlockAlarm = document.createElement("FONT");
-                attColour.value = "red";
-                nodeBlockAlarm.setAttributeNode(attColour);
-                nodeBlockAlarm.appendChild(document.createTextNode("(" + alarm + ")"));
-                nodeBlock.appendChild(nodeBlockAlarm);
+                writeAlarmInfo(nodeBlock, attColour, alarm);
             }
         }
         node.appendChild(nodeBlock);
     }
     return node;
+}
+
+function writeStatus(nodeBlock, attColour, status_text) {
+	var nodeBlockStatus = document.createElement("FONT");
+	attColour.value = "BlueViolet";
+	nodeBlockStatus.setAttributeNode(attColour.cloneNode(true));
+	nodeBlockStatus.appendChild(document.createTextNode(status_text.toUpperCase()));
+	nodeBlock.appendChild(nodeBlockStatus);
+}
+
+function writePrivateValue(nodeBlock) {
+	var nodeBlockStatus = document.createElement("I");
+	nodeBlockStatus.appendChild(document.createTextNode("Unavailable"));
+	nodeBlock.appendChild(nodeBlockStatus);
+}
+
+function writeRangeInfo(nodeBlock, attColour, rc_inrange) {
+    var nodeBlockInrange = document.createElement("FONT");
+    var colour = "Red";
+    var mark_status = "\u274C"; // unicode cross mark
+
+    if (rc_inrange == "YES") {
+        colour = "Green";
+        mark_status = "\u2713"; // unicode check mark
+    }
+
+    attColour.value = colour;
+    attColour = nodeBlockInrange.setAttributeNode(attColour);
+    nodeBlockInrange.appendChild(document.createTextNode(mark_status));
+    nodeBlock.appendChild(nodeBlockInrange);
+}
+
+function writeAlarmInfo(nodeBlock, attColour, alarm) {
+    var nodeBlockAlarm = document.createElement("FONT");
+    attColour.value = "red";
+    attColour = nodeBlockAlarm.setAttributeNode(attColour.cloneNode(true));
+    nodeBlockAlarm.appendChild(document.createTextNode("(" + alarm + ")"));
+    nodeBlock.appendChild(nodeBlockAlarm);
 }
 
 
