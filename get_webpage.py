@@ -2,7 +2,7 @@ from lxml import html
 import requests
 import json
 from block import Block
-from block_utils import (set_rc_values_for_block_from_pvs,
+from block_utils import (format_blocks, set_rc_values_for_block_from_pvs,
         set_rc_values_for_blocks, shorten_title)
 import logging
 
@@ -240,24 +240,6 @@ def scrape_webpage(host="localhost"):
         raise e
 
     return output
-
-
-def format_blocks(blocks):
-    """
-    Converts a list of block objects into JSON.
-
-    Args:
-        blocks: A dictionary of block names to block objects.
-
-    Returns: A JSON dictionary of block names to block descriptions.
-
-    """
-    blocks_formatted = {}
-    for name, block in blocks.items():
-        blocks_formatted[name] = block.get_description()
-
-    return blocks_formatted
-
 
 def get_block_visibility(config):
     """

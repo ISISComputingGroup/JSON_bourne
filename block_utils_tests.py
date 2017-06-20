@@ -1,10 +1,103 @@
 import unittest
 from block import Block
-from block_utils import (set_rc_values_for_block_from_pvs,
+from block_utils import (format_blocks, set_rc_values_for_block_from_pvs,
         set_rc_values_for_blocks, shorten_title)
 
 
-class TestWebServer(unittest.TestCase):
+class TestBlockUtils(unittest.TestCase):
+
+    def test_format_blocks_with_two_blocks(self):
+        #Arrange
+        test_blocks = {
+            "NEW_BLOCK": Block("NEW_BLOCK", "INVALID", 10, "UDF_ALARM", False), 
+            "NOT_NEW_BLOCK": Block("NOT_NEW_BLOCK", "GOOD", 100, "NO_ALARM", False)
+        }
+        expected_result = {
+            'NEW_BLOCK': {'status': 'INVALID', 'alarm': 'UDF_ALARM', 'visibility': False, 'value': 10}, 
+            'NOT_NEW_BLOCK': {'status': 'GOOD', 'alarm': 'NO_ALARM', 'visibility': False, 'value': 100}
+        }
+
+        #Act
+        formatted_blocks = format_blocks(test_blocks)
+
+        #Assert
+        self.assertEquals(formatted_blocks, expected_result)
+
+    def test_format_blocks_with_one_block(self):
+        #Arrange
+        test_blocks = {
+            "NEW_BLOCK": Block("NEW_BLOCK", "", 10, "", False)
+        }
+        expected_result = {
+            'NEW_BLOCK': {'status': '', 'alarm': '', 'visibility': False, 'value': 10}, 
+        }
+
+        #Act
+        formatted_blocks = format_blocks(test_blocks)
+
+        #Assert
+        self.assertEquals(formatted_blocks, expected_result)
+
+    def test_format_blocks_with_one_block_with_rc_values(self):
+        #Arrange
+        block = Block("NEW_BLOCK", "", 10, "", False)
+        block.set_rc_low(0)
+        block.set_rc_high(100)
+        block.set_rc_inrange(False)
+
+        test_blocks = {
+            "NEW_BLOCK": block
+        }
+        expected_result = {
+            'NEW_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
+                'value': 10, 'rc_high': 100, 'rc_low': 0, 'rc_inrange': False}, 
+        }
+
+        #Act
+        formatted_blocks = format_blocks(test_blocks)
+
+        #Assert
+        self.assertEquals(formatted_blocks, expected_result)
+
+    def test_format_blocks_with_two_blocks_with_rc_values(self):
+        #Arrange
+        block1 = Block("NEW_BLOCK", "", 10, "", False)
+        block1.set_rc_low(10)
+        block1.set_rc_high(20)
+        block1.set_rc_inrange(True)
+
+        block2 = Block("OLD_BLOCK", "", 10, "", False)
+        block2.set_rc_low(0)
+        block2.set_rc_high(100)
+        block2.set_rc_inrange(False)
+
+        test_blocks = {
+                "NEW_BLOCK": block1, "OLD_BLOCK": block2
+        }
+        expected_result = {
+            'NEW_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
+                'value': 10, 'rc_high': 20, 'rc_low': 10, 'rc_inrange': True}, 
+            'OLD_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
+                'value': 10, 'rc_high': 100, 'rc_low': 0, 'rc_inrange': False}, 
+        }
+
+        #Act
+        formatted_blocks = format_blocks(test_blocks)
+
+        #Assert
+        self.assertEquals(formatted_blocks, expected_result)
+
+    def test_format_blocks_with_empty_dict(self):
+        #Arrange
+        test_blocks = {}
+        expected_result = {}
+
+        #Act
+        formatted_blocks = format_blocks(test_blocks)
+
+        #Assert
+        self.assertEquals(formatted_blocks, expected_result)
+
     def test_shorten_title_for_default_case(self):
         #Arrange
         test_pv = "TE:NDLT910:DAE:COUNTRATE.VAL"

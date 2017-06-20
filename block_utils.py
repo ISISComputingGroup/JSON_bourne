@@ -56,3 +56,18 @@ def set_rc_values_for_blocks(blocks, pvs):
     for block in blocks:
         set_rc_values_for_block_from_pvs(block, pvs)
 
+def format_blocks(blocks):
+    """
+    Converts a list of block objects into JSON.
+
+    Args:
+        blocks: A dictionary of block names to block objects.
+
+    Returns: A JSON dictionary of block names to block descriptions.
+
+    """
+    blocks_formatted = {}
+    for name, block in blocks.items():
+        blocks_formatted[name] = block.get_description()
+
+    return blocks_formatted
