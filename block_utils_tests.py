@@ -208,36 +208,6 @@ class TestBlockUtils(unittest.TestCase):
         # Assert
         self.assertEquals(shortened_title, "Chi:RC:LOW.VAL")
 
-    def test_can_set_rc_low_on_a_block(self):
-        # Arrange
-        test_block = Block("TEST", "", "", "", "")
-
-        # Act
-        test_block.set_rc_low(10)
-
-        # Assert
-        self.assertEquals(test_block.get_rc_low(), 10)
-
-    def test_can_set_rc_high_on_a_block(self):
-        # Arrange
-        test_block = Block("TEST", "", "", "", "")
-
-        # Act
-        test_block.set_rc_high(100)
-
-        # Assert
-        self.assertEquals(test_block.get_rc_high(), 100)
-
-    def test_can_set_rc_inrange_on_a_block(self):
-        # Arrange
-        test_block = Block("TEST", "", "", "", "")
-
-        # Act
-        test_block.set_rc_inrange(False)
-
-        # Assert
-        self.assertEquals(test_block.get_rc_inrange(), False)
-
     def test_when_rc_values_given_block_description_contains_rc_values(self):
         # Arrange
         test_block = Block("TEST", "INVALID", "10", "UDF_ALARM", "OFF")
