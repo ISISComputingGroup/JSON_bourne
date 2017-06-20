@@ -33,9 +33,9 @@ class Block:
         self.value = value
         self.alarm = alarm
         self.visibility = visibility
-        self.low = value
-        self.high = value
-        self.inrange = value
+        self.low = None
+        self.high = None
+        self.inrange = None
 
     def get_name(self):
         """ Returns the block status. """
@@ -112,17 +112,19 @@ class Block:
         ans = {}
         ans["status"] = self.status
         ans["value"] = self.value
-        if self.low != "":
-            ans["rc_low"] = self.low
-
-        if self.high != "":
-            ans["rc_high"] = self.high
-
-        if self.inrange != "":
-            ans["rc_inrange"] = self.inrange
-
         ans["alarm"] = self.alarm
         ans["visibility"] = self.visibility
+
+        # add rc values if they're set
+        if self.low is not None:
+            ans["rc_low"] = self.low
+
+        if self.high is not None:
+            ans["rc_high"] = self.high
+
+        if self.inrange is not None:
+            ans["rc_inrange"] = self.inrange
+            
         return ans
 
     def __str__(self):
