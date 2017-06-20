@@ -111,10 +111,10 @@ def find_block_pv_keys(block_name, pvs):
 
     return filter(key_matches, pvs.keys())
 
-def set_rc_values_for_blocks(block_objects, pvs):
+def set_rc_values_for_blocks(blocks, pvs):
     """Set all RC values for all the given blocks"""
-    for object in block_objects:
-        set_rc_values_for_block_from_pvs(object,pvs)
+    for block in blocks:
+        set_rc_values_for_block_from_pvs(block, pvs)
 
 def add_rc_values(pvs, blocks):
     """Look for RC values in the supplied list o pvs and assign them to the correct block."""
