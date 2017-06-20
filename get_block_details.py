@@ -77,19 +77,14 @@ def get_rc_values_for_block(block_name, pvs):
     for k, v in pvs.items():
         block_names = k.split(':')
         if block_name == block_names[0]:
-            print block_name, v
-    return v
+		return v
 
 def get_rc_values_for_block_from_object(block_name, pvs):
     """Search pvs for RC values for given block and return them"""
-    values = []
     items = pvs.items()
-    for k, v in items:
-        test_block_name = k.split(':')[0]
-        if block_name == test_block_name:
-            block_value = v.get_value()
-            values.append(block_value)
-    return values
+    def key_matches(key):
+    	return key.split(':')[0] == block_name
+    return [value.get_value() for key, value in items if key_matches(key)]
 
 
 def set_rc_values_for_block_from_pvs(block_object, pvs):

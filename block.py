@@ -109,16 +109,16 @@ class Block:
 
     def get_description(self):
         """ Returns the full description of this BoolStr object. """
-        ans = dict()
+        ans = {}
         ans["status"] = self.status
         ans["value"] = self.value
-        if self.low:
+        if self.low != "":
             ans["rc_low"] = self.low
 
-        if self.high:
+        if self.high != "":
             ans["rc_high"] = self.high
 
-        if self.inrange:
+        if self.inrange != "":
             ans["rc_inrange"] = self.inrange
 
         ans["alarm"] = self.alarm

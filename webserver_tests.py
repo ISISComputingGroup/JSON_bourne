@@ -117,9 +117,9 @@ class TestWebServer(unittest.TestCase):
         rc_values = get_rc_values_for_block_from_object(test_block, test_pvs)
 
         # Assert
-        self.assertEquals(rc_values, 10)
+        self.assertEquals(rc_values, [10])
 
-    def test_get_one_rc_value_for_block_from_object_with_similar_name(self):
+    def test_get_multiple_rc_value_for_block_from_object_with_similar_name(self):
         # Arrange
         test_block = "NEW_BLOCK"
         test_pvs = {"NEW_BLOCK:RC:LOW.VAL": Block("", "", 10, "", ""),
