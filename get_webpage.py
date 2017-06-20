@@ -193,15 +193,11 @@ def get_instpvs(url, blocks_all):
                     "TOTALCOUNTS", "DAETIMINGSOURCE", "MONITORCOUNTS", "MONITORSPECTRUM", "MONITORFROM", "MONITORTO",
                     "NUMTIMECHANNELS", "NUMSPECTRA"]
 
-    #rc_pvs = []
-    print blocks_all.values()[0]
-
     try:
         set_rc_values_for_blocks(blocks_all.values(), ans)
     except Exception as e:
         logging.error("Error in setting rc values for blocks: " + str(e))
 
-    print blocks_all.values()[0]
     for pv in required_pvs:
         if pv + ".VAL" in ans:
             wanted[pv] = ans[pv + ".VAL"]
