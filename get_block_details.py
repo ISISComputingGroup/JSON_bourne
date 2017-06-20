@@ -116,10 +116,6 @@ def set_rc_values_for_blocks(blocks, pvs):
     for block in blocks:
         set_rc_values_for_block_from_pvs(block, pvs)
 
-def add_rc_values(pvs, blocks):
-    """Look for RC values in the supplied list o pvs and assign them to the correct block."""
-
-
 def get_info(url):
     """
     Reads block information from a url and populates a list of block objects with it.
