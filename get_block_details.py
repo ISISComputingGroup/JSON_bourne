@@ -103,8 +103,9 @@ def set_rc_values_for_block_from_pvs(block_object, pvs):
 def find_block_pv_keys(block_name, pvs):
     """Search a list of PVs to find PVs that match a given block name 
 
-    @param block_name: the name of the block to search for
-    @param pvs: the list of pvs to search through
+    Args:
+        block_name: the name of the block to search for
+        pvs: the list of pvs to search through
     """
     def key_matches(key):
         return key.split(':')[0] == block_name
@@ -169,8 +170,9 @@ def get_info(url):
 def parse_block(block_raw, title, status):
     """Parse a string representing a block 
 
-    @param block_raw: the text representation of a block to parse.
-    @return a new block object
+    Args:
+        block_raw: the text representation of a block to parse.
+    Returns: a new block object
     """
     name = shorten_title(title)
 
