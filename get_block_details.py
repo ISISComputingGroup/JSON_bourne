@@ -81,27 +81,35 @@ def get_rc_values_for_block(block_name, pvs):
 
 def get_rc_values_for_block_from_object(block_name, pvs):
     """Search pvs for RC values for given block and return them"""
-    items = pvs.items()
-    def key_matches(key):
-    	return key.split(':')[0] == block_name
-    return [value.get_value() for key, value in items if key_matches(key)]
+    block_pv_keys = find_block_pv_keys(block_name, pvs)
+    return [pvs[key].get_value() for key in block_pv_keys]
 
 
 def set_rc_values_for_block_from_pvs(block_object, pvs):
     """Search pvs for RC values for given block and return them"""
     block_name = block_object.get_name()
-    items = pvs.items()
+    block_pv_keys = find_block_pv_keys(block_name, pvs)
 
-    for k, v in items:
-        test_block_name = k.split(':')[0]
-        if block_name == test_block_name:
-            if "LOW.VAL" == k.split(':')[-1]:
-                low_rc = block_object.set_rc_low(v.get_value())
-            if "HIGH.VAL" == k.split(':')[-1]:
-                high_rc = block_object.set_rc_high(v.get_value())
-            if "INRANGE.VAL" == k.split(':')[-1]:
-                inrange_rc = block_object.set_rc_inrange(v.get_value())
-                return low_rc, high_rc, inrange_rc
+    for key in block_pv_keys:
+        pv = pvs[key]
+        suffix = key.split(':')[-1]
+        if "LOW.VAL" == suffix:
+            block_object.set_rc_low(pv.get_value())
+        if "HIGH.VAL" == suffix:
+            block_object.set_rc_high(pv.get_value())
+        if "INRANGE.VAL" == suffix:
+            block_object.set_rc_inrange(pv.get_value())
+
+def find_block_pv_keys(block_name, pvs):
+    """Search a list of PVs to find PVs that match a given block name 
+
+    @param block_name: the name of the block to search for
+    @param pvs: the list of pvs to search through
+    """
+    def key_matches(key):
+        return key.split(':')[0] == block_name
+
+    return filter(key_matches, pvs.keys())
 
 def set_rc_values_for_blocks(block_objects, pvs):
     """Set all RC values for all the given blocks"""
