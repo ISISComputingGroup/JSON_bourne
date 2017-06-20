@@ -133,7 +133,7 @@ def get_info(url):
         logging.error("URL not found: " + str(url))
         raise e
 
-    blocks = dict()
+    blocks = {}
 
     tree = html.fromstring(page.content)
 

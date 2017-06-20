@@ -84,7 +84,7 @@ def get_info(url):
         logger.error("URL not found: " + str(url))
         raise e
 
-    blocks = dict()
+    blocks = {}
 
     tree = html.fromstring(page.content)
 
@@ -183,8 +183,8 @@ def get_instpvs(url, blocks_all):
     Returns: A trimmed list of instrument PVs.
 
     """
-    wanted = dict()
-    rc = dict()
+    wanted = {}
+    rc = {}
     ans = get_info(url)
 
     required_pvs = ["RUNSTATE", "RUNNUMBER", "_RBNUMBER", "TITLE", "DISPLAY", "_USERNAME", "STARTTIME",
@@ -271,17 +271,17 @@ def scrape_webpage(host="localhost"):
 
     inst_pvs = format_blocks(get_instpvs('http://%s:%s/group?name=INST' % (host, PORT_INSTPV), blocks_all))
 
-    groups = dict()
+    groups = {}
     for group in config["groups"]:
         blocks_all_formatted = format_blocks(blocks_all)
-        blocks = dict()
+        blocks = {}
         for block in group["blocks"]:
             if block in blocks_all_formatted.keys():
                 blocks[block] = blocks_all_formatted[block]
         groups[group["name"]] = blocks
 
     try:
-        output = dict()
+        output = {}
         output["config_name"] = config["name"]
         output["groups"] = groups
         output["inst_pvs"] = inst_pvs
@@ -302,7 +302,7 @@ def format_blocks(blocks):
     Returns: A JSON dictionary of block names to block descriptions.
 
     """
-    blocks_formatted = dict()
+    blocks_formatted = {}
     for name, block in blocks.items():
         blocks_formatted[name] = block.get_description()
 
@@ -319,7 +319,7 @@ def get_block_visibility(config):
     Returns: A dictionary with block-visibility as key-value pairs.
 
     """
-    vis = dict()
+    vis = {}
     for block in config["blocks"]:
         vis[block["name"]] = block["visible"]
     return vis
