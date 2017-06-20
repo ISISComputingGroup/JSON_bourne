@@ -155,34 +155,35 @@ def get_info(url):
     assert(len(titles) == len(status_text))
     assert(len(titles) == len(info))
 
-    for i in range(len(titles)):
+    for row, title, status in zip(info, titles, status_text):
         try:
-            block_raw = info[i].text
-            if block_raw == "null":
-                    value = "null"
-                    alarm = "null"
-
-            else:
-                value_index = 2
-                alarm_index = 3
-                block_split = block_raw.split(None, 3)
-                if len(block_split) < 4:
-                    # Missing a value
-                    continue
-                else:
-                    value = block_split[value_index]
-                    alarm = block_split[alarm_index]
-
-            name = shorten_title(titles[i])
-            status = status_text[i]
-            blocks[name] = Block(name, status, value, alarm, True)
+            block = parse_block(row.text, title, status_text)
+            if block is not None:
+                blocks[block.get_name()] = block
         except Exception as e:
-            logging.error("Unable to decode " + str(titles[i]))
+            logging.error("Unable to decode " + str(title))
 
     return blocks
 
-# ans = get_info("http://localhost:4812/group?name=INST")
-# for a in ans:
-#     print a
 
+def parse_block(block_raw, title, status):
+    """Parse a string representing a block 
+
+    @param block_raw: the text representation of a block to parse.
+    @return a new block object
+    """
+    name = shorten_title(title)
+
+    if block_raw == "null":
+        return Block(name, status, "null", "null", True)
+
+    block_split = block_raw.split(None, 3)
+    if len(block_split) < 4:
+        # Missing a value
+        return None
+
+    value = block_split[2]
+    alarm = block_split[3]
+
+    return Block(name, status, value, alarm, True)
 
