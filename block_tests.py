@@ -34,5 +34,15 @@ class TestBlock(unittest.TestCase):
         self.assertEquals(test_block.get_rc_inrange(), False)
 
 
+    def test_can_set_rc_enabled_on_a_block(self):
+        # Arrange
+        test_block = Block("TEST", "", "", "", "")
+
+        # Act
+        test_block.set_rc_enabled("YES")
+
+        # Assert
+        self.assertEquals(test_block.get_rc_enabled(), "YES")
+
 if __name__ == '__main__':
     unittest.main()

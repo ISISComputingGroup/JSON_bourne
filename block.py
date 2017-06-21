@@ -36,6 +36,7 @@ class Block:
         self.low = None
         self.high = None
         self.inrange = None
+        self.enabled = "NO"
 
     def get_name(self):
         """ Returns the block status. """
@@ -101,6 +102,14 @@ class Block:
         """ Sets the block's inrange status. """
         self.inrange = value
 
+    def get_rc_enabled(self):
+        """ Returns the block's enabled status. """
+        return self.enabled
+
+    def set_rc_enabled(self, value):
+        """ Sets the block's enabled status. """
+        self.enabled = value
+
     def is_connected(self):
         """
         :return Whether this block is connected
@@ -124,7 +133,8 @@ class Block:
 
         if self.inrange is not None:
             ans["rc_inrange"] = self.inrange
-            
+
+        ans["rc_enabled"] = self.enabled
         return ans
 
     def __str__(self):

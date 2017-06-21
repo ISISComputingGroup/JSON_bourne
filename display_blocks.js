@@ -243,6 +243,7 @@ function getDisplayBlocks(node, blocks) {
         }
         
         var rc_inrange = block["rc_inrange"];
+        var rc_enabled = block["rc_enabled"];
         var value = block["value"];
         var status_text = block["status"];
         var alarm = block["alarm"];
@@ -265,8 +266,8 @@ function getDisplayBlocks(node, blocks) {
         } else {
             nodeBlockText.nodeValue += value + "\u00A0\u00A0";
             // write range information about the PV
-            if (rc_inrange != "null") {
-                writeRangeInfo(nodeBlock, attColour);
+            if (rc_enabled === "YES" && (rc_inrange === "YES" || rc_inrange === "NO")) {
+                writeRangeInfo(nodeBlock, attColour, rc_inrange);
             }
             // write alarm status if active
             if (!alarm.startsWith("null") && !alarm.startsWith("OK")) {

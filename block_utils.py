@@ -18,7 +18,7 @@ def shorten_title(title):
 
     """
     title_parts = title.split(':')
-    rc_values = ["HIGH.VAL", "LOW.VAL", "INRANGE.VAL", "ENABLED.VAL"]
+    rc_values = ["HIGH.VAL", "LOW.VAL", "INRANGE.VAL", "ENABLE.VAL"]
 
     if "RC" in title_parts and title_parts[-1] in rc_values:
         return ':'.join(title_parts[-3:])
@@ -37,19 +37,23 @@ def set_rc_values_for_block_from_pvs(block, pvs):
             continue
 
         key_parts = k.split(':')
-        name = key_parts[0]
+        name = key_parts[0].strip()
         suffix = key_parts[-1]
 
         if block_name != name:
             # block name does not match, skip this entry
             continue
+        if "NEW_BLOCK_2" in block_name:
+            print v.get_value(), k
 
         if "LOW.VAL" == suffix:
             block.set_rc_low(v.get_value())
-        if "HIGH.VAL" == suffix:
+        elif "HIGH.VAL" == suffix:
             block.set_rc_high(v.get_value())
-        if "INRANGE.VAL" == suffix:
+        elif "INRANGE.VAL" == suffix:
             block.set_rc_inrange(v.get_value())
+        elif "ENABLE.VAL" == suffix:
+            block.set_rc_enabled(v.get_value())
 
 def set_rc_values_for_blocks(blocks, pvs):
     """Set all RC values for all the given blocks"""

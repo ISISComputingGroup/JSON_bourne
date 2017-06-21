@@ -13,8 +13,10 @@ class TestBlockUtils(unittest.TestCase):
             "NOT_NEW_BLOCK": Block("NOT_NEW_BLOCK", "GOOD", 100, "NO_ALARM", False)
         }
         expected_result = {
-            'NEW_BLOCK': {'status': 'INVALID', 'alarm': 'UDF_ALARM', 'visibility': False, 'value': 10}, 
-            'NOT_NEW_BLOCK': {'status': 'GOOD', 'alarm': 'NO_ALARM', 'visibility': False, 'value': 100}
+            'NEW_BLOCK': {'status': 'INVALID', 'alarm': 'UDF_ALARM',
+                'visibility': False, 'value': 10, 'rc_enabled': 'NO'}, 
+            'NOT_NEW_BLOCK': {'status': 'GOOD', 'alarm': 'NO_ALARM',
+                'visibility': False, 'value': 100, 'rc_enabled': 'NO'}
         }
 
         #Act
@@ -29,7 +31,8 @@ class TestBlockUtils(unittest.TestCase):
             "NEW_BLOCK": Block("NEW_BLOCK", "", 10, "", False)
         }
         expected_result = {
-            'NEW_BLOCK': {'status': '', 'alarm': '', 'visibility': False, 'value': 10}, 
+            'NEW_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
+                'value': 10, 'rc_enabled': 'NO'}, 
         }
 
         #Act
@@ -44,13 +47,15 @@ class TestBlockUtils(unittest.TestCase):
         block.set_rc_low(0)
         block.set_rc_high(100)
         block.set_rc_inrange(False)
+        block.set_rc_enabled("YES")
 
         test_blocks = {
             "NEW_BLOCK": block
         }
         expected_result = {
             'NEW_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
-                'value': 10, 'rc_high': 100, 'rc_low': 0, 'rc_inrange': False}, 
+                'value': 10, 'rc_high': 100, 'rc_low': 0, 'rc_inrange': False,
+                'rc_enabled': 'YES'}, 
         }
 
         #Act
@@ -65,6 +70,7 @@ class TestBlockUtils(unittest.TestCase):
         block1.set_rc_low(10)
         block1.set_rc_high(20)
         block1.set_rc_inrange(True)
+        block1.set_rc_enabled("YES")
 
         block2 = Block("OLD_BLOCK", "", 10, "", False)
         block2.set_rc_low(0)
@@ -76,9 +82,11 @@ class TestBlockUtils(unittest.TestCase):
         }
         expected_result = {
             'NEW_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
-                'value': 10, 'rc_high': 20, 'rc_low': 10, 'rc_inrange': True}, 
+                'value': 10, 'rc_high': 20, 'rc_low': 10, 'rc_inrange': True,
+                'rc_enabled': 'YES'}, 
             'OLD_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
-                'value': 10, 'rc_high': 100, 'rc_low': 0, 'rc_inrange': False}, 
+                'value': 10, 'rc_high': 100, 'rc_low': 0, 'rc_inrange': False,
+                'rc_enabled': 'NO'}, 
         }
 
         #Act
