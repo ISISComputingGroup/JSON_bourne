@@ -43,8 +43,6 @@ def set_rc_values_for_block_from_pvs(block, pvs):
         if block_name != name:
             # block name does not match, skip this entry
             continue
-        if "NEW_BLOCK_2" in block_name:
-            print v.get_value(), k
 
         if "LOW.VAL" == suffix:
             block.set_rc_low(v.get_value())
