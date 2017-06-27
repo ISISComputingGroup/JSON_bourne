@@ -128,13 +128,13 @@ class TestBlockUtils(unittest.TestCase):
 
     def test_shorten_title_with_rc_enabled(self):
         # Arrange
-        test_pv = "TE:NDLT910:CS:SB:NEW_BLOCK:RC:ENABLED.VAL"
+        test_pv = "TE:NDLT910:CS:SB:NEW_BLOCK:RC:ENABLE.VAL"
 
         # Act
         shortened_title = shorten_title(test_pv)
 
         # Assert
-        self.assertEquals(shortened_title, "NEW_BLOCK:RC:ENABLED.VAL")
+        self.assertEquals(shortened_title, "NEW_BLOCK:RC:ENABLE.VAL")
 
     def test_shorten_title_with_rc_in_range(self):
         # Arrange

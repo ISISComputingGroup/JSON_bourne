@@ -124,17 +124,19 @@ class Block:
         ans["alarm"] = self.alarm
         ans["visibility"] = self.visibility
 
-        # add rc values if they're set
-        if self.low is not None:
-            ans["rc_low"] = self.low
+        if RETURN_RC_VALUES:
+            # add rc values if they're set
+            if self.low is not None:
+                ans["rc_low"] = self.low
 
-        if self.high is not None:
-            ans["rc_high"] = self.high
+            if self.high is not None:
+                ans["rc_high"] = self.high
 
-        if self.inrange is not None:
-            ans["rc_inrange"] = self.inrange
+            if self.inrange is not None:
+                ans["rc_inrange"] = self.inrange
 
-        ans["rc_enabled"] = self.enabled
+            ans["rc_enabled"] = self.enabled
+
         return ans
 
     def __str__(self):
