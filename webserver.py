@@ -23,7 +23,7 @@ NDX_INSTS = ["DEMO", "LARMOR", "IMAT", "IRIS", "VESUVIO", "ALF", "ZOOM", "POLARI
 for inst in NDX_INSTS:
     ALL_INSTS[inst] = "NDX" + inst
 
-_scraped_data = dict()
+_scraped_data = {}
 _scraped_data_lock = RLock()
 
 WAIT_BETWEEN_UPDATES = 3

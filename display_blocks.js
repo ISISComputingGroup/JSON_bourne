@@ -1,4 +1,5 @@
 var PORT = 60000;
+var HOST = "http://dataweb.isis.rl.ac.uk" 
 var showPrivate = true;
 var privateRunInfo = ["TITLE", "_USERNAME"];
 var instrument = getURLParameter("Instrument");
@@ -116,7 +117,7 @@ function clear(node) {
  */
 function refresh() {
 	$.ajax({
-		url: "http://dataweb.isis.rl.ac.uk:" + PORT + "/",
+		url: HOST + ":" + PORT + "/",
 		dataType: 'jsonp',
 		data: {"Instrument": instrument},
 		timeout: timeout,
@@ -240,7 +241,9 @@ function getDisplayBlocks(node, blocks) {
         if(block["visibility"] == false && !showHidden){
             continue;
         }
-
+        
+        var rc_inrange = block["rc_inrange"];
+        var rc_enabled = block["rc_enabled"];
         var value = block["value"];
         var status_text = block["status"];
         var alarm = block["alarm"];
@@ -254,31 +257,64 @@ function getDisplayBlocks(node, blocks) {
 
         // write status if disconnected
         if (status_text == "Disconnected") {
-            var nodeBlockStatus = document.createElement("FONT");
-            attColour.value = "BlueViolet";
-            nodeBlockStatus.setAttributeNode(attColour);
-            nodeBlockStatus.appendChild(document.createTextNode(status_text.toUpperCase()));
-            nodeBlock.appendChild(nodeBlockStatus);
+		    writeStatus(nodeBlock, attColour, status_text);
         }
-        // write value if connected
+        // write value if is private
         else if ((isInArray(privateRunInfo, key)) && !showPrivate) {
-            var nodeBlockStatus = document.createElement("I");
-            nodeBlockStatus.appendChild(document.createTextNode("Unavailable"));
-            nodeBlock.appendChild(nodeBlockStatus);
+		    writePrivateValue(nodeBlock);
+        // write value, range info & alarms
         } else {
             nodeBlockText.nodeValue += value + "\u00A0\u00A0";
-                // write alarm status if active
+            // write range information about the PV
+            if (rc_enabled === "YES" && (rc_inrange === "YES" || rc_inrange === "NO")) {
+                writeRangeInfo(nodeBlock, attColour, rc_inrange);
+            }
+            // write alarm status if active
             if (!alarm.startsWith("null") && !alarm.startsWith("OK")) {
-                var nodeBlockAlarm = document.createElement("FONT");
-                attColour.value = "red";
-                nodeBlockAlarm.setAttributeNode(attColour);
-                nodeBlockAlarm.appendChild(document.createTextNode("(" + alarm + ")"));
-                nodeBlock.appendChild(nodeBlockAlarm);
+                writeAlarmInfo(nodeBlock, attColour, alarm);
             }
         }
         node.appendChild(nodeBlock);
     }
     return node;
+}
+
+function writeStatus(nodeBlock, attColour, status_text) {
+	var nodeBlockStatus = document.createElement("FONT");
+	attColour.value = "BlueViolet";
+	nodeBlockStatus.setAttributeNode(attColour.cloneNode(true));
+	nodeBlockStatus.appendChild(document.createTextNode(status_text.toUpperCase()));
+	nodeBlock.appendChild(nodeBlockStatus);
+}
+
+function writePrivateValue(nodeBlock) {
+	var nodeBlockStatus = document.createElement("I");
+	nodeBlockStatus.appendChild(document.createTextNode("Unavailable"));
+	nodeBlock.appendChild(nodeBlockStatus);
+}
+
+function writeRangeInfo(nodeBlock, attColour, rc_inrange) {
+    var nodeBlockInrange = document.createElement("FONT");
+    var colour = "Red";
+    var mark_status = "\u274C"; // unicode cross mark
+
+    if (rc_inrange == "YES") {
+        colour = "Green";
+        mark_status = "\u2713"; // unicode check mark
+    }
+
+    attColour.value = colour;
+    attColour = nodeBlockInrange.setAttributeNode(attColour);
+    nodeBlockInrange.appendChild(document.createTextNode(mark_status));
+    nodeBlock.appendChild(nodeBlockInrange);
+}
+
+function writeAlarmInfo(nodeBlock, attColour, alarm) {
+    var nodeBlockAlarm = document.createElement("FONT");
+    attColour.value = "red";
+    attColour = nodeBlockAlarm.setAttributeNode(attColour.cloneNode(true));
+    nodeBlockAlarm.appendChild(document.createTextNode("(" + alarm + ")"));
+    nodeBlock.appendChild(nodeBlockAlarm);
 }
 
 
