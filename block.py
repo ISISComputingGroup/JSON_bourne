@@ -14,6 +14,11 @@
 # https://www.eclipse.org/org/documents/epl-v10.php or
 # http://opensource.org/licenses/eclipse-1.0.php
 
+# Temporary fix to prevent RC values from being returned from the server
+# while there is still a problem with getting rc values from the archiver.
+# Once that problem has been solved then this flag and it's usages can 
+# be removed. See issue #2446
+RETURN_RC_VALUES = False
 
 class Block:
     """ Class holding Block details. Used for displaying in dataweb"""
