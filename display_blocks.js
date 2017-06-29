@@ -161,7 +161,7 @@ function parseObject(obj) {
     var nodeInstPVList = document.createElement("UL");
 
     nodeInstPVs.appendChild(nodeInstPVList);
-    getDisplayBlocks(nodeInstPVs, instrumentState.inst_pvs);
+    getDisplayRunInfo(nodeInstPVs, instrumentState.inst_pvs);
 	
 	setVisibilityMode('block');
 }
@@ -228,6 +228,54 @@ function getDisplayGroups(node, groups) {
 }
 
 /**
+ * Adds a single block html element to the parent node
+ *
+ * @param node The parent node.
+ * @param block The block to add.
+ * @param blockName The name of the block to display.
+ * @return The updated node.
+ */
+function displayOneBlock(node, block, blockName) {
+    if(block["visibility"] == false && !showHidden){
+        return;
+    }
+
+    var value = block["value"];
+    var status_text = block["status"];
+    var alarm = block["alarm"];
+        
+    var rc_inrange = block["rc_inrange"];
+    var rc_enabled = block["rc_enabled"];
+    var nodeBlock = document.createElement("LI");
+    var attColour = document.createAttribute("color");
+    var nodeBlockText = document.createTextNode(blockName + ":\u00A0\u00A0");
+
+    // write block name
+    nodeBlock.appendChild(nodeBlockText);
+
+    // write status if disconnected
+    if (status_text == "Disconnected") {
+	    writeStatus(nodeBlock, attColour, status_text);
+    }
+    // write value if is private
+    else if ((isInArray(privateRunInfo, blockName)) && !showPrivate) {
+	    writePrivateValue(nodeBlock);
+    // write value, range info & alarms
+    } else {
+        nodeBlockText.nodeValue += value + "\u00A0\u00A0";
+        // write range information about the PV
+        if (rc_enabled === "YES" && (rc_inrange === "YES" || rc_inrange === "NO")) {
+            writeRangeInfo(nodeBlock, attColour, rc_inrange);
+        }
+        // write alarm status if active
+        if (!alarm.startsWith("null") && !alarm.startsWith("OK")) {
+            writeAlarmInfo(nodeBlock, attColour, alarm);
+        }
+    }
+    node.appendChild(nodeBlock);
+}
+
+/**
  * Adds html elements for a list of block objects to a given node.
  *
  * @param node The parent node.
@@ -235,48 +283,34 @@ function getDisplayGroups(node, groups) {
  * @return The updated node.
  */
 function getDisplayBlocks(node, blocks) {
-    clear(node)
     for (var key in blocks) {
         var block = blocks[key];
-        if(block["visibility"] == false && !showHidden){
-            continue;
-        }
-        
-        var rc_inrange = block["rc_inrange"];
-        var rc_enabled = block["rc_enabled"];
-        var value = block["value"];
-        var status_text = block["status"];
-        var alarm = block["alarm"];
-
-        var nodeBlock = document.createElement("LI");
-        var attColour = document.createAttribute("color");
-        var nodeBlockText = document.createTextNode(getTitle(key) + ":\u00A0\u00A0");
-
-        // write block name
-        nodeBlock.appendChild(nodeBlockText);
-
-        // write status if disconnected
-        if (status_text == "Disconnected") {
-		    writeStatus(nodeBlock, attColour, status_text);
-        }
-        // write value if is private
-        else if ((isInArray(privateRunInfo, key)) && !showPrivate) {
-		    writePrivateValue(nodeBlock);
-        // write value, range info & alarms
-        } else {
-            nodeBlockText.nodeValue += value + "\u00A0\u00A0";
-            // write range information about the PV
-            if (rc_enabled === "YES" && (rc_inrange === "YES" || rc_inrange === "NO")) {
-                writeRangeInfo(nodeBlock, attColour, rc_inrange);
-            }
-            // write alarm status if active
-            if (!alarm.startsWith("null") && !alarm.startsWith("OK")) {
-                writeAlarmInfo(nodeBlock, attColour, alarm);
-            }
-        }
-        node.appendChild(nodeBlock);
+        displayOneBlock(node, block, key);
     }
-    return node;
+	
+	return node;
+}
+
+/**
+ * Adds html elements for the list of instrument information.
+ *
+ * @param node The parent node.
+ * @param blocks The list of instrument blocks.
+ * @return The updated node.
+ */
+function getDisplayRunInfo(node, blocks){
+    clear(node)
+    // Add all in order first
+    for (var key in dictInstPV) {
+        if (key in blocks) {
+            var block = blocks[key];
+            displayOneBlock(node, block, getTitle(key));
+            delete blocks[key]
+        }
+    }
+
+    // Add any left over on to the end
+    getDisplayBlocks(node, blocks);
 }
 
 function writeStatus(nodeBlock, attColour, status_text) {
@@ -316,7 +350,6 @@ function writeAlarmInfo(nodeBlock, attColour, alarm) {
     nodeBlockAlarm.appendChild(document.createTextNode("(" + alarm + ")"));
     nodeBlock.appendChild(nodeBlockAlarm);
 }
-
 
 // At the start, assume we can't connect
 // This will update when a connection is made
