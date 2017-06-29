@@ -248,7 +248,7 @@ function displayOneBlock(node, block, blockName) {
     var rc_enabled = block["rc_enabled"];
     var nodeBlock = document.createElement("LI");
     var attColour = document.createAttribute("color");
-    var nodeBlockText = document.createTextNode(getTitle(key) + ":\u00A0\u00A0");
+    var nodeBlockText = document.createTextNode(blockName + ":\u00A0\u00A0");
 
     // write block name
     nodeBlock.appendChild(nodeBlockText);
@@ -258,7 +258,7 @@ function displayOneBlock(node, block, blockName) {
 	    writeStatus(nodeBlock, attColour, status_text);
     }
     // write value if is private
-    else if ((isInArray(privateRunInfo, key)) && !showPrivate) {
+    else if ((isInArray(privateRunInfo, blockName)) && !showPrivate) {
 	    writePrivateValue(nodeBlock);
     // write value, range info & alarms
     } else {
