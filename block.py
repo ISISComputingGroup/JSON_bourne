@@ -14,11 +14,16 @@
 # https://www.eclipse.org/org/documents/epl-v10.php or
 # http://opensource.org/licenses/eclipse-1.0.php
 
+# Temporary fix to prevent RC values from being returned from the server
+# while there is still a problem with getting rc values from the archiver.
+# Once that problem has been solved then this flag and it's usages can 
+# be removed. See issue #2446
+RETURN_RC_VALUES = False
 
 class Block:
     """ Class holding Block details. Used for displaying in dataweb"""
 
-    def __init__(self, status, value, alarm, visibility):
+    def __init__(self, name, status, value, alarm, visibility):
         """
         Standard constructor.
 
@@ -28,10 +33,23 @@ class Block:
             value: the current block value
             alarm: the alarm status
         """
+        self.name = name
         self.status = status
         self.value = value
         self.alarm = alarm
         self.visibility = visibility
+        self.low = None
+        self.high = None
+        self.inrange = None
+        self.enabled = "NO"
+
+    def get_name(self):
+        """ Returns the block status. """
+        return self.name
+
+    def set_name(self, name):
+        """ Sets the block status. """
+        self.status = name
 
     def get_status(self):
         """ Returns the block status. """
@@ -65,7 +83,39 @@ class Block:
         """ Sets the block's visibility. """
         self.visibility = visibility
 
-    def isConnected(self):
+    def get_rc_low(self):
+        """ Returns the block's low value. """
+        return self.low
+
+    def set_rc_low(self, value):
+        """ Sets the block's low value. """
+        self.low = value
+
+    def get_rc_high(self):
+        """ Returns the block's high value. """
+        return self.high
+
+    def set_rc_high(self, value):
+        """ Sets the block's high value. """
+        self.high = value
+
+    def get_rc_inrange(self):
+        """ Returns the block's inrange status. """
+        return self.inrange
+
+    def set_rc_inrange(self, value):
+        """ Sets the block's inrange status. """
+        self.inrange = value
+
+    def get_rc_enabled(self):
+        """ Returns the block's enabled status. """
+        return self.enabled
+
+    def set_rc_enabled(self, value):
+        """ Sets the block's enabled status. """
+        self.enabled = value
+
+    def is_connected(self):
         """
         :return Whether this block is connected
         """
@@ -73,9 +123,26 @@ class Block:
 
     def get_description(self):
         """ Returns the full description of this BoolStr object. """
-        ans = dict()
+        ans = {}
         ans["status"] = self.status
         ans["value"] = self.value
         ans["alarm"] = self.alarm
         ans["visibility"] = self.visibility
+
+        if RETURN_RC_VALUES:
+            # add rc values if they're set
+            if self.low is not None:
+                ans["rc_low"] = self.low
+
+            if self.high is not None:
+                ans["rc_high"] = self.high
+
+            if self.inrange is not None:
+                ans["rc_inrange"] = self.inrange
+
+            ans["rc_enabled"] = self.enabled
+
         return ans
+
+    def __str__(self):
+        return self.get_description().__str__()

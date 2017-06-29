@@ -1,4 +1,5 @@
 var PORT = 60000;
+var HOST = "http://dataweb.isis.rl.ac.uk" 
 var showPrivate = true;
 var privateRunInfo = ["TITLE", "_USERNAME"];
 var instrument = getURLParameter("Instrument");
@@ -116,7 +117,7 @@ function clear(node) {
  */
 function refresh() {
 	$.ajax({
-		url: "http://dataweb.isis.rl.ac.uk:" + PORT + "/",
+		url: HOST + ":" + PORT + "/",
 		dataType: 'jsonp',
 		data: {"Instrument": instrument},
 		timeout: timeout,
@@ -242,36 +243,33 @@ function displayOneBlock(node, block, blockName) {
     var value = block["value"];
     var status_text = block["status"];
     var alarm = block["alarm"];
-
+        
+    var rc_inrange = block["rc_inrange"];
+    var rc_enabled = block["rc_enabled"];
     var nodeBlock = document.createElement("LI");
     var attColour = document.createAttribute("color");
-    var nodeBlockText = document.createTextNode(blockName + ":\u00A0\u00A0");
+    var nodeBlockText = document.createTextNode(getTitle(key) + ":\u00A0\u00A0");
 
     // write block name
     nodeBlock.appendChild(nodeBlockText);
 
     // write status if disconnected
     if (status_text == "Disconnected") {
-        var nodeBlockStatus = document.createElement("FONT");
-        attColour.value = "BlueViolet";
-        nodeBlockStatus.setAttributeNode(attColour);
-        nodeBlockStatus.appendChild(document.createTextNode(status_text.toUpperCase()));
-        nodeBlock.appendChild(nodeBlockStatus);
+	    writeStatus(nodeBlock, attColour, status_text);
     }
-    // write value if connected
-    else if ((isInArray(privateRunInfo, blockName)) && !showPrivate) {
-        var nodeBlockStatus = document.createElement("I");
-        nodeBlockStatus.appendChild(document.createTextNode("Unavailable"));
-        nodeBlock.appendChild(nodeBlockStatus);
+    // write value if is private
+    else if ((isInArray(privateRunInfo, key)) && !showPrivate) {
+	    writePrivateValue(nodeBlock);
+    // write value, range info & alarms
     } else {
         nodeBlockText.nodeValue += value + "\u00A0\u00A0";
-            // write alarm status if active
+        // write range information about the PV
+        if (rc_enabled === "YES" && (rc_inrange === "YES" || rc_inrange === "NO")) {
+            writeRangeInfo(nodeBlock, attColour, rc_inrange);
+        }
+        // write alarm status if active
         if (!alarm.startsWith("null") && !alarm.startsWith("OK")) {
-            var nodeBlockAlarm = document.createElement("FONT");
-            attColour.value = "red";
-            nodeBlockAlarm.setAttributeNode(attColour);
-            nodeBlockAlarm.appendChild(document.createTextNode("(" + alarm + ")"));
-            nodeBlock.appendChild(nodeBlockAlarm);
+            writeAlarmInfo(nodeBlock, attColour, alarm);
         }
     }
     node.appendChild(nodeBlock);
@@ -289,14 +287,15 @@ function getDisplayBlocks(node, blocks) {
         var block = blocks[key];
         displayOneBlock(node, block, key);
     }
-    return node;
+	
+	return node;
 }
 
 /**
  * Adds html elements for the list of instrument information.
  *
  * @param node The parent node.
- * @param blocks The list of instrument blocks
+ * @param blocks The list of instrument blocks.
  * @return The updated node.
  */
 function getDisplayRunInfo(node, blocks){
@@ -310,12 +309,47 @@ function getDisplayRunInfo(node, blocks){
         }
     }
 
-    //Add any left over on to the end
+    // Add any left over on to the end
     getDisplayBlocks(node, blocks);
-
-    return node;
 }
 
+function writeStatus(nodeBlock, attColour, status_text) {
+	var nodeBlockStatus = document.createElement("FONT");
+	attColour.value = "BlueViolet";
+	nodeBlockStatus.setAttributeNode(attColour.cloneNode(true));
+	nodeBlockStatus.appendChild(document.createTextNode(status_text.toUpperCase()));
+	nodeBlock.appendChild(nodeBlockStatus);
+}
+
+function writePrivateValue(nodeBlock) {
+	var nodeBlockStatus = document.createElement("I");
+	nodeBlockStatus.appendChild(document.createTextNode("Unavailable"));
+	nodeBlock.appendChild(nodeBlockStatus);
+}
+
+function writeRangeInfo(nodeBlock, attColour, rc_inrange) {
+    var nodeBlockInrange = document.createElement("FONT");
+    var colour = "Red";
+    var mark_status = "\u274C"; // unicode cross mark
+
+    if (rc_inrange == "YES") {
+        colour = "Green";
+        mark_status = "\u2713"; // unicode check mark
+    }
+
+    attColour.value = colour;
+    attColour = nodeBlockInrange.setAttributeNode(attColour);
+    nodeBlockInrange.appendChild(document.createTextNode(mark_status));
+    nodeBlock.appendChild(nodeBlockInrange);
+}
+
+function writeAlarmInfo(nodeBlock, attColour, alarm) {
+    var nodeBlockAlarm = document.createElement("FONT");
+    attColour.value = "red";
+    attColour = nodeBlockAlarm.setAttributeNode(attColour.cloneNode(true));
+    nodeBlockAlarm.appendChild(document.createTextNode("(" + alarm + ")"));
+    nodeBlock.appendChild(nodeBlockAlarm);
+}
 
 // At the start, assume we can't connect
 // This will update when a connection is made

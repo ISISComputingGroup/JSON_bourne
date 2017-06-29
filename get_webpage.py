@@ -2,6 +2,8 @@ from lxml import html
 import requests
 import json
 from block import Block
+from block_utils import (format_blocks, set_rc_values_for_block_from_pvs,
+        set_rc_values_for_blocks, shorten_title)
 import logging
 
 logger = logging.getLogger('JSON_bourne')
@@ -9,21 +11,6 @@ logger = logging.getLogger('JSON_bourne')
 PORT_INSTPV = 4812
 PORT_BLOCKS = 4813
 PORT_CONFIG = 8008
-
-
-def shorten_title(title):
-    """
-    Gets a PV title by shortening its address to the last segment.
-
-    Args:
-        title: The PV address as string.
-
-    Returns: The last segment of the input PV address as string.
-
-    """
-    number = title.rfind(':')
-    return title[number + 1:]
-
 
 def ascii_to_string(ascii):
     """
@@ -70,7 +57,7 @@ def get_info(url):
         logger.error("URL not found: " + str(url))
         raise e
 
-    blocks = dict()
+    blocks = {}
 
     tree = html.fromstring(page.content)
 
@@ -129,14 +116,14 @@ def get_info(url):
 
             name = shorten_title(titles[i])
             status = status_text[i]
-            blocks[name] = Block(status, value, alarm, True)
+            blocks[name] = Block(name, status, value, alarm, True)
         except Exception as e:
             logger.error("Unable to decode " + str(titles[i]))
 
     return blocks
 
 
-def get_instpvs(url):
+def get_instpvs(url, blocks_all):
     """
     Extracts and formats a list of relevant instrument PVs from all instrument PVs.
 
@@ -146,7 +133,8 @@ def get_instpvs(url):
     Returns: A trimmed list of instrument PVs.
 
     """
-    wanted = dict()
+    wanted = {}
+    rc = {}
     ans = get_info(url)
 
     required_pvs = ["RUNSTATE", "RUNNUMBER", "_RBNUMBER", "TITLE", "DISPLAY", "_USERNAME", "STARTTIME",
@@ -154,6 +142,11 @@ def get_instpvs(url):
                     "PERIOD", "NUMPERIODS", "PERIODSEQ", "BEAMCURRENT", "TOTALUAMPS", "COUNTRATE", "DAEMEMORYUSED",
                     "TOTALCOUNTS", "DAETIMINGSOURCE", "MONITORCOUNTS", "MONITORSPECTRUM", "MONITORFROM", "MONITORTO",
                     "NUMTIMECHANNELS", "NUMSPECTRA"]
+
+    try:
+        set_rc_values_for_blocks(blocks_all.values(), ans)
+    except Exception as e:
+        logging.error("Error in setting rc values for blocks: " + str(e))
 
     for pv in required_pvs:
         if pv + ".VAL" in ans:
@@ -173,7 +166,7 @@ def convert_seconds(block):
         block: the block to convert
 
     """
-    if not block.isConnected():
+    if not block.is_connected():
         return
     old_value = block.get_value()
     seconds = int(old_value) % 60
@@ -223,47 +216,30 @@ def scrape_webpage(host="localhost"):
         # get block visibility from config
         for block in blocks_all:
             blocks_all[block].set_visibility(block_vis.get(block))
-
-        blocks_all_formatted = format_blocks(blocks_all)
     except Exception as e:
         logger.error("Failed to read blocks: " + str(e))
 
-    groups = dict()
+    inst_pvs = format_blocks(get_instpvs('http://%s:%s/group?name=INST' % (host, PORT_INSTPV), blocks_all))
+
+    groups = {}
     for group in config["groups"]:
-        blocks = dict()
+        blocks_all_formatted = format_blocks(blocks_all)
+        blocks = {}
         for block in group["blocks"]:
             if block in blocks_all_formatted.keys():
                 blocks[block] = blocks_all_formatted[block]
         groups[group["name"]] = blocks
 
     try:
-        output = dict()
+        output = {}
         output["config_name"] = config["name"]
         output["groups"] = groups
-        output["inst_pvs"] = format_blocks(get_instpvs('http://%s:%s/group?name=INST' % (host, PORT_INSTPV)))
+        output["inst_pvs"] = inst_pvs
     except Exception as e:
         logger.error("Output construction failed " + str(e))
         raise e
 
     return output
-
-
-def format_blocks(blocks):
-    """
-    Converts a list of block objects into JSON.
-
-    Args:
-        blocks: A dictionary of block names to block objects.
-
-    Returns: A JSON dictionary of block names to block descriptions.
-
-    """
-    blocks_formatted = dict()
-    for name, block in blocks.items():
-        blocks_formatted[name] = block.get_description()
-
-    return blocks_formatted
-
 
 def get_block_visibility(config):
     """
@@ -275,7 +251,7 @@ def get_block_visibility(config):
     Returns: A dictionary with block-visibility as key-value pairs.
 
     """
-    vis = dict()
+    vis = {}
     for block in config["blocks"]:
         vis[block["name"]] = block["visible"]
     return vis
