@@ -232,7 +232,7 @@ function getDisplayGroups(node, groups) {
  *
  * @param node The parent node.
  * @param block The block to add.
- * @param blockName The name of the block to display
+ * @param blockName The name of the block to display.
  * @return The updated node.
  */
 function displayOneBlock(node, block, blockName) {
@@ -300,7 +300,7 @@ function getDisplayBlocks(node, blocks) {
  */
 function getDisplayRunInfo(node, blocks){
     clear(node)
-    //Add all in order first
+    // Add all in order first
     for (var key in dictInstPV) {
         if (key in blocks) {
             var block = blocks[key];
