@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>IBEX status</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script src="ibexOverview.js" type="text/javascript" defer></script>
+  <style>
+    /* Set height of the grid so .sidenav can be 100% (adjust as needed) */
+    .row.content {height: 550px}
+    
+    /* Set gray background color and 100% height */
+    .sidenav {
+      background-color: #f1f1f1;
+      height: 100%;
+    }
+    .btn-xl {
+    padding: 10px 20px;
+    font-size: 20px;
+    border-radius: 10px;
+    width:49.8%;
+	}
+    /* On small screens, set height to 'auto' for the grid */
+    @media screen and (max-width: 767px) {
+      .row.content {height: auto;} 
+	
+
+    }
+  </style>
+</head>
+<body style="background-color:powderblue;">
+<nav class="navbar navbar-default">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+	<div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">IBEX</a>
+    </div>
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        <li><a href="http://epics-jenkins.isis.rl.ac.uk/">Jenkins <span class="sr-only">(current)</span></a></li>
+        <li><a href="ibexWaffle.html">waffle.io</a></li>
+      </ul>
+    </div>
+    </div><!-- /.navbar-collapse -->
+</nav>
+
+<div class="container-fluid">
+    
+    <div class="col-sm-12">
+      <!--<div class="well">
+        <h4>Dashboard</h4>
+        <p>Some text..</p>
+      </div>-->
+      <div class="row">
+        <div class="col-sm-4">
+          <div class="well">
+		  <div class="row">
+            <h4>Total Users</h4>
+			<p id = "totalUsers"></p> 
+          </div>
+        </div></div>
+        <div class="col-sm-4">
+          <div class="well">
+            <h4 style="color:lime">Online Instruments</h4>
+            <p id = "onlineUsers"></p> 
+          </div>
+        </div>
+        <div class="col-sm-4">
+          <div class="well">
+            <h4 style ="color:red">Offline Instruments</h4>
+            <p id = "offlineUsers"></p> 
+          </div>
+        </div>
+      </div>
+      
+        <div class="col-sm-12">
+          <div class="well">
+		  <div id = "buttons"></div>
+        </div>
+      </div>
+          
+        
+    </div>
+
+</div>
+
+</body>
+</html>

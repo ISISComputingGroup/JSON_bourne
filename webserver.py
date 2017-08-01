@@ -60,14 +60,23 @@ class MyHandler(BaseHTTPRequestHandler):
             logger.warn("Connected to from " + str(self.client_address) + " looking at " + str(inst))
 
             with _scraped_data_lock:
-                if inst not in _scraped_data.keys():
-                    raise ValueError(str(inst) + " not known")
-                if _scraped_data[inst] == "":
-                    raise ValueError("Instrument has become unavailable")
-                try:
-                    ans = "%s(%s)" % (callback, json.dumps(_scraped_data[inst]))
-                except Exception as err:
-                    raise ValueError("Unable to convert instrument data to JSON: %s" % err.message)
+                active = {}
+                if inst == "ALL":
+                    for key in _scraped_data:
+                        if _scraped_data[key] != "":
+                            active[key] = True
+                        else:
+                            active[key] = False
+                    ans = "%s(%s)" % (callback, json.dumps(active))
+                else:
+                    if inst not in _scraped_data.keys():
+                        raise ValueError(str(inst) + " not known")
+                    if _scraped_data[inst] == "":
+                        raise ValueError("Instrument has become unavailable")
+                    try:
+                        ans = "%s(%s)" % (callback, json.dumps(_scraped_data[inst]))
+                    except Exception as err:
+                        raise ValueError("Unable to convert instrument data to JSON: %s" % err.message)
 
             self.send_response(200)
             self.send_header('Content-type', 'text/html')
