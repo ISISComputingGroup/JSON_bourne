@@ -40,6 +40,36 @@ function sortObject(o) {
     return sorted;
 }
 
+function close_window(){
+	clearBox("new_window");
+	
+}
+
+function on_click(elmnt) {
+	clearBox("new_window")
+	var newWindow = document.createElement("div");
+	var newWindowStyle = document.createAttribute("class");
+	newWindowStyle.value = "col-sm-12 well";
+	newWindow.setAttributeNode(newWindowStyle);
+	newWindow.id = "internal"
+	document.getElementById("new_window").appendChild(newWindow);
+	var closeButton = document.createElement("button");
+	closeButton.innerHTML = "x";
+	var blockListStyle = document.createAttribute("onclick");
+    blockListStyle.value = "close_window()";
+	closeButton.setAttributeNode(blockListStyle);
+	document.getElementById("internal").appendChild(closeButton);
+	var newIframe = document.createElement("iframe");
+	newIframe.src = "http://dataweb.isis.rl.ac.uk/IbexDataweb/default.html?Instrument="+ elmnt.innerHTML
+	newIframe.height = "540px"
+	newIframe.width = "100%"
+	newIframe.frameborder = "0"
+	document.getElementById("internal").appendChild(newIframe);
+		//<iframe src="https://waffle.io/ISISComputingGroup/IBEX" height = "100%" width = "100%" frameborder = "0" ></iframe>
+
+	//window.location = "http://dataweb.isis.rl.ac.uk/IbexDataweb/default.html?Instrument="+ elmnt.innerHTML
+};
+
 function display_data(data){
 	var onlineClients = new Array();
 	var offlineClients = new Array();
@@ -59,15 +89,24 @@ function display_data(data){
 	for (value in data){
 		var newButton = document.createElement("button");
 		newButton.innerHTML = value
-		document.getElementById("buttons").appendChild(newButton);
+
 		newButton.style.type = "btn";
+		//newButton.onclick = function(event,newButton) {
+		//window.location = "http://dataweb.isis.rl.ac.uk/IbexDataweb/default.html?Instrument="+newButton.innerHTML;
+		//};
 		var blockListStyle = document.createAttribute("class");
 		if (data[value] == true){
-			blockListStyle.value = 'btn btn-success btn-xl';
+			blockListStyle.value = 'btn btn-success btn-xl b';
 		} else{
-			blockListStyle.value = 'btn btn-danger btn-xl';
+			blockListStyle.value = 'btn btn-danger btn-xl b';
 		}
         newButton.setAttributeNode(blockListStyle);
+		var blockListStyle = document.createAttribute("onclick");
+        blockListStyle.value = "on_click(this)"
+		newButton.setAttributeNode(blockListStyle);
+		document.getElementById("buttons").appendChild(newButton);
+
+
 	}
 };
 
