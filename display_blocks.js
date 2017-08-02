@@ -158,7 +158,7 @@ function parseObject(obj) {
 
     // populate run information
     var nodeInstPVs = document.getElementById("inst_pvs");
-    var nodeInstPVList = document.createElement("UL");
+    var nodeInstPVList = document.createElement("ul");
 
     nodeInstPVs.appendChild(nodeInstPVList);
     getDisplayRunInfo(nodeInstPVs, instrumentState.inst_pvs);
@@ -247,7 +247,6 @@ function displayOneBlock(node, block, blockName) {
     var rc_inrange = block["rc_inrange"];
     var rc_enabled = block["rc_enabled"];
     var nodeBlock = document.createElement("LI");
-    var attColour = document.createAttribute("color");
     var nodeBlockText = document.createTextNode(blockName + ":\u00A0\u00A0");
 
     // write block name
@@ -255,7 +254,7 @@ function displayOneBlock(node, block, blockName) {
 
     // write status if disconnected
     if (status_text == "Disconnected") {
-	    writeStatus(nodeBlock, attColour, status_text);
+	    writeStatus(nodeBlock, status_text);
     }
     // write value if is private
     else if ((isInArray(privateRunInfo, blockName)) && !showPrivate) {
@@ -265,11 +264,11 @@ function displayOneBlock(node, block, blockName) {
         nodeBlockText.nodeValue += value + "\u00A0\u00A0";
         // write range information about the PV
         if (rc_enabled === "YES" && (rc_inrange === "YES" || rc_inrange === "NO")) {
-            writeRangeInfo(nodeBlock, attColour, rc_inrange);
+            writeRangeInfo(nodeBlock, rc_inrange);
         }
         // write alarm status if active
         if (!alarm.startsWith("null") && !alarm.startsWith("OK")) {
-            writeAlarmInfo(nodeBlock, attColour, alarm);
+            writeAlarmInfo(nodeBlock, alarm);
         }
     }
     node.appendChild(nodeBlock);
@@ -313,10 +312,9 @@ function getDisplayRunInfo(node, blocks){
     getDisplayBlocks(node, blocks);
 }
 
-function writeStatus(nodeBlock, attColour, status_text) {
-	var nodeBlockStatus = document.createElement("FONT");
-	attColour.value = "BlueViolet";
-	nodeBlockStatus.setAttributeNode(attColour.cloneNode(true));
+function writeStatus(nodeBlock, status_text) {
+	var nodeBlockStatus = document.createElement("span");
+	nodeBlockStatus.style = "color:blueviolet"
 	nodeBlockStatus.appendChild(document.createTextNode(status_text.toUpperCase()));
 	nodeBlock.appendChild(nodeBlockStatus);
 }
@@ -327,8 +325,8 @@ function writePrivateValue(nodeBlock) {
 	nodeBlock.appendChild(nodeBlockStatus);
 }
 
-function writeRangeInfo(nodeBlock, attColour, rc_inrange) {
-    var nodeBlockInrange = document.createElement("FONT");
+function writeRangeInfo(nodeBlock, rc_inrange) {
+    var nodeBlockInrange = document.createElement("span");
     var colour = "Red";
     var mark_status = "\u274C"; // unicode cross mark
 
@@ -336,18 +334,15 @@ function writeRangeInfo(nodeBlock, attColour, rc_inrange) {
         colour = "Green";
         mark_status = "\u2713"; // unicode check mark
     }
-
-    attColour.value = colour;
-    attColour = nodeBlockInrange.setAttributeNode(attColour);
+	nodeBlockInrange.style = "color:"+color
     nodeBlockInrange.appendChild(document.createTextNode(mark_status));
     nodeBlock.appendChild(nodeBlockInrange);
 }
 
-function writeAlarmInfo(nodeBlock, attColour, alarm) {
-    var nodeBlockAlarm = document.createElement("FONT");
-    attColour.value = "red";
-    attColour = nodeBlockAlarm.setAttributeNode(attColour.cloneNode(true));
-    nodeBlockAlarm.appendChild(document.createTextNode("(" + alarm + ")"));
+function writeAlarmInfo(nodeBlock, alarm) {
+    var nodeBlockAlarm = document.createElement("span");
+    nodeBlockAlarm.style = "color:red"
+	nodeBlockAlarm.appendChild(document.createTextNode("(" + alarm + ")"));
     nodeBlock.appendChild(nodeBlockAlarm);
 }
 
