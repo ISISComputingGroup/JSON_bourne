@@ -81,7 +81,7 @@ function on_click(elmnt) {
 	create_new_window();
 	var newIframe = document.createElement("iframe");
 	newIframe.src = "http://dataweb.isis.rl.ac.uk/IbexDataweb/default.html?Instrument="+ elmnt.innerHTML
-	newIframe.height = "540px"
+	newIframe.height = String(windowHeight/3)+"px"
 	newIframe.width = "100%"
 	newIframe.frameborder = "0"
 	document.getElementById("internal").appendChild(newIframe);
@@ -115,9 +115,9 @@ function display_data(data){
 		//window.location = "http://dataweb.isis.rl.ac.uk/IbexDataweb/default.html?Instrument="+newButton.innerHTML;
 		//};
 		if (total_users >15){
-			ending = "btn-large b";
+			ending = "btn-large";
 		} else {
-			ending = "btn-xl b";
+			ending = "btn-xl";
 			};	
 		var blockListStyle = document.createAttribute("class");
 		if (data[value] == true){

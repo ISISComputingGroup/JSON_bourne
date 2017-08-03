@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
   <title>IBEX status</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -16,14 +17,14 @@
       height: 100%;
     }
     .btn-xl {
-	class:text-center
+	class:text-center;
     padding: 10px 20px;
     font-size: 20px;
     border-radius: 10px;
     width:20%;
 	}
     .btn-large {
-	class:text-center
+	class:text-center;
     padding: 10px 20px;
     font-size: 20px;
     border-radius: 10px;
@@ -53,8 +54,9 @@
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
       <ul class="nav navbar-nav">
-        <li><a href="http://epics-jenkins.isis.rl.ac.uk/">Jenkins <span class="sr-only">(current)</span></a></li>
         <li><a href="ibexWaffle.html">waffle.io</a></li>
+        <li><a href="http://epics-jenkins.isis.rl.ac.uk/">Jenkins</a></li>
+		<li><a href="http://epics-jenkins.isis.rl.ac.uk/job/ibex_gui_pipeline/checkstyle/trendDetails/">Checkstyle Warnings</a></li>
 		<li><a onclick="open_wall_display()">Wall display</a></li>
       </ul>
     </div>
@@ -72,7 +74,7 @@
         <div class="col-sm-4">
           <div class="well">
 		  <div class="row">
-            <h3 class="text-center"><b>Total Users</b></h3>
+            <h3 class="text-center"><b>Total Instruments</b></h3>
 			<h3 id = "totalUsers" class="text-center"></h3> 
           </div>
         </div></div>
