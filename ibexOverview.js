@@ -1,6 +1,10 @@
 var PORT = 60000;
-var HOST = "http://localhost" 
+var HOST = "http://dataweb.isis.rl.ac.uk" 
 //$('.btn').button();
+var windowWidth = $(window).width();
+var windowHeight = $(window).height();
+var buttonHeight = $(window).height();
+open_wall_display();
 
 function refresh() {
 	$.ajax({
@@ -12,7 +16,7 @@ function refresh() {
 			window.alert("Error: JSON not read");
 		},
 		success: function(data){ 
-			//window.alert(JSON.stringify(data))
+			//window.alert(JSON.stringify(data));
 			display_data(data);
 		}
 	});
@@ -29,8 +33,8 @@ function sortObject(o) {
     for (key in o) {
         if (o.hasOwnProperty(key)) {
             a.push(key);
-        }
-    }
+        };
+    };
 
     a.sort();
 
@@ -42,28 +46,31 @@ function sortObject(o) {
 
 function close_window(){
 	clearBox("new_window");
-	
-}
+};
 
-function open_wall_display(){
-	clearBox("new_window")
+function create_new_window(){
+	clearBox("new_window");
 	var newWindow = document.createElement("div");
 	var newWindowStyle = document.createAttribute("class");
 	newWindowStyle.value = "col-sm-12 well";
 	newWindow.setAttributeNode(newWindowStyle);
-	newWindow.id = "internal"
+	newWindow.id = "internal";
 	document.getElementById("new_window").appendChild(newWindow);
 	var closeButton = document.createElement("button");
 	closeButton.innerHTML = "x";
 	var blockListStyle = document.createAttribute("onclick");
     blockListStyle.value = "close_window()";
 	closeButton.setAttributeNode(blockListStyle);
-	document.getElementById("internal").appendChild(closeButton);
+	document.getElementById("internal").appendChild(closeButton);	
+};
+
+function open_wall_display(){
+	create_new_window()
 	var newIframe = document.createElement("iframe");
 	newIframe.src = "http://epics-jenkins.isis.rl.ac.uk/plugin/jenkinswalldisplay/walldisplay.html?viewName=All&jenkinsUrl=http%3A%2F%2Fepics-jenkins.isis.rl.ac.uk%2F"
-	newIframe.height = "540px"
+	newIframe.height = String(windowHeight/3)+"px"
 	newIframe.width = "100%"
-	newIframe.frameborder = "0"
+	//newIframe.frameborder = "0"
 	document.getElementById("internal").appendChild(newIframe);
 	
 	
@@ -71,19 +78,7 @@ function open_wall_display(){
 
 
 function on_click(elmnt) {
-	clearBox("new_window")
-	var newWindow = document.createElement("div");
-	var newWindowStyle = document.createAttribute("class");
-	newWindowStyle.value = "col-sm-12 well";
-	newWindow.setAttributeNode(newWindowStyle);
-	newWindow.id = "internal"
-	document.getElementById("new_window").appendChild(newWindow);
-	var closeButton = document.createElement("button");
-	closeButton.innerHTML = "x";
-	var blockListStyle = document.createAttribute("onclick");
-    blockListStyle.value = "close_window()";
-	closeButton.setAttributeNode(blockListStyle);
-	document.getElementById("internal").appendChild(closeButton);
+	create_new_window();
 	var newIframe = document.createElement("iframe");
 	newIframe.src = "http://dataweb.isis.rl.ac.uk/IbexDataweb/default.html?Instrument="+ elmnt.innerHTML
 	newIframe.height = "540px"
@@ -105,9 +100,9 @@ function display_data(data){
 			offlineClients.push(value);
 		};	
 	};
-	data = sortObject(data)
-
-	document.getElementById("totalUsers").innerHTML = Object.keys(data).length;
+	data = sortObject(data);
+	var total_users = Object.keys(data).length;
+	document.getElementById("totalUsers").innerHTML = total_users;
 	document.getElementById("onlineUsers").innerHTML = Object.keys(onlineClients).length;
 	document.getElementById("offlineUsers").innerHTML = Object.keys(offlineClients).length;
 	clearBox("buttons")
@@ -119,20 +114,25 @@ function display_data(data){
 		//newButton.onclick = function(event,newButton) {
 		//window.location = "http://dataweb.isis.rl.ac.uk/IbexDataweb/default.html?Instrument="+newButton.innerHTML;
 		//};
+		if (total_users >15){
+			ending = "btn-large b";
+		} else {
+			ending = "btn-xl b";
+			};	
 		var blockListStyle = document.createAttribute("class");
 		if (data[value] == true){
-			blockListStyle.value = 'btn btn-success btn-xl b';
+			blockListStyle.value = 'btn btn-success '+ending;
 		} else{
-			blockListStyle.value = 'btn btn-danger btn-xl b';
+			blockListStyle.value = 'btn btn-danger '+ending;
 		}
         newButton.setAttributeNode(blockListStyle);
 		var blockListStyle = document.createAttribute("onclick");
         blockListStyle.value = "on_click(this)"
 		newButton.setAttributeNode(blockListStyle);
+
 		document.getElementById("buttons").appendChild(newButton);
 
-
-	}
+	};
 };
 
 $(document).ready(refresh());
