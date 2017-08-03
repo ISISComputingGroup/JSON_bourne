@@ -68,7 +68,7 @@ function open_wall_display(){
 	create_new_window()
 	var newIframe = document.createElement("iframe");
 	newIframe.src = "http://epics-jenkins.isis.rl.ac.uk/plugin/jenkinswalldisplay/walldisplay.html?viewName=All&jenkinsUrl=http%3A%2F%2Fepics-jenkins.isis.rl.ac.uk%2F"
-	newIframe.height = String(windowHeight/3)+"px"
+	newIframe.height = String(windowHeight*2/5)+"px"
 	newIframe.width = "100%"
 	//newIframe.frameborder = "0"
 	document.getElementById("internal").appendChild(newIframe);
@@ -81,7 +81,7 @@ function on_click(elmnt) {
 	create_new_window();
 	var newIframe = document.createElement("iframe");
 	newIframe.src = "http://dataweb.isis.rl.ac.uk/IbexDataweb/default.html?Instrument="+ elmnt.innerHTML
-	newIframe.height = String(windowHeight/3)+"px"
+	newIframe.height = String(windowHeight*2/5)+"px"
 	newIframe.width = "100%"
 	newIframe.frameborder = "0"
 	document.getElementById("internal").appendChild(newIframe);
