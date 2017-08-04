@@ -1,10 +1,6 @@
 var PORT = 60000;
 var HOST = "http://dataweb.isis.rl.ac.uk" 
 //$('.btn').button();
-var windowWidth = $(window).width();
-var windowHeight = $(window).height();
-var buttonHeight = $(window).height();
-open_wall_display();
 
 function refresh() {
 	$.ajax({
@@ -136,5 +132,9 @@ function display_data(data){
 };
 
 $(document).ready(refresh());
+var windowWidth = $(window).width();
+var windowHeight = $(window).height();
+var buttonHeight = $(window).height();
+open_wall_display();
 
 setInterval(refresh, 5000);
