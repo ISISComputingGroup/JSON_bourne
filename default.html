@@ -6,25 +6,24 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=9,10" >
         <title>Instrument Status</title>
-        <script src="startswith.js"></script>
+        <script src="startswith.js" type="text/javascript"></script>
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
-        <script src="display_blocks.js" type="text/javascript" defer></script>
-		<link rel="shortcut icon" type="image/x-icon" href="favicon.ico"/>
-
+        <script src="display_blocks.js" type="text/javascript" defer="defer"></script>
+		    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico"/>
     </head>
 
     <body>
-        <p id="inst_name"></p>
-        <p id="config_name"></p>
+        <div id="inst_name"></div>
+        <div id="config_name"></div>
         <table cellpadding="30">
             <tr>
                 <td valign="top" rowspan="2">
                     <h2 id="run_information">Run Information</h2>
-                    <p id="inst_pvs"></p>
+                    <ul id="inst_pvs"></ul>
                 </td>
                 <td valign="top">
                     <h2 id="blocks">Blocks</h2>
-                    <p id="groups"></p>
+                    <div id="groups"></div>
                 </td>
             </tr>
         </table>
@@ -32,7 +31,7 @@
 
         <table cellpadding="30">
             <tr id="showHiddenContainer">
-                <td><label align=""><input id="showHidden" type="checkbox" onchange="refresh()"> <b>Show hidden
+                <td><label><input id="showHidden" type="checkbox" onchange="refresh()"> <b>Show hidden
                     blocks</b></label></td>
             </tr>
         </table>
