@@ -125,6 +125,7 @@ function refresh() {
 			displayError();
 		},
 		success: function(data){ 
+			//window.alert(JSON.stringify(data))
 			parseObject(data);
 		}
 	});
@@ -136,6 +137,7 @@ function refresh() {
 function parseObject(obj) {
     // set up page
     instrumentState = obj;
+	createTitle(obj)
     showHidden = document.getElementById("showHidden").checked;
 	if ("DISPLAY" in instrumentState.inst_pvs) {
 		showPrivate = getBoolean(instrumentState.inst_pvs["DISPLAY"]["value"]);
@@ -146,12 +148,6 @@ function parseObject(obj) {
     clear(nodeInstTitle);
     clear(nodeConfigTitle);
 
-    nodeInstTitle.appendChild(document.createTextNode(instrument));
-    nodeConfigTitle.appendChild(document.createTextNode("Configuration: " + instrumentState.config_name));
-
-    document.getElementById("inst_name").appendChild(nodeInstTitle);
-    document.getElementById("config_name").appendChild(nodeConfigTitle);
-
     // populate blocks
     var nodeGroups = document.getElementById("groups");
     getDisplayGroups(nodeGroups, instrumentState.groups);
@@ -161,10 +157,116 @@ function parseObject(obj) {
     var nodeInstPVList = document.createElement("ul");
 
     nodeInstPVs.appendChild(nodeInstPVList);
+    nodeInstPVs.appendChild(nodeInstPVList);
     getDisplayRunInfo(nodeInstPVs, instrumentState.inst_pvs);
+
+    nodeInstTitle.appendChild(document.createTextNode(instrument));
+    nodeConfigTitle.appendChild(document.createTextNode("Configuration: " + instrumentState.config_name));
+
+    document.getElementById("config_name").appendChild(nodeConfigTitle);
 	
 	setVisibilityMode('block');
-}
+};
+
+
+function clearBox(elementID){
+    document.getElementById(elementID).innerHTML = "";
+};
+
+function newPartOfTable(){
+	document.getElementById("next_part").removeAttribute("id");
+	document.getElementById("table_part").innerHTML = document.getElementById("table_part").innerHTML + "<th id = \"next_part\" style = \"padding: 10px; background-color:lightgrey ; border: black 2px solid\";></th>";
+};
+
+/**
+ * creates a Title at the top looking similar to the IBEX GUI
+ */
+function createTitle(obj){
+	clearBox("top_bar");
+	
+	document.getElementById("top_bar").innerHTML = "<div id = \"inst_name\"></div><table><tr id = table_part><th id = \"next_part\" style = \"padding: 10px; background-color:lightgrey ; border: black 2px solid\";></th></tr></table>";
+	runStatus = obj["inst_pvs"]["RUNSTATE"]["value"];
+	
+	switch (runStatus){
+		case "PROCESSING" || "UPDATING" || "STORING" || "SAVING" || "UNKNOWN":
+			colour = "YELLOW";
+			break;
+		case "RUNNING":
+			colour = "LIGHTGREEN";
+			break;
+		case "SETUP":
+			colour = "LIGHTBLUE";
+			break;
+		case "PAUSED":
+			colour = "RED";
+			break;
+		case "WAITING" || "VETOING":
+			colour = "GOLDENROD";
+			break;
+		case "ENDING" || "ABORTING":
+			colour = "BLUE";
+			break;
+		case "PAUSING":
+			colour = "DARK_RED";
+			break;
+	};
+	document.getElementById("inst_name").style = "padding: 10px; background-color:" +colour+"; border: black 2px solid";
+	var title = document.createElement("h3"); 
+	title.innerHTML = instrument.toUpperCase()+" is "+runStatus;
+	var blockListClass = document.createAttribute("class");
+	blockListClass.value = "text-center";
+	title.setAttributeNode(blockListClass);
+	document.getElementById("inst_name").appendChild(title);
+	
+	var runNum = document.createElement("h3"); 
+	runNum.innerHTML = "Run: "+obj["inst_pvs"]["RUNNUMBER"]["value"];
+	document.getElementById("inst_name").appendChild(runNum);
+	
+	var titleName = document.createElement("h5"); 
+	insidePart ="Title: "+obj["inst_pvs"]["TITLE"]["value"];
+	titleName.innerHTML = insidePart + "\xa0".repeat(30);
+	document.getElementById("next_part").appendChild(titleName);
+	
+	var userName = document.createElement("h5");
+	insidePart = "Users: "+obj["inst_pvs"]["_USERNAME"]["value"];
+	userName.innerHTML = insidePart + "\xa0".repeat(30);
+	document.getElementById("next_part").appendChild(userName);
+	
+	newPartOfTable();
+	var goodRawFrames = document.createElement("h5"); 
+	insidePart ="Good / Raw Frames: "+obj["inst_pvs"]["GOODFRAMES"]["value"]+"/"+obj["inst_pvs"]["RAWFRAMES"]["value"];
+	titleName.innerHTML = insidePart + "\xa0".repeat(30);
+	document.getElementById("next_part").appendChild(titleName);
+
+	var currentTotal = document.createElement("h5");
+	insidePart ="Current / Total: "+obj["inst_pvs"]["BEAMCURRENT"]["value"]+"/"+obj["inst_pvs"]["TOTALUAMPS"]["value"];
+	currentTotal.innerHTML = insidePart + "\xa0".repeat(30);
+	document.getElementById("next_part").appendChild(currentTotal);
+	
+	var monitorCount = document.createElement("h5");
+	insidePart ="Monitor Counts: "+obj["inst_pvs"]["MONITORCOUNTS"]["value"];
+	monitorCount.innerHTML = insidePart + "\xa0".repeat(30);
+	document.getElementById("next_part").appendChild(monitorCount);
+	
+	newPartOfTable();
+	var instTime = document.createElement("h5"); 
+	insidePart ="Inst. Time: "+obj["inst_pvs"]["STARTTIME"]["value"];
+	instTime.innerHTML = insidePart + "\xa0".repeat(30);
+	document.getElementById("next_part").appendChild(instTime);
+
+	var runTime = document.createElement("h5");
+	insidePart ="Run Time: "+obj["inst_pvs"]["RUNDURATION_PD"]["value"];
+	runTime.innerHTML = insidePart + "\xa0".repeat(30);
+	document.getElementById("next_part").appendChild(runTime);
+	
+	var currentTotalPeriods = document.createElement("h5");
+	insidePart ="Period: "+obj["inst_pvs"]["PERIOD"]["value"]+"/"+obj["inst_pvs"]["NUMPERIODS"]["value"];
+	currentTotalPeriods.innerHTML = insidePart + "\xa0".repeat(30);
+	document.getElementById("next_part").appendChild(currentTotalPeriods);
+	
+};
+
+
 
 /**
  * Display an error when connection to server couldn't be made.
@@ -173,11 +275,12 @@ function displayError() {
 
     clear(nodeInstTitle);
     clear(nodeConfigTitle);
-
-    nodeInstTitle.appendChild(document.createTextNode(instrument));
+	//var instName = document.innerHTML(instrument)
+	//instName.class = "text-center"
+    //nodeInstTitle.appendChild(instName);
     nodeConfigTitle.appendChild(document.createTextNode("Could not connect to " + instrument + ", check IBEX server is running."));
 
-	document.getElementById("inst_name").appendChild(nodeInstTitle);
+	document.getElementById("top_bar").innerHTML = instrument;
 	document.getElementById("config_name").appendChild(nodeConfigTitle);
 	
 	setVisibilityMode('none');
