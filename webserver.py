@@ -33,6 +33,27 @@ RETRIES_BETWEEN_LOGS = 60
 
 class MyHandler(BaseHTTPRequestHandler):
 
+    @staticmethod
+    def _handle_all_instruments(data):
+        active = dict()
+        for key in data:
+            if data[key] != "":
+                active[key] = True
+            else:
+                active[key] = False
+        return str(json.dumps(active))
+
+    @staticmethod
+    def _handle_specific_instrument(instrument, data):
+        if instrument not in data.keys():
+            raise ValueError(str(instrument) + " not known")
+        if data[instrument] == "":
+            raise ValueError("Instrument has become unavailable")
+        try:
+            return str(json.dumps(_scraped_data[instrument]))
+        except Exception as err:
+            raise ValueError("Unable to convert instrument data to JSON: %s" % err.message)
+
     def do_GET(self):
         """
         This is called by BaseHTTPRequestHandler every time a client does a GET.
@@ -60,29 +81,17 @@ class MyHandler(BaseHTTPRequestHandler):
             logger.warn("Connected to from " + str(self.client_address) + " looking at " + str(inst))
 
             with _scraped_data_lock:
-                active = dict()
                 if inst == "ALL":
-                    for key in _scraped_data:
-                        if _scraped_data[key] != "":
-                            active[key] = True
-                        else:
-                            active[key] = False
-                    ans = "%s(%s)" % (callback, json.dumps(active))
+                    ans = self._handle_all_instruments( _scraped_data)
                 else:
-                    if inst not in _scraped_data.keys():
-                        raise ValueError(str(inst) + " not known")
-                    if _scraped_data[inst] == "":
-                        raise ValueError("Instrument has become unavailable")
-                    try:
-                        ans = "%s(%s)" % (callback, json.dumps(_scraped_data[inst]))
-                    except Exception as err:
-                        raise ValueError("Unable to convert instrument data to JSON: %s" % err.message)
+                    ans = self._handle_specific_instrument(inst, _scraped_data)
+
+            response = "{}({})".format(callback, ans)
 
             self.send_response(200)
             self.send_header('Content-type', 'text/html')
             self.end_headers()
-
-            self.wfile.write(ans)
+            self.wfile.write(response)
         except ValueError as e:
             self.send_response(400)
             logger.error(e)

@@ -10,33 +10,7 @@
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
   <script src="ibexOverview.js" type="text/javascript" defer></script>
   <link rel="shortcut icon" type="image/x-icon" href="favicon.ico"/>
-  <style>    
-    /* Set gray background color and 100% height */
-    .sidenav {
-      background-color: #f1f1f1;
-      height: 100%;
-    }
-    .btn-xl {
-	class:text-center;
-    padding: 10px 20px;
-    font-size: 20px;
-    border-radius: 10px;
-    width:20%;
-	}
-    .btn-large {
-	class:text-center;
-    padding: 10px 20px;
-    font-size: 20px;
-    border-radius: 10px;
-    width:10%;
-	}
-    /* On small screens, set height to 'auto' for the grid */
-    @media screen and (max-width: 767px) {
-      .row.content {height: auto;} 
-	
-
-    }
-  </style>
+  <link rel="stylesheet" href="ibexOverviewStyle.css" />
 </head>
 <body style="background-color:powderblue;">
 <nav class="navbar navbar-default">
@@ -60,16 +34,12 @@
 		<li><a onclick="open_wall_display()">Wall display</a></li>
       </ul>
     </div>
-    </div><!-- /.navbar-collapse -->
+    </div>
 </nav>
 
 <div class="container-fluid">
     
     <div class="col-sm-12">
-      <!--<div class="well">
-        <h4>Dashboard</h4>
-        <p>Some text..</p>
-      </div>-->
       <div class="row">
         <div class="col-sm-4">
           <div class="well">
@@ -96,10 +66,7 @@
         </div>
       </div>
       <div id = "new_window">
-      
       </div>
-
-	  
     </div>
 </div>
 
