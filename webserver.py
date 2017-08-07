@@ -60,7 +60,7 @@ class MyHandler(BaseHTTPRequestHandler):
             logger.warn("Connected to from " + str(self.client_address) + " looking at " + str(inst))
 
             with _scraped_data_lock:
-                active = {}
+                active = dict()
                 if inst == "ALL":
                     for key in _scraped_data:
                         if _scraped_data[key] != "":

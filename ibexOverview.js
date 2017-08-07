@@ -9,10 +9,9 @@ function refresh() {
 		data: {"Instrument": "all"},
 		timeout: 1000,
 		error: function(xhr, status, error){ 
-			window.alert("Error: JSON not read");
+			window.alert("Error: JSON not read. Error was: " + error);
 		},
 		success: function(data){ 
-			//window.alert(JSON.stringify(data));
 			display_data(data);
 		}
 	});
@@ -20,13 +19,13 @@ function refresh() {
 
 function clearBox(elementID){
     document.getElementById(elementID).innerHTML = "";
-};
+}
 
-function sortObject(o) {
-    var sorted = {},
-    key, a = [];
+function sortDictionary(o) {
+    var sorted = {};
+    var a = [];
 
-    for (key in o) {
+    for (var key in o) {
         if (o.hasOwnProperty(key)) {
             a.push(key);
         };
@@ -34,15 +33,15 @@ function sortObject(o) {
 
     a.sort();
 
-    for (key = 0; key < a.length; key++) {
-        sorted[a[key]] = o[a[key]];
+    for (var i = 0; i < a.length; i++) {
+        sorted[a[i]] = o[a[i]];
     }
     return sorted;
 }
 
 function close_window(){
 	clearBox("new_window");
-};
+}
 
 function create_new_window(){
 	clearBox("new_window");
@@ -58,7 +57,7 @@ function create_new_window(){
     blockListStyle.value = "close_window()";
 	closeButton.setAttributeNode(blockListStyle);
 	document.getElementById("internal").appendChild(closeButton);	
-};
+}
 
 function open_wall_display(){
 	create_new_window()
@@ -66,10 +65,7 @@ function open_wall_display(){
 	newIframe.src = "http://epics-jenkins.isis.rl.ac.uk/plugin/jenkinswalldisplay/walldisplay.html?viewName=All&jenkinsUrl=http%3A%2F%2Fepics-jenkins.isis.rl.ac.uk%2F"
 	newIframe.height = String(windowHeight*2/5)+"px"
 	newIframe.width = "100%"
-	//newIframe.frameborder = "0"
-	document.getElementById("internal").appendChild(newIframe);
-	
-	
+	document.getElementById("internal").appendChild(newIframe);	
 }
 
 
@@ -77,14 +73,11 @@ function on_click(elmnt) {
 	create_new_window();
 	var newIframe = document.createElement("iframe");
 	newIframe.src = "http://dataweb.isis.rl.ac.uk/IbexDataweb/default.html?Instrument="+ elmnt.innerHTML
-	newIframe.height = String(windowHeight*2/5)+"px"
+	newIframe.height = "40%"
 	newIframe.width = "100%"
 	newIframe.frameborder = "0"
 	document.getElementById("internal").appendChild(newIframe);
-		//<iframe src="https://waffle.io/ISISComputingGroup/IBEX" height = "100%" width = "100%" frameborder = "0" ></iframe>
-
-	//window.location = "http://dataweb.isis.rl.ac.uk/IbexDataweb/default.html?Instrument="+ elmnt.innerHTML
-};
+}
 
 function display_data(data){
 	var onlineClients = new Array();
@@ -96,7 +89,7 @@ function display_data(data){
 			offlineClients.push(value);
 		};	
 	};
-	data = sortObject(data);
+	data = sortDictionary(data);
 	var total_users = Object.keys(data).length;
 	document.getElementById("totalUsers").innerHTML = total_users;
 	document.getElementById("onlineUsers").innerHTML = Object.keys(onlineClients).length;
@@ -104,17 +97,19 @@ function display_data(data){
 	clearBox("buttons")
 	for (value in data){
 		var newButton = document.createElement("button");
+		
 		newButton.innerHTML = value
 
 		newButton.style.type = "btn";
-		//newButton.onclick = function(event,newButton) {
-		//window.location = "http://dataweb.isis.rl.ac.uk/IbexDataweb/default.html?Instrument="+newButton.innerHTML;
-		//};
-		if (total_users >15){
+
+		// Need to choose whether to display bigger or smaller buttons based on the
+		// number of users, otherwise page might overflow and require scrolling
+		var max_users_for_large_buttons = 15;
+		if (total_users > max_users_for_large_buttons){
 			ending = "btn-large";
 		} else {
 			ending = "btn-xl";
-			};	
+		};	
 		var blockListStyle = document.createAttribute("class");
 		if (data[value] == true){
 			blockListStyle.value = 'btn btn-success '+ending;
@@ -128,8 +123,8 @@ function display_data(data){
 
 		document.getElementById("buttons").appendChild(newButton);
 
-	};
-};
+	}
+}
 
 $(document).ready(refresh());
 var windowWidth = $(window).width();
