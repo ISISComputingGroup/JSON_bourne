@@ -34,7 +34,12 @@ RETRIES_BETWEEN_LOGS = 60
 class MyHandler(BaseHTTPRequestHandler):
 
     @staticmethod
-    def _handle_all_instruments(data):
+    def _get_whether_ibex_is_running_on_all_instruments(data):
+        """
+        Gets whether ibex is running for each instrument.
+        :param data: The data scraped from the archiver webpage
+        :return: A json dictionary containing the states of each instrument
+        """
         active = dict()
         for key in data:
             if data[key] != "":
@@ -44,7 +49,13 @@ class MyHandler(BaseHTTPRequestHandler):
         return str(json.dumps(active))
 
     @staticmethod
-    def _handle_specific_instrument(instrument, data):
+    def _get_detailed_state_of_specific_instrument(instrument, data):
+        """
+        Gets the detailed state of a specific instrument, used to display the instrument's dataweb screen
+        :param instrument: The instrument to get data for
+        :param data: The data scraped from the archiver webpage
+        :return: The data from the archiver webpage filtered to only contain data about the requested instrument
+        """
         if instrument not in data.keys():
             raise ValueError(str(instrument) + " not known")
         if data[instrument] == "":
@@ -82,9 +93,9 @@ class MyHandler(BaseHTTPRequestHandler):
 
             with _scraped_data_lock:
                 if inst == "ALL":
-                    ans = self._handle_all_instruments( _scraped_data)
+                    ans = self._get_whether_ibex_is_running_on_all_instruments(_scraped_data)
                 else:
-                    ans = self._handle_specific_instrument(inst, _scraped_data)
+                    ans = self._get_detailed_state_of_specific_instrument(inst, _scraped_data)
 
             response = "{}({})".format(callback, ans)
 
