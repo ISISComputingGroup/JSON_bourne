@@ -173,11 +173,11 @@ function clearBox(elementID){
 /**
  * creates a Title at the top looking similar to the IBEX GUI
  */
-function createTitle(obj){
+function createTitle(inst_details){
 	clearBox("top_bar");
 	
 	document.getElementById("top_bar").innerHTML = "<div id = \"inst_name\"></div><table><tr id = table_part><th id = \"next_part\" style = \"padding: 10px; background-color:lightgrey ; border: black 2px solid\";></th></tr></table>";
-	runStatus = obj["inst_pvs"]["RUNSTATE"]["value"];
+	runStatus = inst_details["inst_pvs"]["RUNSTATE"]["value"];
 	
 	switch (runStatus){
 		case "PROCESSING" || "UPDATING" || "STORING" || "SAVING" || "UNKNOWN":
@@ -210,20 +210,20 @@ function createTitle(obj){
 	title.setAttributeNode(blockListClass);
 	document.getElementById("inst_name").appendChild(title);
 	
-	addItemToTable("Title", obj["inst_pvs"]["TITLE"]["value"]);
-	addItemToTable("Users", obj["inst_pvs"]["_USERNAME"]["value"]);
+	addItemToTable("Title", inst_details["inst_pvs"]["TITLE"]["value"]);
+	addItemToTable("Users", inst_details["inst_pvs"]["_USERNAME"]["value"]);
 	
 	newPartOfTable();
 	
-	addItemToTable("Good / Raw Frames", obj["inst_pvs"]["GOODFRAMES"]["value"]+"/"+obj["inst_pvs"]["RAWFRAMES"]["value"]);
-	addItemToTable("Current / Total", obj["inst_pvs"]["BEAMCURRENT"]["value"]+"/"+obj["inst_pvs"]["TOTALUAMPS"]["value"]);
-	addItemToTable("Monitor Counts", obj["inst_pvs"]["MONITORCOUNTS"]["value"]);
+	addItemToTable("Good / Raw Frames", inst_details["inst_pvs"]["GOODFRAMES"]["value"]+"/"+inst_details["inst_pvs"]["RAWFRAMES"]["value"]);
+	addItemToTable("Current / Total", inst_details["inst_pvs"]["BEAMCURRENT"]["value"]+"/"+inst_details["inst_pvs"]["TOTALUAMPS"]["value"]);
+	addItemToTable("Monitor Counts", inst_details["inst_pvs"]["MONITORCOUNTS"]["value"]);
 	
 	newPartOfTable();
 	
-	addItemToTable("Inst. Time", obj["inst_pvs"]["STARTTIME"]["value"]);
-	addItemToTable("Run Time", obj["inst_pvs"]["RUNDURATION_PD"]["value"]);
-	addItemToTable("Period", obj["inst_pvs"]["PERIOD"]["value"]+"/"+obj["inst_pvs"]["NUMPERIODS"]["value"]);
+	addItemToTable("Inst. Time", inst_details["inst_pvs"]["STARTTIME"]["value"]);
+	addItemToTable("Run Time", inst_details["inst_pvs"]["RUNDURATION_PD"]["value"]);
+	addItemToTable("Period", inst_details["inst_pvs"]["PERIOD"]["value"]+"/"+inst_details["inst_pvs"]["NUMPERIODS"]["value"]);
 	
 };
 
