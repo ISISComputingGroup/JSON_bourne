@@ -163,12 +163,12 @@ function parseObject(obj) {
     document.getElementById("config_name").appendChild(nodeConfigTitle);
 	
 	setVisibilityMode('block');
-};
+}
 
 
 function clearBox(elementID){
     document.getElementById(elementID).innerHTML = "";
-};
+}
 
 /**
  * creates a Title at the top looking similar to the IBEX GUI
@@ -179,29 +179,8 @@ function createTitle(inst_details){
 	document.getElementById("top_bar").innerHTML = "<div id = \"inst_name\"></div><table><tr id = table_part><th id = \"next_part\" style = \"padding: 10px; background-color:lightgrey ; border: black 2px solid\";></th></tr></table>";
 	runStatus = inst_details["inst_pvs"]["RUNSTATE"]["value"];
 	
-	switch (runStatus){
-		case "PROCESSING" || "UPDATING" || "STORING" || "SAVING" || "UNKNOWN":
-			colour = "YELLOW";
-			break;
-		case "RUNNING":
-			colour = "LIGHTGREEN";
-			break;
-		case "SETUP":
-			colour = "LIGHTBLUE";
-			break;
-		case "PAUSED":
-			colour = "RED";
-			break;
-		case "WAITING" || "VETOING":
-			colour = "GOLDENROD";
-			break;
-		case "ENDING" || "ABORTING":
-			colour = "BLUE";
-			break;
-		case "PAUSING":
-			colour = "DARK_RED";
-			break;
-	};
+	colour = getColourFromRunState(runStatus);
+	
 	document.getElementById("inst_name").style = "padding: 10px; background-color:" +colour+"; border: black 2px solid";
 	var title = document.createElement("h3"); 
 	title.innerHTML = instrument.toUpperCase() + " is " + runStatus;
@@ -225,14 +204,41 @@ function createTitle(inst_details){
 	addItemToTable("Run Time", inst_details["inst_pvs"]["RUNDURATION_PD"]["value"]);
 	addItemToTable("Period", inst_details["inst_pvs"]["PERIOD"]["value"]+"/"+inst_details["inst_pvs"]["NUMPERIODS"]["value"]);
 	
-};
+}
 
+/**
+ *	Gets a colour for a particular run status.
+ */
+function getColourFromRunState(runState){
+	switch (runStatus){
+		case "RUNNING":
+			return "LIGHTGREEN";
+		case "SETUP":
+			return "LIGHTBLUE";
+		case "PAUSED":
+			return "RED";
+		case "WAITING" || "VETOING":
+			return "GOLDENROD";
+		case "ENDING" || "ABORTING":
+			return "BLUE";
+		case "PAUSING":
+			return "DARK_RED";
+		default:
+			return "YELLOW"
+	}	
+}
 
+/**
+  *	Create a new part of the table in the top bar.
+  */
 function newPartOfTable(){
 	document.getElementById("next_part").removeAttribute("id");
 	document.getElementById("table_part").innerHTML += "<th id = \"next_part\" style = \"padding: 10px; background-color:lightgrey ; border: black 2px solid\";></th>";
-};
+}
 
+/**
+  *	Add an item to the table in the top bar.
+  */ 
 function addItemToTable(name, value) {
 	var elem = document.createElement("h5");
 	elem.innerHTML = name + ": " + value + "&nbsp;".repeat(30);
