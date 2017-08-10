@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+  <title>IBEX status</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script src="ibexOverview.js" type="text/javascript" defer></script>
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico"/>
+  <link rel="stylesheet" href="ibexOverviewStyle.css" />
+</head>
+<body style="background-color:powderblue;">
+<nav class="navbar navbar-default">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+	<div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="ibexOverview.html">IBEX</a>
+    </div>
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        <li><a href="ibexWaffle.html">waffle.io</a></li>
+        <li><a href="http://epics-jenkins.isis.rl.ac.uk/">Jenkins</a></li>
+		<li><a href="http://epics-jenkins.isis.rl.ac.uk/job/ibex_gui_pipeline/checkstyle/trendDetails/">Checkstyle Warnings</a></li>
+		<li><a onclick="open_wall_display()">Wall display</a></li>
+      </ul>
+    </div>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    
+    <div class="col-sm-12">
+      <div class="row">
+        <div class="col-sm-4">
+          <div class="well">
+		  <div class="row">
+            <h3 class="text-center"><b>Total Instruments</b></h3>
+			<h3 id = "totalUsers" class="text-center"></h3> 
+          </div>
+        </div></div>
+        <div class="col-sm-4">
+          <div class="well">
+            <h3 style="color:limegreen"class="text-center"><b>Online Instruments</b></h3>
+            <h3 id = "onlineUsers" class="text-center"></h3> 
+          </div> 
+        </div>
+        <div class="col-sm-4">
+          <div class="well">
+            <h3 style ="color:red"class="text-center"><b>Offline Instruments</b></h3>
+            <h3 id = "offlineUsers" class="text-center"></h3> 
+          </div>
+        </div>
+        <div class="col-sm-12">
+          <div class="well">
+		  <div id = "buttons"></div>
+        </div>
+      </div>
+      <div id = "new_window">
+      </div>
+    </div>
+</div>
+
+</div>
+</body>
+</html>

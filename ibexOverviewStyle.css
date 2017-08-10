@@ -1,0 +1,25 @@
+/* Set gray background color and 100% height */
+.sidenav {
+  background-color: #f1f1f1;
+  height: 100%;
+}
+.btn-xl {
+class:text-center;
+padding: 10px 20px;
+font-size: 20px;
+border-radius: 10px;
+width:20%;
+}
+.btn-large {
+class:text-center;
+padding: 10px 20px;
+font-size: 20px;
+border-radius: 10px;
+width:10%;
+}
+/* On small screens, set height to 'auto' for the grid */
+@media screen and (max-width: 767px) {
+  .row.content {height: auto;} 
+
+
+}

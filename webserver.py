@@ -33,6 +33,38 @@ RETRIES_BETWEEN_LOGS = 60
 
 class MyHandler(BaseHTTPRequestHandler):
 
+    @staticmethod
+    def _get_whether_ibex_is_running_on_all_instruments(data):
+        """
+        Gets whether ibex is running for each instrument.
+        :param data: The data scraped from the archiver webpage
+        :return: A json dictionary containing the states of each instrument
+        """
+        active = dict()
+        for key in data:
+            if data[key] != "":
+                active[key] = True
+            else:
+                active[key] = False
+        return str(json.dumps(active))
+
+    @staticmethod
+    def _get_detailed_state_of_specific_instrument(instrument, data):
+        """
+        Gets the detailed state of a specific instrument, used to display the instrument's dataweb screen
+        :param instrument: The instrument to get data for
+        :param data: The data scraped from the archiver webpage
+        :return: The data from the archiver webpage filtered to only contain data about the requested instrument
+        """
+        if instrument not in data.keys():
+            raise ValueError(str(instrument) + " not known")
+        if data[instrument] == "":
+            raise ValueError("Instrument has become unavailable")
+        try:
+            return str(json.dumps(_scraped_data[instrument]))
+        except Exception as err:
+            raise ValueError("Unable to convert instrument data to JSON: %s" % err.message)
+
     def do_GET(self):
         """
         This is called by BaseHTTPRequestHandler every time a client does a GET.
@@ -60,20 +92,17 @@ class MyHandler(BaseHTTPRequestHandler):
             logger.warn("Connected to from " + str(self.client_address) + " looking at " + str(inst))
 
             with _scraped_data_lock:
-                if inst not in _scraped_data.keys():
-                    raise ValueError(str(inst) + " not known")
-                if _scraped_data[inst] == "":
-                    raise ValueError("Instrument has become unavailable")
-                try:
-                    ans = "%s(%s)" % (callback, json.dumps(_scraped_data[inst]))
-                except Exception as err:
-                    raise ValueError("Unable to convert instrument data to JSON: %s" % err.message)
+                if inst == "ALL":
+                    ans = self._get_whether_ibex_is_running_on_all_instruments(_scraped_data)
+                else:
+                    ans = self._get_detailed_state_of_specific_instrument(inst, _scraped_data)
+
+            response = "{}({})".format(callback, ans)
 
             self.send_response(200)
             self.send_header('Content-type', 'text/html')
             self.end_headers()
-
-            self.wfile.write(ans)
+            self.wfile.write(response)
         except ValueError as e:
             self.send_response(400)
             logger.error(e)
