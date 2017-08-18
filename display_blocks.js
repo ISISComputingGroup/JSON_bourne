@@ -181,7 +181,7 @@ function createTitle(inst_details){
 	
 	colour = getColourFromRunState(runStatus);
 	
-	document.getElementById("inst_name").style.padding = "10px"; //"padding: 10px; background-color:" +colour+"; border: black 2px solid";
+	document.getElementById("inst_name").style.padding = "10px";
 	document.getElementById("inst_name").style.backgroundColor = colour;
 	document.getElementById("inst_name").style.border = "black 2px solid";
 	var title = document.createElement("h3"); 
