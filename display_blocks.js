@@ -181,7 +181,9 @@ function createTitle(inst_details){
 	
 	colour = getColourFromRunState(runStatus);
 	
-	document.getElementById("inst_name").style = "padding: 10px; background-color:" +colour+"; border: black 2px solid";
+	document.getElementById("inst_name").style.padding = "10px"; //"padding: 10px; background-color:" +colour+"; border: black 2px solid";
+	document.getElementById("inst_name").style.backgroundColor = colour;
+	document.getElementById("inst_name").style.border = "black 2px solid";
 	var title = document.createElement("h3"); 
 	title.innerHTML = instrument.toUpperCase() + " is " + runStatus;
 	var blockListClass = document.createAttribute("class");
@@ -233,7 +235,7 @@ function getColourFromRunState(runState){
   */
 function newPartOfTable(){
 	document.getElementById("next_part").removeAttribute("id");
-	document.getElementById("table_part").innerHTML += "<th id = \"next_part\" style = \"padding: 10px; background-color:lightgrey ; border: black 2px solid\";></th>";
+	document.getElementById("table_part").innerHTML += "<th id = \"next_part\" style = \"padding: 10px; background-color:lightgrey; width:50%; border: black 2px solid\";></th>";
 }
 
 /**
