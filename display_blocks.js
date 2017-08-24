@@ -136,6 +136,7 @@ function refresh() {
 function parseObject(obj) {
     // set up page
     instrumentState = obj;
+	createTitle(obj)
     showHidden = document.getElementById("showHidden").checked;
 	if ("DISPLAY" in instrumentState.inst_pvs) {
 		showPrivate = getBoolean(instrumentState.inst_pvs["DISPLAY"]["value"]);
@@ -146,12 +147,6 @@ function parseObject(obj) {
     clear(nodeInstTitle);
     clear(nodeConfigTitle);
 
-    nodeInstTitle.appendChild(document.createTextNode(instrument));
-    nodeConfigTitle.appendChild(document.createTextNode("Configuration: " + instrumentState.config_name));
-
-    document.getElementById("inst_name").appendChild(nodeInstTitle);
-    document.getElementById("config_name").appendChild(nodeConfigTitle);
-
     // populate blocks
     var nodeGroups = document.getElementById("groups");
     getDisplayGroups(nodeGroups, instrumentState.groups);
@@ -160,10 +155,96 @@ function parseObject(obj) {
     var nodeInstPVs = document.getElementById("inst_pvs");
     var nodeInstPVList = document.createElement("ul");
 
-    nodeInstPVs.appendChild(nodeInstPVList);
     getDisplayRunInfo(nodeInstPVs, instrumentState.inst_pvs);
+
+    nodeInstTitle.appendChild(document.createTextNode(instrument));
+    nodeConfigTitle.appendChild(document.createTextNode("Configuration: " + instrumentState.config_name));
+
+    document.getElementById("config_name").appendChild(nodeConfigTitle);
 	
 	setVisibilityMode('block');
+}
+
+
+function clearBox(elementID){
+    document.getElementById(elementID).innerHTML = "";
+}
+
+/**
+ * creates a Title at the top looking similar to the IBEX GUI
+ */
+function createTitle(inst_details){
+	clearBox("top_bar");
+	
+	document.getElementById("top_bar").innerHTML = "<div id = \"inst_name\"></div><table><tr id = table_part><th id = \"next_part\" style = \"padding: 10px; background-color:lightgrey ; border: black 2px solid\";></th></tr></table>";
+	runStatus = inst_details["inst_pvs"]["RUNSTATE"]["value"];
+	
+	colour = getColourFromRunState(runStatus);
+	
+	document.getElementById("inst_name").style.padding = "10px";
+	document.getElementById("inst_name").style.backgroundColor = colour;
+	document.getElementById("inst_name").style.border = "black 2px solid";
+	var title = document.createElement("h3"); 
+	title.innerHTML = instrument.toUpperCase() + " is " + runStatus;
+	var blockListClass = document.createAttribute("class");
+	blockListClass.value = "text-center";
+	title.setAttributeNode(blockListClass);
+	document.getElementById("inst_name").appendChild(title);
+	
+	addItemToTable("Title", inst_details["inst_pvs"]["TITLE"]["value"]);
+	addItemToTable("Users", inst_details["inst_pvs"]["_USERNAME"]["value"]);
+	
+	newPartOfTable();
+	
+	addItemToTable("Good / Raw Frames", inst_details["inst_pvs"]["GOODFRAMES"]["value"]+"/"+inst_details["inst_pvs"]["RAWFRAMES"]["value"]);
+	addItemToTable("Current / Total", inst_details["inst_pvs"]["BEAMCURRENT"]["value"]+"/"+inst_details["inst_pvs"]["TOTALUAMPS"]["value"]);
+	addItemToTable("Monitor Counts", inst_details["inst_pvs"]["MONITORCOUNTS"]["value"]);
+	
+	newPartOfTable();
+	
+	addItemToTable("Inst. Time", inst_details["inst_pvs"]["STARTTIME"]["value"]);
+	addItemToTable("Run Time", inst_details["inst_pvs"]["RUNDURATION_PD"]["value"]);
+	addItemToTable("Period", inst_details["inst_pvs"]["PERIOD"]["value"]+"/"+inst_details["inst_pvs"]["NUMPERIODS"]["value"]);
+	
+}
+
+/**
+ *	Gets a colour for a particular run status.
+ */
+function getColourFromRunState(runState){
+	switch (runStatus){
+		case "RUNNING":
+			return "LIGHTGREEN";
+		case "SETUP":
+			return "LIGHTBLUE";
+		case "PAUSED":
+			return "RED";
+		case "WAITING" || "VETOING":
+			return "GOLDENROD";
+		case "ENDING" || "ABORTING":
+			return "BLUE";
+		case "PAUSING":
+			return "DARK_RED";
+		default:
+			return "YELLOW"
+	}	
+}
+
+/**
+  *	Create a new part of the table in the top bar.
+  */
+function newPartOfTable(){
+	document.getElementById("next_part").removeAttribute("id");
+	document.getElementById("table_part").innerHTML += "<th id = \"next_part\" style = \"padding: 10px; background-color:lightgrey; width:50%; border: black 2px solid\";></th>";
+}
+
+/**
+  *	Add an item to the table in the top bar.
+  */ 
+function addItemToTable(name, value) {
+	var elem = document.createElement("h5");
+	elem.innerHTML = name + ": " + value + "&nbsp;".repeat(30);
+	document.getElementById("next_part").appendChild(elem);
 }
 
 /**
@@ -173,11 +254,9 @@ function displayError() {
 
     clear(nodeInstTitle);
     clear(nodeConfigTitle);
-
-    nodeInstTitle.appendChild(document.createTextNode(instrument));
     nodeConfigTitle.appendChild(document.createTextNode("Could not connect to " + instrument + ", check IBEX server is running."));
 
-	document.getElementById("inst_name").appendChild(nodeInstTitle);
+	document.getElementById("top_bar").innerHTML = instrument;
 	document.getElementById("config_name").appendChild(nodeConfigTitle);
 	
 	setVisibilityMode('none');
