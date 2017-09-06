@@ -104,8 +104,9 @@ class MyHandler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(response)
         except ValueError as e:
-            self.send_response(400)
             logger.error(e)
+            logger.warn("Return 400 because of error!")
+            self.send_response(400)
         except Exception as e:
             self.send_response(404)
             logger.error(e)
