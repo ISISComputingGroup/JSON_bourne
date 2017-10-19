@@ -1,5 +1,5 @@
 var PORT = 60000;
-var HOST = "http://dataweb.isis.rl.ac.uk" 
+var HOST = "http://localhost"
 var showPrivate = true;
 var privateRunInfo = ["TITLE", "_USERNAME"];
 var instrument = getURLParameter("Instrument");

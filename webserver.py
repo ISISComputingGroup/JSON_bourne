@@ -1,8 +1,12 @@
+import traceback
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from SocketServer import ThreadingMixIn
 from threading import Thread, active_count, RLock
 from time import sleep
 import re
+
+import sys
+
 from get_webpage import scrape_webpage
 import json
 from logging.handlers import TimedRotatingFileHandler
@@ -16,7 +20,7 @@ logger.addHandler(handler)
 
 HOST, PORT = '', 60000
 
-ALL_INSTS = {"MUONFE": "NDEMUONFE"}  # Used for non NDX hosts format of {name: host}
+ALL_INSTS = {"MUONFE": "NDEMUONFE", "NDW1798": "localhost"}  # Used for non NDX hosts format of {name: host}
 
 NDX_INSTS = ["DEMO", "LARMOR", "IMAT", "IRIS", "VESUVIO", "ALF", "ZOOM", "POLARIS", "HRPD", "MERLIN", "ENGINX", "RIKENFE"]
 
@@ -153,7 +157,7 @@ class WebScraper(Thread):
             except Exception as e:
                 if not self._previously_failed or self._tries_since_logged >= RETRIES_BETWEEN_LOGS:
                     logger.error("Failed to get data from instrument: " + str(self._name) + " at " + str(self._host) +
-                              " error was: " + str(e))
+                              " error was: " + str(e) + " - Stack (1 line) {stack}:".format(stack=traceback.format_exc()))
                     self._previously_failed = True
                     self._tries_since_logged = 0
                 with _scraped_data_lock:

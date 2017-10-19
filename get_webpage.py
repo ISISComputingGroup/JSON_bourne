@@ -152,8 +152,15 @@ def get_instpvs(url, blocks_all):
         if pv + ".VAL" in ans:
             wanted[pv] = ans[pv + ".VAL"]
 
-    convert_seconds(wanted["RUNDURATION"])
-    convert_seconds(wanted["RUNDURATION_PD"])
+    try:
+        convert_seconds(wanted["RUNDURATION"])
+    except KeyError:
+        pass
+
+    try:
+        convert_seconds(wanted["RUNDURATION_PD"])
+    except KeyError:
+        pass
 
     return wanted
 
