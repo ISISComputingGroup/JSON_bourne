@@ -51,10 +51,6 @@ pipeline {
             """
       }
     }
-    
-    stage("Trigger Downstream") {
-
-    }
   }
   
   post {
