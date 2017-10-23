@@ -47,7 +47,13 @@ pipeline {
             set GIT_COMMIT=${env.GIT_COMMIT}
             set RELEASE_BRANCH=${env.RELEASE_VERSION}
             set RELEASE=${env.IS_RELEASE}
-            python run_tests.py
+            call build/update_genie_python.bat
+            if %errorlevel% neq 0 (
+                    @echo ERROR: Cannot install clean genie_python
+                    goto ERROR
+            )
+
+            C:\Instrument\Apps\Python\python.exe run_tests.py
             """
       }
     }
