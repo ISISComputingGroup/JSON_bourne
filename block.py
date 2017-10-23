@@ -13,6 +13,10 @@
 # along with this program; if not, you can obtain a copy from
 # https://www.eclipse.org/org/documents/epl-v10.php or
 # http://opensource.org/licenses/eclipse-1.0.php
+"""
+Classes for Blocks
+"""
+
 
 # Temporary fix to prevent RC values from being returned from the server
 # while there is still a problem with getting rc values from the archiver.
@@ -20,10 +24,18 @@
 # be removed. See issue #2446
 RETURN_RC_VALUES = False
 
-class Block:
-    """ Class holding Block details. Used for displaying in dataweb"""
 
-    def __init__(self, name, status, value, alarm, visibility):
+class Block:
+    """
+    Class holding Block details. Used for displaying in dataweb
+    """
+
+    # Status when the block is connected
+    CONNECTED = "Connected"
+    # Status hen the block is disconnected
+    DISCONNECTED = "DisConnected"
+
+    def __init__(self, name, status, value, alarm, visibility, units=""):
         """
         Standard constructor.
 
@@ -32,6 +44,7 @@ class Block:
             status: the status of the block (e.g disconnected)
             value: the current block value
             alarm: the alarm status
+            units: units associated with the value
         """
         self.name = name
         self.status = status
@@ -42,6 +55,7 @@ class Block:
         self.high = None
         self.inrange = None
         self.enabled = "NO"
+        self.units = units
 
     def get_name(self):
         """ Returns the block status. """
@@ -66,6 +80,14 @@ class Block:
     def set_value(self, value):
         """ Sets the block value. """
         self.value = value
+
+    def get_units(self):
+        """ Returns the units for the block. """
+        return self.units
+
+    def set_units(self, units):
+        """ Returns the units for the block. """
+        self.units = units
 
     def get_alarm(self):
         """ Returns the block alarm state. """
@@ -119,15 +141,19 @@ class Block:
         """
         :return Whether this block is connected
         """
-        return self.status == "Connected"
+        return self.status == Block.CONNECTED
 
     def get_description(self):
         """ Returns the full description of this BoolStr object. """
-        ans = {}
-        ans["status"] = self.status
-        ans["value"] = self.value
-        ans["alarm"] = self.alarm
-        ans["visibility"] = self.visibility
+        if self.units == "":
+            formatted_value = self.value
+        else:
+            formatted_value = "{value} {units}".format(value=self.value, units=self.units)
+        ans = {
+            "status": self.status,
+            "value": formatted_value,
+            "alarm": self.alarm,
+            "visibility": self.visibility}
 
         if RETURN_RC_VALUES:
             # add rc values if they're set

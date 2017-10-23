@@ -1,16 +1,14 @@
+import json
+import logging
+import re
 import traceback
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from SocketServer import ThreadingMixIn
+from logging.handlers import TimedRotatingFileHandler
 from threading import Thread, active_count, RLock
 from time import sleep
-import re
 
-import sys
-
-from get_webpage import scrape_webpage
-import json
-from logging.handlers import TimedRotatingFileHandler
-import logging
+from external_webpage.get_webpage import WebPageScraper
 
 logger = logging.getLogger('JSON_bourne')
 handler = TimedRotatingFileHandler('log\JSON_bourne.log', when='midnight', backupCount=30)
@@ -20,9 +18,10 @@ logger.addHandler(handler)
 
 HOST, PORT = '', 60000
 
-ALL_INSTS = {"MUONFE": "NDEMUONFE", "NDW1798": "localhost"}  # Used for non NDX hosts format of {name: host}
+ALL_INSTS = {"MUONFE": "NDEMUONFE"}  # Used for non NDX hosts format of {name: host}
 
-NDX_INSTS = ["DEMO", "LARMOR", "IMAT", "IRIS", "VESUVIO", "ALF", "ZOOM", "POLARIS", "HRPD", "MERLIN", "ENGINX", "RIKENFE"]
+NDX_INSTS = ["DEMO", "LARMOR", "IMAT", "IRIS", "VESUVIO", "ALF", "ZOOM", "POLARIS", "HRPD", "MERLIN", "ENGINX",
+             "RIKENFE"]
 
 for inst in NDX_INSTS:
     ALL_INSTS[inst] = "NDX" + inst
@@ -36,6 +35,9 @@ RETRIES_BETWEEN_LOGS = 60
 
 
 class MyHandler(BaseHTTPRequestHandler):
+    """
+    Handle for web calls for Json Borne
+    """
 
     @staticmethod
     def _get_whether_ibex_is_running_on_all_instruments(data):
@@ -90,16 +92,16 @@ class MyHandler(BaseHTTPRequestHandler):
                 raise ValueError("No instrument specified")
 
             callback = result.groups()[0]
-            inst = instruments.groups()[0].upper()
+            inst_uppercase = instruments.groups()[0].upper()
 
             # Warn level so as to avoid many log messages that come from other modules
-            logger.warn("Connected to from " + str(self.client_address) + " looking at " + str(inst))
+            logger.warn("Connected to from " + str(self.client_address) + " looking at " + str(inst_uppercase))
 
             with _scraped_data_lock:
-                if inst == "ALL":
+                if inst_uppercase == "ALL":
                     ans = self._get_whether_ibex_is_running_on_all_instruments(_scraped_data)
                 else:
-                    ans = self._get_detailed_state_of_specific_instrument(inst, _scraped_data)
+                    ans = self._get_detailed_state_of_specific_instrument(inst_uppercase, _scraped_data)
 
             response = "{}({})".format(callback, ans)
 
@@ -126,28 +128,50 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 
 
 class WebScraper(Thread):
+    """
+    Information for instruments based on external source.
+    """
     _running = True
     _previously_failed = False
     _tries_since_logged = 0
 
     def wait(self, seconds):
-        # Lots of short waits so can stop thread more quickly
+        """
+        Wait for a number of seconds but in short waits so can stop thread more quickly
+        Args:
+            seconds: number of seconds to wait
+
+        Returns:
+
+        """
         for i in range(seconds):
             if not self._running:
                 return
             sleep(1)
 
     def __init__(self, name, host):
+        """
+        Initialize.
+        Args:
+            name: Name of instrument.
+            host: Host for the instrument.
+        """
         super(WebScraper, self).__init__()
         self._host = host
         self._name = name
 
     def run(self):
+        """
+        Function to run continuously to update the scraped data.
+        Returns:
+
+        """
         global _scraped_data
+        web_page_scraper = WebPageScraper(self._host)
         while self._running:
             try:
                 self._tries_since_logged += 1
-                temp_data = scrape_webpage(self._host)
+                temp_data = web_page_scraper.scrape_webpage()
                 with _scraped_data_lock:
                     _scraped_data[self._name] = temp_data
                 if self._previously_failed:
@@ -156,8 +180,8 @@ class WebScraper(Thread):
                 self.wait(WAIT_BETWEEN_UPDATES)
             except Exception as e:
                 if not self._previously_failed or self._tries_since_logged >= RETRIES_BETWEEN_LOGS:
-                    logger.error("Failed to get data from instrument: " + str(self._name) + " at " + str(self._host) +
-                              " error was: " + str(e) + " - Stack (1 line) {stack}:".format(stack=traceback.format_exc()))
+                    logger.error("Failed to get data from instrument: {0} at {1} error was: {2}{3}".format(
+                        self._name, self._host, e, " - Stack (1 line) {stack}:".format(stack=traceback.format_exc())))
                     self._previously_failed = True
                     self._tries_since_logged = 0
                 with _scraped_data_lock:
@@ -166,8 +190,8 @@ class WebScraper(Thread):
 
 if __name__ == '__main__':
     web_scrapers = []
-    for name, host in ALL_INSTS.iteritems():
-        web_scraper = WebScraper(name, host)
+    for inst_name, inst_host in ALL_INSTS.items():
+        web_scraper = WebScraper(inst_name, inst_host)
         web_scraper.start()
         web_scrapers.append(web_scraper)
 
@@ -177,7 +201,7 @@ if __name__ == '__main__':
         while True:
             server.serve_forever()
     except KeyboardInterrupt:
-        print "Shutting down"
+        print("Shutting down")
         for w in web_scrapers:
             w._running = False
     while active_count() > 1:

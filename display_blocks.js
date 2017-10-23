@@ -190,7 +190,7 @@ function createTitle(inst_details){
 	blockListClass.value = "text-center";
 	title.setAttributeNode(blockListClass);
 	document.getElementById("inst_name").appendChild(title);
-	
+
 	addItemToTable("Title", inst_details["inst_pvs"]["TITLE"]["value"]);
 	addItemToTable("Users", inst_details["inst_pvs"]["_USERNAME"]["value"]);
 	
@@ -235,7 +235,7 @@ function getColourFromRunState(runState){
   */
 function newPartOfTable(){
 	document.getElementById("next_part").removeAttribute("id");
-	document.getElementById("table_part").innerHTML += "<th id = \"next_part\" style = \"padding: 10px; background-color:lightgrey; width:50%; border: black 2px solid\";></th>";
+	document.getElementById("table_part").innerHTML += "<th id = \"next_part\" style = \"padding: 10px; background-color:lightgrey; width:33%; border: black 2px solid\";></th>";
 }
 
 /**
@@ -346,7 +346,7 @@ function displayOneBlock(node, block, blockName) {
             writeRangeInfo(nodeBlock, rc_inrange);
         }
         // write alarm status if active
-        if (!alarm.startsWith("null") && !alarm.startsWith("OK")) {
+        if (!alarm.startsWith("null") && alarm !== "") {
             writeAlarmInfo(nodeBlock, alarm);
         }
     }
