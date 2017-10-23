@@ -17,76 +17,13 @@
 Classes getting external resources from an instrument and formating them for the info page.
 """
 
-import requests
-import json
-from block_utils import (format_blocks, set_rc_values_for_blocks)
 import logging
 
+from block_utils import (format_blocks, set_rc_values_for_blocks)
+from external_webpage.data_source_reader import DataSourceReader
 from external_webpage.web_page_parser import WebPageParser
 
 logger = logging.getLogger('JSON_bourne')
-
-PORT_INSTPV = 4812
-PORT_BLOCKS = 4813
-PORT_CONFIG = 8008
-
-
-class PageReader(object):
-    """
-    Access of external gata sources from urls.
-    """
-
-    def __init__(self, host):
-        """
-        Initialize.
-        Args:
-            host: The host name for the instrument.
-        """
-        self._host = host
-
-    def get_info(self, port, group_name):
-        """
-        Read block information from the archiver and populate a list of block objects with it.
-
-        Args:
-            port: the port the url is on
-            group_name: the name of the group within the archiver to access.
-
-        Returns: A converted list of block objects.
-
-        """
-        url = 'http://{host}:{port}/group?name={group_name}&format=json'.format(
-            host=self._host, port=port, group_name=group_name)
-        try:
-            page = requests.get(url)
-            return page.json()
-        except Exception as e:
-            logger.error("URL not found or json not understood: " + str(url))
-            raise e
-
-    def read_config(self, port):
-        """
-        Read the configuration from the instrument blockserver.
-        Args:
-            port: Port the server is on.
-
-        Returns: The configuration as a dictionary.
-
-        """
-
-        # read config
-        page = requests.get('http://%s:%s/' % (self._host, port))
-        corrected_page = page.content\
-            .replace("'", '"')\
-            .replace("None", "null")\
-            .replace("True", "true")\
-            .replace("False", "false")
-        try:
-            return json.loads(corrected_page)
-        except Exception as e:
-            logger.error("JSON conversion failed: " + str(e))
-            logger.error("JSON was: " + str(corrected_page))
-            raise e
 
 
 class InstrumentConfig(object):
@@ -122,7 +59,7 @@ class InstrumentConfig(object):
         return block["visible"]
 
 
-class WebPageScraper:
+class InstrumentInformationCollator:
     """
     Collect instrument information and summarise as a dictionary.
     """
@@ -135,7 +72,7 @@ class WebPageScraper:
             reader: A reader object to get external information.
         """
         if reader is None:
-            self.reader = PageReader(host)
+            self.reader = DataSourceReader(host)
         else:
             self.reader = reader
 
@@ -157,8 +94,8 @@ class WebPageScraper:
         required_pvs = ["RUNSTATE", "RUNNUMBER", "_RBNUMBER", "TITLE", "DISPLAY", "_USERNAME", "STARTTIME",
                         "RUNDURATION", "RUNDURATION_PD", "GOODFRAMES", "GOODFRAMES_PD", "RAWFRAMES", "RAWFRAMES_PD",
                         "PERIOD", "NUMPERIODS", "PERIODSEQ", "BEAMCURRENT", "TOTALUAMPS", "COUNTRATE", "DAEMEMORYUSED",
-                        "TOTALCOUNTS", "DAETIMINGSOURCE", "MONITORCOUNTS", "MONITORSPECTRUM", "MONITORFROM", "MONITORTO",
-                        "NUMTIMECHANNELS", "NUMSPECTRA"]
+                        "TOTALCOUNTS", "DAETIMINGSOURCE", "MONITORCOUNTS", "MONITORSPECTRUM", "MONITORFROM",
+                        "MONITORTO", "NUMTIMECHANNELS", "NUMSPECTRA"]
 
         try:
             set_rc_values_for_blocks(blocks_all.values(), ans)
@@ -205,7 +142,7 @@ class WebPageScraper:
             block.set_value(str(hours) + " hr " + str(minutes) + " min " + str(seconds) + " s")
         block.set_units("")
 
-    def scrape_webpage(self):
+    def collate(self):
         """
         Returns the collated information on instrument configuration, blocks and run status PVs as JSON.
 
@@ -213,21 +150,20 @@ class WebPageScraper:
 
         """
 
-        instrument_config = InstrumentConfig(self.reader.read_config(PORT_CONFIG))
+        instrument_config = InstrumentConfig(self.reader.read_config())
 
         try:
 
             # read blocks
-
-            blocks_log = self.web_page_parser.extract_blocks(self.reader.get_info(PORT_BLOCKS, "BLOCKS"))
-            blocks_nolog = self.web_page_parser.extract_blocks(self.reader.get_info(PORT_BLOCKS, "DATAWEB"))
+            blocks_log = self.web_page_parser.extract_blocks(self.reader.get_blocks_from_blocks_archive())
+            blocks_nolog = self.web_page_parser.extract_blocks(self.reader.get_blocks_from_dataweb_archive())
             blocks_all = dict(blocks_log.items() + blocks_nolog.items())
 
             # get block visibility from config
             for block in blocks_all:
                 blocks_all[block].set_visibility(instrument_config.block_is_visible(block))
 
-            instrument_blocks = self.web_page_parser.extract_blocks(self.reader.get_info(PORT_INSTPV, "INST"))
+            instrument_blocks = self.web_page_parser.extract_blocks(self.reader.get_blocks_from_instrument_archive())
 
             inst_pvs = format_blocks(self._get_inst_pvs(instrument_blocks, blocks_all))
 

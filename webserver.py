@@ -8,7 +8,7 @@ from logging.handlers import TimedRotatingFileHandler
 from threading import Thread, active_count, RLock
 from time import sleep
 
-from external_webpage.get_webpage import WebPageScraper
+from external_webpage.instrument_information_collator import InstrumentInformationCollator
 
 logger = logging.getLogger('JSON_bourne')
 handler = TimedRotatingFileHandler('log\JSON_bourne.log', when='midnight', backupCount=30)
@@ -167,11 +167,11 @@ class WebScraper(Thread):
 
         """
         global _scraped_data
-        web_page_scraper = WebPageScraper(self._host)
+        web_page_scraper = InstrumentInformationCollator(self._host)
         while self._running:
             try:
                 self._tries_since_logged += 1
-                temp_data = web_page_scraper.scrape_webpage()
+                temp_data = web_page_scraper.collate()
                 with _scraped_data_lock:
                     _scraped_data[self._name] = temp_data
                 if self._previously_failed:
