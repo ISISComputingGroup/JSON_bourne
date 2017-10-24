@@ -8,6 +8,11 @@ set PYTHON_INSTALL_DIR=C:\Instrument\Apps\Python
 
 @echo Updating genie_python
 
+@echo Deleting P drive
+net use p: /d
+@echo Mapping P drive
+net use p: \\isis\inst$
+
 if exist "%PYTHON_KITS_PATH%\LATEST_BUILD.txt" (
 	for /f %%i in ( %PYTHON_KITS_PATH%\LATEST_BUILD.txt ) do (
 		@echo NEW_BUILD: %%i

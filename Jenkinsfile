@@ -43,11 +43,6 @@ pipeline {
         }
         
         bat """
-            @echo Deleting P drive
-            net use p: /d
-            @echo Mapping P drive
-            net use p: \\isis\inst$
-
             set BUILD_NUMBER=${env.BUILD_NUMBER}
             set GIT_COMMIT=${env.GIT_COMMIT}
             set RELEASE_BRANCH=${env.RELEASE_VERSION}
