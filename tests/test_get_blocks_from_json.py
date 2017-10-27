@@ -11,7 +11,6 @@ from tests.data_mother import ArchiveMother
 
 class TestBlocksFromJSON(unittest.TestCase):
 
-
     def test_GIVEN_no_object_WHEN_parse_THEN_exception(self):
         json = {}
         parser = WebPageParser()
@@ -40,7 +39,7 @@ class TestBlocksFromJSON(unittest.TestCase):
         assert_that(result, has_length(1))
         assert_that(result[expected_name].name, is_(expected_name))
 
-    def test_GIVEN_one_channels_is_diconnected_WHEN_parse_THEN_block_is_disconnected(self):
+    def test_GIVEN_one_channels_is_disconnected_WHEN_parse_THEN_block_is_disconnected(self):
         expected_name = "BLOCK"
         expected_connectivity = False
         json = ArchiveMother.create_info_page(

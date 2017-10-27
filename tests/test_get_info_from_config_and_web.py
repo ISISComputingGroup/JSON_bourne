@@ -45,6 +45,92 @@ class TestBlocksFromJSON(unittest.TestCase):
 
         assert_that(result["inst_pvs"]["RUNDURATION"]["value"], is_(expected_value))
 
+    def test_GIVEN_title_is_hidden_WHEN_parse_THEN_title_and_user_appear_us_unavailable(self):
+        title_name = "DAE:TITLE.VAL"
+        title_value = "a title"
+        title_expected_value = InstrumentInformationCollator.PRIVATE_VALUE
+        username_name = "DAE:_USERNAME.VAL"
+        username_value = "username"
+        username_expected_value = InstrumentInformationCollator.PRIVATE_VALUE
+        display_name = "DAE:TITLE:DISPLAY.VAL"
+        display_value = "No"
+        channel_values = [ArchiveMother.create_channel(name=title_name, value=title_value),
+                  ArchiveMother.create_channel(name=username_name, value=username_value),
+                  ArchiveMother.create_channel(name=display_name, value=display_value)]
+        self.reader.get_blocks_from_instrument_archive = Mock(
+            return_value=ArchiveMother.create_info_page(channel_values))
+
+        result = self.scraper.collate()
+
+        assert_that(result["inst_pvs"]["TITLE"]["value"], is_(title_expected_value))
+        assert_that(result["inst_pvs"]["_USERNAME"]["value"], is_(username_expected_value))
+
+    def test_GIVEN_title_is_hidden_WHEN_parse_but_no_display_or_username_THEN_no_title_or_username_exist(self):
+        display_name = "DAE:TITLE:DISPLAY.VAL"
+        display_value = "No"
+        channel_values = [ArchiveMother.create_channel(name=display_name, value=display_value)]
+        self.reader.get_blocks_from_instrument_archive = Mock(
+            return_value=ArchiveMother.create_info_page(channel_values))
+
+        result = self.scraper.collate()
+
+        assert_that(result["inst_pvs"], not_(has_key("TITLE")))
+        assert_that(result["inst_pvs"], not_(has_key("_USERNAME")))
+
+    def test_GIVEN_display_set_to_something_weird_WHEN_parse_THEN_title_and_user_appear_as_unavailable(self):
+        title_name = "DAE:TITLE.VAL"
+        title_value = "a title"
+        title_expected_value = InstrumentInformationCollator.PRIVATE_VALUE
+        username_name = "DAE:_USERNAME.VAL"
+        username_value = "username"
+        username_expected_value = InstrumentInformationCollator.PRIVATE_VALUE
+        display_name = "DAE:TITLE:DISPLAY.VAL"
+        display_value = "Blah"
+        channel_values = [ArchiveMother.create_channel(name=title_name, value=title_value),
+                  ArchiveMother.create_channel(name=username_name, value=username_value),
+                  ArchiveMother.create_channel(name=display_name, value=display_value)]
+        self.reader.get_blocks_from_instrument_archive = Mock(
+            return_value=ArchiveMother.create_info_page(channel_values))
+
+        result = self.scraper.collate()
+
+        assert_that(result["inst_pvs"]["TITLE"]["value"], is_(title_expected_value))
+        assert_that(result["inst_pvs"]["_USERNAME"]["value"], is_(username_expected_value))
+
+    def test_GIVEN_display_is_not_present_WHEN_parse_THEN_title_and_user_appear_as_unavailable(self):
+        title_name = "DAE:TITLE.VAL"
+        title_value = "a title"
+        title_expected_value = InstrumentInformationCollator.PRIVATE_VALUE
+        username_name = "DAE:_USERNAME.VAL"
+        username_value = "username"
+        username_expected_value = InstrumentInformationCollator.PRIVATE_VALUE
+        channel_values = [ArchiveMother.create_channel(name=title_name, value=title_value),
+                  ArchiveMother.create_channel(name=username_name, value=username_value)]
+        self.reader.get_blocks_from_instrument_archive = Mock(
+            return_value=ArchiveMother.create_info_page(channel_values))
+
+        result = self.scraper.collate()
+
+        assert_that(result["inst_pvs"]["TITLE"]["value"], is_(title_expected_value))
+        assert_that(result["inst_pvs"]["_USERNAME"]["value"], is_(username_expected_value))
+
+    def test_GIVEN_display_is_yes_WHEN_parse_THEN_title_and_user_appear_as_set(self):
+        title_name = "DAE:TITLE.VAL"
+        title_value = "a title"
+        username_name = "DAE:_USERNAME.VAL"
+        username_value = "username"
+        display_name = "DAE:TITLE:DISPLAY.VAL"
+        display_value = "Yes"
+        channel_values = [ArchiveMother.create_channel(name=title_name, value=title_value),
+                  ArchiveMother.create_channel(name=username_name, value=username_value),
+                  ArchiveMother.create_channel(name=display_name, value=display_value)]
+        self.reader.get_blocks_from_instrument_archive = Mock(
+            return_value=ArchiveMother.create_info_page(channel_values))
+
+        result = self.scraper.collate()
+
+        assert_that(result["inst_pvs"]["TITLE"]["value"], is_(title_value))
+        assert_that(result["inst_pvs"]["_USERNAME"]["value"], is_(username_value))
 
 if __name__ == '__main__':
     unittest.main()

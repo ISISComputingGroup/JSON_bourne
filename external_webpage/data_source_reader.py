@@ -45,34 +45,34 @@ class DataSourceReader(object):
         """
         self._host = host
 
-    def get_blocks_from_blocks_archive(self):
+    def get_json_from_blocks_archive(self):
         """
         get a list of blocks from the blocks archive
 
         Returns: list of blocks
 
         """
-        return self._get_info(PORT_BLOCKS, "BLOCKS")
+        return self._get_json_from_info_page(PORT_BLOCKS, "BLOCKS")
 
-    def get_blocks_from_dataweb_archive(self):
+    def get_json_from_dataweb_archive(self):
         """
         get a list of blocks from the dataweb archive
 
         Returns: list of blocks
 
         """
-        self._get_info(PORT_BLOCKS, "DATAWEB")
+        return self._get_json_from_info_page(PORT_BLOCKS, "DATAWEB")
 
-    def get_blocks_from_instrument_archive(self):
+    def get_json_from_instrument_archive(self):
         """
         get a list of blocks from the instrument archive
 
         Returns: list of blocks
 
         """
-        self._get_info(PORT_INSTPV, "INST")
+        return self._get_json_from_info_page(PORT_INSTPV, "INST")
 
-    def _get_info(self, port, group_name):
+    def _get_json_from_info_page(self, port, group_name):
         """
         Read block information from the archiver and populate a list of block objects with it.
 

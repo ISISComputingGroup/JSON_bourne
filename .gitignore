@@ -2,3 +2,5 @@
 /log/*.log.*
 JSON_bourne.log
 *.pyc
+test-reports/
+.idea/

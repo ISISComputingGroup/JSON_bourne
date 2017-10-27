@@ -1,7 +1,5 @@
 var PORT = 60000;
 var HOST = "http://localhost"
-var showPrivate = true;
-var privateRunInfo = ["TITLE", "_USERNAME"];
 var instrument = getURLParameter("Instrument");
 var nodeInstTitle = document.createElement("H2");
 var nodeConfigTitle = document.createElement("H2");
@@ -138,12 +136,6 @@ function parseObject(obj) {
     instrumentState = obj;
 	createTitle(obj)
     showHidden = document.getElementById("showHidden").checked;
-	if ("DISPLAY" in instrumentState.inst_pvs) {
-		showPrivate = getBoolean(instrumentState.inst_pvs["DISPLAY"]["value"]);
-		delete instrumentState.inst_pvs["DISPLAY"];
-	} else {
-		showPrivate = true;
-	}
     clear(nodeInstTitle);
     clear(nodeConfigTitle);
 
@@ -176,7 +168,7 @@ function clearBox(elementID){
 function createTitle(inst_details){
 	clearBox("top_bar");
 	
-	document.getElementById("top_bar").innerHTML = "<div id = \"inst_name\"></div><table><tr id = table_part><th id = \"next_part\" style = \"padding: 10px; background-color:lightgrey ; border: black 2px solid\";></th></tr></table>";
+	document.getElementById("top_bar").innerHTML = "<div id = \"inst_name\"></div><table style=\"width:100%\"><tr id = table_part><th id = \"next_part\" style = \"padding: 10px; width:33%; background-color:lightgrey ; border: black 2px solid\";></th></tr></table>";
 	runStatus = inst_details["inst_pvs"]["RUNSTATE"]["value"];
 	
 	colour = getColourFromRunState(runStatus);
@@ -334,10 +326,6 @@ function displayOneBlock(node, block, blockName) {
     // write status if disconnected
     if (status_text == "Disconnected") {
 	    writeStatus(nodeBlock, status_text);
-    }
-    // write value if is private
-    else if ((isInArray(privateRunInfo, blockName)) && !showPrivate) {
-	    writePrivateValue(nodeBlock);
     // write value, range info & alarms
     } else {
         nodeBlockText.nodeValue += value + "\u00A0\u00A0";
@@ -395,12 +383,6 @@ function writeStatus(nodeBlock, status_text) {
 	var nodeBlockStatus = document.createElement("span");
 	nodeBlockStatus.style = "color:blueviolet"
 	nodeBlockStatus.appendChild(document.createTextNode(status_text.toUpperCase()));
-	nodeBlock.appendChild(nodeBlockStatus);
-}
-
-function writePrivateValue(nodeBlock) {
-	var nodeBlockStatus = document.createElement("I");
-	nodeBlockStatus.appendChild(document.createTextNode("Unavailable"));
 	nodeBlock.appendChild(nodeBlockStatus);
 }
 

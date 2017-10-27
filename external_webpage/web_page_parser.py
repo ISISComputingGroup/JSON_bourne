@@ -58,7 +58,7 @@ class WebPageParser(object):
         try:
             blocks = {}
             channels = info_page_as_json["Channels"]
-        except KeyError:
+        except (KeyError, TypeError):
             raise BlocksParseError("There is no json object for channels")
 
         for channel in channels:

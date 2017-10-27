@@ -64,6 +64,19 @@ class InstrumentInformationCollator:
     Collect instrument information and summarise as a dictionary.
     """
 
+    # String to use for title and username if they are private
+    PRIVATE_VALUE = "Unavailable"
+    # Name of the username channel
+    USERNAME_CHANNEL_NAME = "_USERNAME"
+    # name of the title channel
+    TITLE_CHANNEL_NAME = "TITLE"
+    # name of the channel which determins of the username and title should be displayed
+    DISPLAY_TITLE_CHANNEL_NAME = "DISPLAY"
+    # name of the channel of the current run duration
+    RUN_DURATION_CHANNEL_NAME = "RUNDURATION"
+    # name of the channel fo the run duration for the current period
+    RUN_DURATION_PD_CHANNEL_NAME = "RUNDURATION_PD"
+
     def __init__(self, host="localhost", reader=None):
         """
         Initialize.
@@ -91,8 +104,16 @@ class InstrumentInformationCollator:
         """
         wanted = {}
 
-        required_pvs = ["RUNSTATE", "RUNNUMBER", "_RBNUMBER", "TITLE", "DISPLAY", "_USERNAME", "STARTTIME",
-                        "RUNDURATION", "RUNDURATION_PD", "GOODFRAMES", "GOODFRAMES_PD", "RAWFRAMES", "RAWFRAMES_PD",
+        display_title_channel_name = InstrumentInformationCollator.DISPLAY_TITLE_CHANNEL_NAME
+        title_channel_name = InstrumentInformationCollator.TITLE_CHANNEL_NAME
+        username_channel_name = InstrumentInformationCollator.USERNAME_CHANNEL_NAME
+        run_duration_channel_name = InstrumentInformationCollator.RUN_DURATION_CHANNEL_NAME
+        run_duration_pd_channel_name = InstrumentInformationCollator.RUN_DURATION_PD_CHANNEL_NAME
+        required_pvs = ["RUNSTATE", "RUNNUMBER", "_RBNUMBER", title_channel_name,
+                        display_title_channel_name,
+                        username_channel_name, "STARTTIME",
+                        run_duration_channel_name, run_duration_pd_channel_name, "GOODFRAMES", "GOODFRAMES_PD",
+                        "RAWFRAMES", "RAWFRAMES_PD",
                         "PERIOD", "NUMPERIODS", "PERIODSEQ", "BEAMCURRENT", "TOTALUAMPS", "COUNTRATE", "DAEMEMORYUSED",
                         "TOTALCOUNTS", "DAETIMINGSOURCE", "MONITORCOUNTS", "MONITORSPECTRUM", "MONITORFROM",
                         "MONITORTO", "NUMTIMECHANNELS", "NUMSPECTRA"]
@@ -107,14 +128,20 @@ class InstrumentInformationCollator:
                 wanted[pv] = ans[pv + ".VAL"]
 
         try:
-            self._convert_seconds(wanted["RUNDURATION"])
+            self._convert_seconds(wanted[run_duration_channel_name])
         except KeyError:
             pass
 
         try:
-            self._convert_seconds(wanted["RUNDURATION_PD"])
+            self._convert_seconds(wanted[run_duration_pd_channel_name])
         except KeyError:
             pass
+
+        if display_title_channel_name not in wanted or wanted[display_title_channel_name].get_value().lower() != "yes":
+            if title_channel_name in wanted:
+                wanted[title_channel_name].set_value(InstrumentInformationCollator.PRIVATE_VALUE)
+            if username_channel_name in wanted:
+                wanted[username_channel_name].set_value(InstrumentInformationCollator.PRIVATE_VALUE)
 
         return wanted
 
@@ -155,15 +182,20 @@ class InstrumentInformationCollator:
         try:
 
             # read blocks
-            blocks_log = self.web_page_parser.extract_blocks(self.reader.get_blocks_from_blocks_archive())
-            blocks_nolog = self.web_page_parser.extract_blocks(self.reader.get_blocks_from_dataweb_archive())
+            json_from_blocks_archive = self.reader.get_json_from_blocks_archive()
+            blocks_log = self.web_page_parser.extract_blocks(json_from_blocks_archive)
+
+            json_from_dataweb_archive = self.reader.get_json_from_dataweb_archive()
+            blocks_nolog = self.web_page_parser.extract_blocks(json_from_dataweb_archive)
+
             blocks_all = dict(blocks_log.items() + blocks_nolog.items())
 
             # get block visibility from config
             for block in blocks_all:
                 blocks_all[block].set_visibility(instrument_config.block_is_visible(block))
 
-            instrument_blocks = self.web_page_parser.extract_blocks(self.reader.get_blocks_from_instrument_archive())
+            json_from_instrument_archive = self.reader.get_json_from_instrument_archive()
+            instrument_blocks = self.web_page_parser.extract_blocks(json_from_instrument_archive)
 
             inst_pvs = format_blocks(self._get_inst_pvs(instrument_blocks, blocks_all))
 
