@@ -10,14 +10,14 @@ from external_webpage.instrument_information_collator import InstrumentInformati
 from tests.data_mother import ArchiveMother, ConfigMother
 
 
-class TestBlocksFromJSON(unittest.TestCase):
+class TestGetInfoFromConfigAndWeb(unittest.TestCase):
 
     def setUp(self):
         self.reader = Mock()
         page_info = ArchiveMother.create_info_page([])
-        self.reader.get_blocks_from_blocks_archive = Mock(return_value=page_info)
-        self.reader.get_blocks_from_dataweb_archive = Mock(return_value=page_info)
-        self.reader.get_blocks_from_instrument_archive = Mock(return_value=page_info)
+        self.reader.get_json_from_blocks_archive = Mock(return_value=page_info)
+        self.reader.get_json_from_dataweb_archive = Mock(return_value=page_info)
+        self.reader.get_json_from_instrument_archive = Mock(return_value=page_info)
 
         config = ConfigMother.create_config()
         self.reader.read_config = Mock(return_value=config)
@@ -38,7 +38,7 @@ class TestBlocksFromJSON(unittest.TestCase):
         value = 5025
         units = "s"
         expected_value = "1 hr 23 min 45 s"
-        self.reader.get_blocks_from_instrument_archive = Mock(
+        self.reader.get_json_from_instrument_archive = Mock(
             return_value=ArchiveMother.create_info_page([ArchiveMother.create_channel(name=name, value=value, units=units)]))
 
         result = self.scraper.collate()
@@ -57,7 +57,7 @@ class TestBlocksFromJSON(unittest.TestCase):
         channel_values = [ArchiveMother.create_channel(name=title_name, value=title_value),
                   ArchiveMother.create_channel(name=username_name, value=username_value),
                   ArchiveMother.create_channel(name=display_name, value=display_value)]
-        self.reader.get_blocks_from_instrument_archive = Mock(
+        self.reader.get_json_from_instrument_archive = Mock(
             return_value=ArchiveMother.create_info_page(channel_values))
 
         result = self.scraper.collate()
@@ -69,7 +69,7 @@ class TestBlocksFromJSON(unittest.TestCase):
         display_name = "DAE:TITLE:DISPLAY.VAL"
         display_value = "No"
         channel_values = [ArchiveMother.create_channel(name=display_name, value=display_value)]
-        self.reader.get_blocks_from_instrument_archive = Mock(
+        self.reader.get_json_from_instrument_archive = Mock(
             return_value=ArchiveMother.create_info_page(channel_values))
 
         result = self.scraper.collate()
@@ -89,7 +89,7 @@ class TestBlocksFromJSON(unittest.TestCase):
         channel_values = [ArchiveMother.create_channel(name=title_name, value=title_value),
                   ArchiveMother.create_channel(name=username_name, value=username_value),
                   ArchiveMother.create_channel(name=display_name, value=display_value)]
-        self.reader.get_blocks_from_instrument_archive = Mock(
+        self.reader.get_json_from_instrument_archive = Mock(
             return_value=ArchiveMother.create_info_page(channel_values))
 
         result = self.scraper.collate()
@@ -106,7 +106,7 @@ class TestBlocksFromJSON(unittest.TestCase):
         username_expected_value = InstrumentInformationCollator.PRIVATE_VALUE
         channel_values = [ArchiveMother.create_channel(name=title_name, value=title_value),
                   ArchiveMother.create_channel(name=username_name, value=username_value)]
-        self.reader.get_blocks_from_instrument_archive = Mock(
+        self.reader.get_json_from_instrument_archive = Mock(
             return_value=ArchiveMother.create_info_page(channel_values))
 
         result = self.scraper.collate()
@@ -124,7 +124,7 @@ class TestBlocksFromJSON(unittest.TestCase):
         channel_values = [ArchiveMother.create_channel(name=title_name, value=title_value),
                   ArchiveMother.create_channel(name=username_name, value=username_value),
                   ArchiveMother.create_channel(name=display_name, value=display_value)]
-        self.reader.get_blocks_from_instrument_archive = Mock(
+        self.reader.get_json_from_instrument_archive = Mock(
             return_value=ArchiveMother.create_info_page(channel_values))
 
         result = self.scraper.collate()

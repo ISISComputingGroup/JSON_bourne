@@ -59,7 +59,6 @@ pipeline {
     }
    stage("Unit Test Results") {
     steps {
-        junit "test-reports/*.xml"
         junit "test-reports/**/*.xml"
     }
    }
