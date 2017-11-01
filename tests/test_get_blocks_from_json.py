@@ -165,5 +165,32 @@ class TestBlocksFromJSON(unittest.TestCase):
 
         assert_that(result[expected_name].get_description()["value"], is_(expected_value))
 
+    def test_GIVEN_one_channels_with_value_with_incorrect_utf8_in_WHEN_parse_THEN_block_has_correct_utf8_in(self):
+        expected_name = "BLOCK"
+        value = u'mu \\u-062\\u-075'
+        expected_value = u'mu \u00B5'  # decimal 181
+        channel = ArchiveMother.create_channel(name=expected_name, value=value)
+        del channel['Current Value']["Units"]
+        json = ArchiveMother.create_info_page([channel])
+        parser = WebPageParser()
+
+        result = parser.extract_blocks(json)
+
+        assert_that(result[expected_name].get_description()["value"], is_(expected_value))
+
+    def test_GIVEN_one_channels_with_value_with_multiple_incorrect_utf8s_some_repeated_in_WHEN_parse_THEN_block_has_correct_utf8_in(self):
+        expected_name = "BLOCK"
+        value = u'mu \\u-062\\u-075 cent \\u-062\\u-094 mu \\u-062\\u-075 F \\u0070'
+
+        expected_value = u'mu \u00B5 cent \u00A2 mu \u00B5 F F'
+        channel = ArchiveMother.create_channel(name=expected_name, value=value)
+        del channel['Current Value']["Units"]
+        json = ArchiveMother.create_info_page([channel])
+        parser = WebPageParser()
+
+        result = parser.extract_blocks(json)
+
+        assert_that(result[expected_name].get_description()["value"], is_(expected_value))
+
 if __name__ == '__main__':
     unittest.main()

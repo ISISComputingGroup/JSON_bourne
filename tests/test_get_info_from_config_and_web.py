@@ -132,5 +132,18 @@ class TestGetInfoFromConfigAndWeb(unittest.TestCase):
         assert_that(result["inst_pvs"]["TITLE"]["value"], is_(title_value))
         assert_that(result["inst_pvs"]["_USERNAME"]["value"], is_(username_value))
 
+    def test_GIVEN_displayed_title_as_utf8_characters_in_WHEN_parse_THEN_title_still_has_UTF8_characters_in(self):
+        title_name = "DAE:TITLE.VAL"
+        title_value = u"a title \u0302"
+        display_name = "DAE:TITLE:DISPLAY.VAL"
+        display_value = "Yes"
+        channel_values = [ArchiveMother.create_channel(name=title_name, value=title_value),
+                  ArchiveMother.create_channel(name=display_name, value=display_value)]
+        self.reader.get_json_from_instrument_archive = Mock(
+            return_value=ArchiveMother.create_info_page(channel_values))
+
+        result = self.scraper.collate()
+
+        assert_that(result["inst_pvs"]["TITLE"]["value"], is_(title_value))
 if __name__ == '__main__':
     unittest.main()

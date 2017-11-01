@@ -19,6 +19,8 @@ Classes for parsing web pages
 
 import logging
 
+import re
+
 from block import Block
 from block_utils import shorten_title
 
@@ -86,6 +88,10 @@ class WebPageParser(object):
         if connected:
             units = current_value.get("Units", "")
             value = current_value["Value"]
+
+            replaced = True
+            while replaced:
+                value, replaced = self._replace_fake_unicode(value)
             alarm = current_value["Alarm"]
         else:
             value = "null"
@@ -94,3 +100,40 @@ class WebPageParser(object):
         status = Block.CONNECTED if connected else Block.DISCONNECTED
 
         return Block(name, status, value, alarm, True, units)
+
+    def _replace_fake_unicode(self, value):
+        """
+        Replace the first `\\udddd` with its unicode equivalent
+        Args:
+            value: the value to use
+
+        Returns: tuple of new value and whether a replace was made
+
+        """
+        # look for \\u-DDD which should be proper unicode characters but are not
+        match = re.search(r"((?:\\u[\d-]{4})+)", value)
+
+        if match is None:
+            return value, False
+
+        start, end = match.span(1)
+        unicode_chars = match.group(1)
+
+        # split multiple unicode characters into values
+        string_values = re.split(r"\\u", unicode_chars)[1:]
+
+        # for each value convert to actual value (unsigned byte) and ad to byte array
+        asbytearray = bytearray()
+        for string_val in string_values:
+            val = int(string_val)
+            if val < 0:
+                val += 256
+            asbytearray.append(val)
+
+        # convert byte array to utf8
+        asunicode = asbytearray.decode("utf-8")
+
+        # rebuild full string without mistake
+        modified_value = value[:start] + asunicode + value[end:]
+
+        return modified_value, True

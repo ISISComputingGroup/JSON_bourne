@@ -47,7 +47,8 @@ class InstrumentConfig(object):
 
     def block_is_visible(self, block_name):
         """
-        According to the configuration is a block visible to the user.
+        According to the configuration is a block visible to the user. If it is not in the configuration assume it
+        should be visible
         Args:
             block_name: Block name to query
 
@@ -55,8 +56,11 @@ class InstrumentConfig(object):
         Raises KeyError: If the block does not exist.
 
         """
-        block = self.blocks[block_name]
-        return block["visible"]
+        try:
+            block = self.blocks[block_name]
+            return block["visible"]
+        except KeyError:
+            return True
 
 
 class InstrumentInformationCollator:
