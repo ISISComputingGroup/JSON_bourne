@@ -160,10 +160,8 @@ class InstrumentInformationCollator:
         if not block.is_connected():
             return
         old_value = block.get_value()
-        seconds = int(old_value) % 60
-        minutes = int(old_value) / 60
-        hours = minutes / 60
-        minutes %= 60
+        minutes, seconds = divmod(int(old_value), 60)
+        hours, minutes = divmod(minutes, 60)
 
         if hours == 0 and minutes == 0:
             block.set_value(old_value + " s")

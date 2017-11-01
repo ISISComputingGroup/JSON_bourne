@@ -87,7 +87,7 @@ class WebPageParser(object):
         current_value = channel["Current Value"]
         if connected:
             units = current_value.get("Units", "")
-            value = current_value["Value"]
+            value = unicode(current_value["Value"])
 
             replaced = True
             while replaced:
