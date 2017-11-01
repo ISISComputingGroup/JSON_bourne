@@ -53,33 +53,21 @@ class ArchiveMother(object):
 class ConfigMother():
 
     @staticmethod
-    def create_config(name="conf"):
+    def create_config(name="conf", blocks=None, groups=None):
 
-        blocks = []
-        """[{
-                "log_rate": 30.0,
-                "log_deadband": 0.0,
-                "component": None,
-                "runcontrol": False,
-                "visible": True,
-                "pv": "TE:NDW1798:SIMPLE:VALUE1",
-                "name": "NEW_BLOCK_4",
-                "highlimit": 0.0,
-                "log_periodic": True,
-                "lowlimit": 0.0,
-                "local": True
-            }]"""
-        groups = []
-        """[{
-                "component": None,
-                "blocks": ["NEW_BLOCK"],
-                "name": "NEW_GROUP"
-            }]"""
+        if blocks is not None:
+            final_blocks = blocks
+        else:
+            final_blocks = []
 
+        if groups is not None:
+           final_groups = groups
+        else:
+            final_groups = []
 
         return {
-            "blocks": blocks,
-            "groups": groups,
+            "blocks": final_blocks,
+            "groups": final_groups,
             "iocs": [{
                 "macros": [],
                 "pvs": [],
@@ -154,3 +142,27 @@ class ConfigMother():
             "synoptic": "-- NONE --",
             "name": name,
             }
+
+    @staticmethod
+    def create_block(block_name, is_visibile=True):
+        return {
+            "log_rate": 30.0,
+            "log_deadband": 0.0,
+            "component": None,
+            "runcontrol": False,
+            "visible": is_visibile,
+            "pv": "TE:NDW1798:SIMPLE:VALUE1",
+            "name": block_name,
+            "highlimit": 0.0,
+            "log_periodic": True,
+            "lowlimit": 0.0,
+            "local": True
+        }
+
+    @staticmethod
+    def create_group(group_name, blocks):
+        return {
+            "component": None,
+            "blocks": blocks,
+            "name": group_name
+        }

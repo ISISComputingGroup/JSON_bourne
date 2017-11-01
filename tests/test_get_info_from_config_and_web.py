@@ -145,5 +145,40 @@ class TestGetInfoFromConfigAndWeb(unittest.TestCase):
         result = self.scraper.collate()
 
         assert_that(result["inst_pvs"]["TITLE"]["value"], is_(title_value))
+
+    def test_GIVEN_visible_block_WHEN_parse_THEN_block_is_marked_as_visible(self):
+
+        block_name = "block"
+        group_name = "group1"
+        expected_is_visible = True
+        self.reader.get_json_from_blocks_archive = Mock(
+            return_value=ArchiveMother.create_info_page(
+                [ArchiveMother.create_channel(name=block_name)]))
+        block = ConfigMother.create_block(block_name, is_visibile=expected_is_visible)
+        group = ConfigMother.create_group(group_name, [block_name])
+        config = ConfigMother.create_config(blocks=[block], groups=[group])
+        self.reader.read_config = Mock(return_value=config)
+
+        result = self.scraper.collate()
+
+        assert_that(result["groups"][group_name][block_name]["visibility"], is_(expected_is_visible))
+
+    def test_GIVEN_hidden_block_WHEN_parse_THEN_block_is_marked_as_visible(self):
+
+        block_name = "block"
+        group_name = "group1"
+        expected_is_visible = False
+        self.reader.get_json_from_blocks_archive = Mock(
+            return_value=ArchiveMother.create_info_page(
+                [ArchiveMother.create_channel(name=block_name)]))
+        block = ConfigMother.create_block(block_name, is_visibile=expected_is_visible)
+        group = ConfigMother.create_group(group_name, [block_name])
+        config = ConfigMother.create_config(blocks=[block], groups=[group])
+        self.reader.read_config = Mock(return_value=config)
+
+        result = self.scraper.collate()
+
+        assert_that(result["groups"][group_name][block_name]["visibility"], is_(expected_is_visible))
+
 if __name__ == '__main__':
     unittest.main()

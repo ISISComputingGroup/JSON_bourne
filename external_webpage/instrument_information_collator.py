@@ -193,8 +193,8 @@ class InstrumentInformationCollator:
             blocks_all = dict(blocks_log.items() + blocks_nolog.items())
 
             # get block visibility from config
-            for block in blocks_all:
-                blocks_all[block].set_visibility(instrument_config.block_is_visible(block))
+            for block_name, block in blocks_all.items():
+                block.set_visibility(instrument_config.block_is_visible(block_name))
 
             json_from_instrument_archive = self.reader.get_json_from_instrument_archive()
             instrument_blocks = self.web_page_parser.extract_blocks(json_from_instrument_archive)
