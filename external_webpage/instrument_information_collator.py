@@ -214,13 +214,7 @@ class InstrumentInformationCollator:
                     blocks[block] = blocks_all_formatted[block]
             groups[group["name"]] = blocks
 
-        try:
-            output = {
-                "config_name": instrument_config.name,
-                "groups": groups,
-                "inst_pvs": inst_pvs}
-        except Exception as e:
-            logger.error("Output construction failed " + str(e))
-            raise e
-
-        return output
+        return {
+            "config_name": instrument_config.name,
+            "groups": groups,
+            "inst_pvs": inst_pvs}
