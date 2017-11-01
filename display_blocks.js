@@ -235,7 +235,8 @@ function newPartOfTable(){
   */ 
 function addItemToTable(name, value) {
 	var elem = document.createElement("h5");
-	elem.innerHTML = name + ": " + value + "&nbsp;".repeat(30);
+	var textnode = document.createTextNode(name + ": " + value);
+	elem.appendChild(textnode)
 	document.getElementById("next_part").appendChild(elem);
 }
 
