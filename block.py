@@ -32,8 +32,9 @@ class Block:
 
     # Status when the block is connected
     CONNECTED = "Connected"
+
     # Status hen the block is disconnected
-    DISCONNECTED = "DisConnected"
+    DISCONNECTED = "Disconnected"
 
     def __init__(self, name, status, value, alarm, visibility, units=""):
         """

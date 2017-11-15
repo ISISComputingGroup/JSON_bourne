@@ -39,9 +39,10 @@ class TestBlocksFromJSON(unittest.TestCase):
         assert_that(result, has_length(1))
         assert_that(result[expected_name].name, is_(expected_name))
 
-    def test_GIVEN_one_channels_is_disconnected_WHEN_parse_THEN_block_is_disconnected(self):
+    def test_GIVEN_one_channels_is_disconnected_WHEN_parse_THEN_block_is_disconnected_and_status_reflects_this(self):
         expected_name = "BLOCK"
         expected_connectivity = False
+        expected_status = "Disconnected"  # Don't use constant this is the word expected in the js file.
         json = ArchiveMother.create_info_page(
             [ArchiveMother.create_channel(name=expected_name, is_connected=expected_connectivity)])
         parser = WebPageParser()
@@ -49,10 +50,12 @@ class TestBlocksFromJSON(unittest.TestCase):
         result = parser.extract_blocks(json)
 
         assert_that(result[expected_name].is_connected(), is_(expected_connectivity))
+        assert_that(result[expected_name].status, is_(expected_status))
 
-    def test_GIVEN_one_channels_is_connected_WHEN_parse_THEN_block_is_connected(self):
+    def test_GIVEN_one_channels_is_connected_WHEN_parse_THEN_block_is_connected_and_status_reflects_this(self):
         expected_name = "BLOCK"
         expected_connectivity = True
+        expected_status = "Connected"
         json = ArchiveMother.create_info_page(
             [ArchiveMother.create_channel(name=expected_name, is_connected=expected_connectivity)])
         parser = WebPageParser()
@@ -60,6 +63,7 @@ class TestBlocksFromJSON(unittest.TestCase):
         result = parser.extract_blocks(json)
 
         assert_that(result[expected_name].is_connected(), is_(expected_connectivity))
+        assert_that(result[expected_name].status, is_(expected_status))
 
     def test_GIVEN_one_channels_has_value_WHEN_parse_THEN_block_has_value(self):
         expected_name = "BLOCK"
