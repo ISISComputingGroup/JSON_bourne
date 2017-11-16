@@ -1,7 +1,11 @@
+import os
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import unittest
-from block import Block
+from block import Block, RETURN_RC_VALUES
 from block_utils import (format_blocks, set_rc_values_for_block_from_pvs,
-        set_rc_values_for_blocks, shorten_title)
+                         set_rc_values_for_blocks, shorten_title)
 
 
 class TestBlockUtils(unittest.TestCase):
@@ -12,34 +16,49 @@ class TestBlockUtils(unittest.TestCase):
             "NEW_BLOCK": Block("NEW_BLOCK", "INVALID", 10, "UDF_ALARM", False), 
             "NOT_NEW_BLOCK": Block("NOT_NEW_BLOCK", "GOOD", 100, "NO_ALARM", False)
         }
-        expected_result = {
-            'NEW_BLOCK': {'status': 'INVALID', 'alarm': 'UDF_ALARM',
-                'visibility': False, 'value': 10, 'rc_enabled': 'NO'}, 
-            'NOT_NEW_BLOCK': {'status': 'GOOD', 'alarm': 'NO_ALARM',
-                'visibility': False, 'value': 100, 'rc_enabled': 'NO'}
-        }
+        if RETURN_RC_VALUES:
+            expected_result = {
+                'NEW_BLOCK': {'status': 'INVALID', 'alarm': 'UDF_ALARM',
+                    'visibility': False, 'value': 10, 'rc_enabled': 'NO'},
+                'NOT_NEW_BLOCK': {'status': 'GOOD', 'alarm': 'NO_ALARM',
+                    'visibility': False, 'value': 100, 'rc_enabled': 'NO'}
+            }
+        else:
+            expected_result = {
+                'NEW_BLOCK': {'status': 'INVALID', 'alarm': 'UDF_ALARM',
+                              'visibility': False, 'value': 10},
+                'NOT_NEW_BLOCK': {'status': 'GOOD', 'alarm': 'NO_ALARM',
+                                  'visibility': False, 'value': 100}
+            }
 
         #Act
         formatted_blocks = format_blocks(test_blocks)
 
         #Assert
-        self.assertEquals(formatted_blocks, expected_result)
+        self._assert_blocks(formatted_blocks, expected_result)
 
     def test_format_blocks_with_one_block(self):
+
         #Arrange
         test_blocks = {
             "NEW_BLOCK": Block("NEW_BLOCK", "", 10, "", False)
         }
-        expected_result = {
-            'NEW_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
-                'value': 10, 'rc_enabled': 'NO'}, 
-        }
+        if RETURN_RC_VALUES:
+            expected_result = {
+                'NEW_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
+                    'value': 10, 'rc_enabled': 'NO'},
+            }
+        else:
+            expected_result = {
+                'NEW_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
+                    'value': 10},
+            }
 
         #Act
         formatted_blocks = format_blocks(test_blocks)
 
         #Assert
-        self.assertEquals(formatted_blocks, expected_result)
+        self._assert_blocks(formatted_blocks, expected_result)
 
     def test_format_blocks_with_one_block_with_rc_values(self):
         #Arrange
@@ -52,17 +71,23 @@ class TestBlockUtils(unittest.TestCase):
         test_blocks = {
             "NEW_BLOCK": block
         }
-        expected_result = {
-            'NEW_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
-                'value': 10, 'rc_high': 100, 'rc_low': 0, 'rc_inrange': False,
-                'rc_enabled': 'YES'}, 
-        }
+        if RETURN_RC_VALUES:
+            expected_result = {
+                'NEW_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
+                    'value': 10, 'rc_high': 100, 'rc_low': 0, 'rc_inrange': False,
+                    'rc_enabled': 'YES'},
+            }
+        else:
+            expected_result = {
+                'NEW_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
+                              'value': 10}
+            }
 
         #Act
         formatted_blocks = format_blocks(test_blocks)
 
         #Assert
-        self.assertEquals(formatted_blocks, expected_result)
+        self._assert_blocks(formatted_blocks, expected_result)
 
     def test_format_blocks_with_two_blocks_with_rc_values(self):
         #Arrange
@@ -80,20 +105,28 @@ class TestBlockUtils(unittest.TestCase):
         test_blocks = {
                 "NEW_BLOCK": block1, "OLD_BLOCK": block2
         }
-        expected_result = {
-            'NEW_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
-                'value': 10, 'rc_high': 20, 'rc_low': 10, 'rc_inrange': True,
-                'rc_enabled': 'YES'}, 
-            'OLD_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
-                'value': 10, 'rc_high': 100, 'rc_low': 0, 'rc_inrange': False,
-                'rc_enabled': 'NO'}, 
-        }
+        if RETURN_RC_VALUES:
+            expected_result = {
+                'NEW_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
+                    'value': 10, 'rc_high': 20, 'rc_low': 10, 'rc_inrange': True,
+                    'rc_enabled': 'YES'},
+                'OLD_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
+                    'value': 10, 'rc_high': 100, 'rc_low': 0, 'rc_inrange': False,
+                    'rc_enabled': 'NO'},
+            }
+        else:
+            expected_result = {
+                'NEW_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
+                              'value': 10},
+                'OLD_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
+                              'value': 10},
+            }
 
         #Act
         formatted_blocks = format_blocks(test_blocks)
 
         #Assert
-        self.assertEquals(formatted_blocks, expected_result)
+        self._assert_blocks(formatted_blocks, expected_result)
 
     def test_format_blocks_with_empty_dict(self):
         #Arrange
@@ -230,9 +263,10 @@ class TestBlockUtils(unittest.TestCase):
         self.assertEquals(description["visibility"], "OFF")
         self.assertEquals(description["status"], "INVALID")
         self.assertEquals(description["alarm"], "UDF_ALARM")
-        self.assertEquals(description["rc_low"], 0)
-        self.assertEquals(description["rc_high"], 100)
-        self.assertEquals(description["rc_inrange"], False)
+        if RETURN_RC_VALUES:
+            self.assertEquals(description["rc_low"], 0)
+            self.assertEquals(description["rc_high"], 100)
+            self.assertEquals(description["rc_inrange"], False)
 
     def test_when_rc_values_not_given_block_description_do_not_contain_rc_values(self):
         # Arrange
@@ -374,6 +408,30 @@ class TestBlockUtils(unittest.TestCase):
             set_rc_values_for_blocks(test_blocks, test_pvs)
         except Exception, e:
             self.fail("set_rc_values_for_blocks should handle empty pv list")
+
+    def _assert_blocks(self, actual_blocks, expected_blocks):
+        # Check blocks are in both
+        diff = set(actual_blocks.keys()).difference(set(expected_blocks.keys()))
+        self.assertEqual(len(diff), 0, "Extra keys {0}".format(diff))
+        diff = set(expected_blocks.keys()).difference(set(actual_blocks.keys()))
+        self.assertEqual(len(diff), 0, "Missing keys {0}".format(diff))
+
+        for expected_block_key, expected_block_value in expected_blocks.items():
+            actual_block_value = actual_blocks[expected_block_key]
+            diff = set(actual_block_value.keys()).difference(set(expected_block_value.keys()))
+            self.assertEqual(len(diff), 0, "Extra keys in block {block}: {0}".format(diff, block=expected_block_key))
+            diff = set(expected_block_value.keys()).difference(set(actual_block_value.keys()))
+            self.assertEqual(len(diff), 0, "Missing keys in block {block}: {0}".format(diff, block=expected_block_key))
+
+            for expected_block_value_key, expected_block_value_value in expected_block_value.items():
+                actual_block_value_value = actual_block_value[expected_block_value_key]
+                self.assertEqual(actual_block_value_value, expected_block_value_value ,
+                                 "Block entry {block}:{key} is different actual {actual} should be {expected}".format(
+                                     key=expected_block_value_key, block=expected_block_key, actual=actual_block_value_value, expected=expected_block_value_value))
+
+
+
+
 
 
 if __name__ == '__main__':

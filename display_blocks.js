@@ -1,7 +1,5 @@
 var PORT = 60000;
-var HOST = "http://dataweb.isis.rl.ac.uk" 
-var showPrivate = true;
-var privateRunInfo = ["TITLE", "_USERNAME"];
+var HOST = "http://dataweb.isis.rl.ac.uk"
 var instrument = getURLParameter("Instrument");
 var nodeInstTitle = document.createElement("H2");
 var nodeConfigTitle = document.createElement("H2");
@@ -138,12 +136,6 @@ function parseObject(obj) {
     instrumentState = obj;
 	createTitle(obj)
     showHidden = document.getElementById("showHidden").checked;
-	if ("DISPLAY" in instrumentState.inst_pvs) {
-		showPrivate = getBoolean(instrumentState.inst_pvs["DISPLAY"]["value"]);
-		delete instrumentState.inst_pvs["DISPLAY"];
-	} else {
-		showPrivate = true;
-	}
     clear(nodeInstTitle);
     clear(nodeConfigTitle);
 
@@ -176,7 +168,7 @@ function clearBox(elementID){
 function createTitle(inst_details){
 	clearBox("top_bar");
 	
-	document.getElementById("top_bar").innerHTML = "<div id = \"inst_name\"></div><table><tr id = table_part><th id = \"next_part\" style = \"padding: 10px; background-color:lightgrey ; border: black 2px solid\";></th></tr></table>";
+	document.getElementById("top_bar").innerHTML = "<div id = \"inst_name\"></div><table style=\"width:100%\"><tr id = table_part><th id = \"next_part\" style = \"padding: 10px; width:33%; background-color:lightgrey ; border: black 2px solid\";></th></tr></table>";
 	runStatus = inst_details["inst_pvs"]["RUNSTATE"]["value"];
 	
 	colour = getColourFromRunState(runStatus);
@@ -190,7 +182,7 @@ function createTitle(inst_details){
 	blockListClass.value = "text-center";
 	title.setAttributeNode(blockListClass);
 	document.getElementById("inst_name").appendChild(title);
-	
+
 	addItemToTable("Title", inst_details["inst_pvs"]["TITLE"]["value"]);
 	addItemToTable("Users", inst_details["inst_pvs"]["_USERNAME"]["value"]);
 	
@@ -235,7 +227,7 @@ function getColourFromRunState(runState){
   */
 function newPartOfTable(){
 	document.getElementById("next_part").removeAttribute("id");
-	document.getElementById("table_part").innerHTML += "<th id = \"next_part\" style = \"padding: 10px; background-color:lightgrey; width:50%; border: black 2px solid\";></th>";
+	document.getElementById("table_part").innerHTML += "<th id = \"next_part\" style = \"padding: 10px; background-color:lightgrey; width:33%; border: black 2px solid\";></th>";
 }
 
 /**
@@ -243,7 +235,8 @@ function newPartOfTable(){
   */ 
 function addItemToTable(name, value) {
 	var elem = document.createElement("h5");
-	elem.innerHTML = name + ": " + value + "&nbsp;".repeat(30);
+	var textnode = document.createTextNode(name + ": " + value);
+	elem.appendChild(textnode)
 	document.getElementById("next_part").appendChild(elem);
 }
 
@@ -334,10 +327,6 @@ function displayOneBlock(node, block, blockName) {
     // write status if disconnected
     if (status_text == "Disconnected") {
 	    writeStatus(nodeBlock, status_text);
-    }
-    // write value if is private
-    else if ((isInArray(privateRunInfo, blockName)) && !showPrivate) {
-	    writePrivateValue(nodeBlock);
     // write value, range info & alarms
     } else {
         nodeBlockText.nodeValue += value + "\u00A0\u00A0";
@@ -346,7 +335,7 @@ function displayOneBlock(node, block, blockName) {
             writeRangeInfo(nodeBlock, rc_inrange);
         }
         // write alarm status if active
-        if (!alarm.startsWith("null") && !alarm.startsWith("OK")) {
+        if (!alarm.startsWith("null") && alarm !== "") {
             writeAlarmInfo(nodeBlock, alarm);
         }
     }
@@ -395,12 +384,6 @@ function writeStatus(nodeBlock, status_text) {
 	var nodeBlockStatus = document.createElement("span");
 	nodeBlockStatus.style = "color:blueviolet"
 	nodeBlockStatus.appendChild(document.createTextNode(status_text.toUpperCase()));
-	nodeBlock.appendChild(nodeBlockStatus);
-}
-
-function writePrivateValue(nodeBlock) {
-	var nodeBlockStatus = document.createElement("I");
-	nodeBlockStatus.appendChild(document.createTextNode("Unavailable"));
 	nodeBlock.appendChild(nodeBlockStatus);
 }
 
