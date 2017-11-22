@@ -60,7 +60,7 @@ function open_wall_display(){
 	create_new_window()
 	var newIframe = document.createElement("iframe");
 	
-	newIframe.src = "http://epics-jenkins.isis.rl.ac.uk/plugin/jenkinswalldisplay/walldisplay.html?viewName=all&jenkinsUrl=http%3A%2F%2Fepics-jenkins.isis.rl.ac.uk%2F"
+	newIframe.src = "http://epics-jenkins.isis.rl.ac.uk/plugin/jenkinswalldisplay/walldisplay.html?viewName=WallDisplay&jenkinsUrl=http%3A%2F%2Fepics-jenkins.isis.rl.ac.uk%2F"
 	newIframe.height = String(windowHeight*2/5)+"px"
 	newIframe.width = "100%"
 	
