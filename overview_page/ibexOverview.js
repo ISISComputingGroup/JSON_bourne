@@ -1,12 +1,16 @@
 var PORT = 60000;
 var HOST = "http://dataweb.isis.rl.ac.uk"
 
-function refresh() {
+var INST_REFRESH = 5000;
+var WALL_DISP_REFRESH = 60000;
+var TIMEOUT = 1000;
+
+function refresh_instruments() {
 	$.ajax({
 		url: HOST + ":" + PORT + "/",
 		dataType: 'jsonp',
 		data: {"Instrument": "all"},
-		timeout: 1000,
+		timeout: TIMEOUT,
 		error: function(xhr, status, error){ 
 			window.alert("Error: JSON not read. Error was: " + error);
 		},
@@ -14,6 +18,11 @@ function refresh() {
 			display_data(data);
 		}
 	});
+}
+
+function refresh_wall_display() {
+	// Refresh the wall display as it has a memory leak
+	document.getElementById('wall_display').src = document.getElementById('wall_display').src
 }
 
 function clearBox(elementID){
@@ -59,6 +68,7 @@ function create_new_window(){
 function open_wall_display(){
 	create_new_window()
 	var newIframe = document.createElement("iframe");
+	newIframe.setAttribute("id", "wall_display");
 	
 	newIframe.src = "http://epics-jenkins.isis.rl.ac.uk/plugin/jenkinswalldisplay/walldisplay.html?viewName=All&jenkinsUrl=http%3A%2F%2Fepics-jenkins.isis.rl.ac.uk%2F"
 	newIframe.height = String(windowHeight*2/5)+"px"
@@ -131,12 +141,13 @@ function display_data(data){
 	}
 }
 
-$(document).ready(refresh());
-
 var windowWidth = $(window).width();
 var windowHeight = $(window).height();
 var buttonHeight = $(window).height();
 
 open_wall_display();
 
-setInterval(refresh, 5000);
+$(document).ready(refresh_instruments());
+
+setInterval(refresh_instruments, INST_REFRESH);
+setInterval(refresh_wall_display, WALL_DISP_REFRESH);
