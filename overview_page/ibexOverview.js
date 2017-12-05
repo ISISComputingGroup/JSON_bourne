@@ -2,7 +2,7 @@ var PORT = 60000;
 var HOST = "http://dataweb.isis.rl.ac.uk"
 
 var INST_REFRESH = 5000;
-var WALL_DISP_REFRESH = 60000;
+var WALL_DISP_REFRESH = 2 * 60 * 1000;
 var TIMEOUT = 1000;
 
 function refresh_instruments() {
@@ -12,7 +12,7 @@ function refresh_instruments() {
 		data: {"Instrument": "all"},
 		timeout: TIMEOUT,
 		error: function(xhr, status, error){ 
-			window.alert("Error: JSON not read. Error was: " + error);
+			document.getElementById("time").setAttribute("style", "color:red")
 		},
 		success: function(data){ 
 			display_data(data);
@@ -22,7 +22,8 @@ function refresh_instruments() {
 
 function refresh_wall_display() {
 	// Refresh the wall display as it has a memory leak
-	document.getElementById('wall_display').src = document.getElementById('wall_display').src
+	var display = document.getElementById('wall_display');
+	display.src = display.src;
 }
 
 function clearBox(elementID){
@@ -45,10 +46,6 @@ function sortDictionary(o) {
         sorted[a[i]] = o[a[i]];
     }
     return sorted;
-}
-
-function close_window(){
-	clearBox("new_window");
 }
 
 function create_new_window(){
@@ -137,8 +134,11 @@ function display_data(data){
 		newButton.setAttributeNode(blockListStyle);
 
 		document.getElementById("buttons").appendChild(newButton);
-
 	}
+	var time = document.getElementById("time");
+	var date = new Date();
+	time.innerHTML = "Last updated at: " + date.toLocaleTimeString();
+	time.setAttribute("style", "color:black");
 }
 
 var windowWidth = $(window).width();
