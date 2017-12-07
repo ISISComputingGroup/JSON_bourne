@@ -3,7 +3,7 @@ var HOST = "http://dataweb.isis.rl.ac.uk"
 
 var INST_REFRESH = 5000;
 var WALL_DISP_REFRESH = 2 * 60 * 1000;
-var TIMEOUT = 1000;
+var TIMEOUT = 2500;
 
 function refresh_instruments() {
 	$.ajax({
