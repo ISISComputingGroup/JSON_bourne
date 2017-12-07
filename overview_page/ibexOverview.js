@@ -1,19 +1,27 @@
 var PORT = 60000;
 var HOST = "http://dataweb.isis.rl.ac.uk"
 
-function refresh() {
+var INST_REFRESH = 5000;
+var WALL_DISP_REFRESH = 2 * 60 * 1000;
+var TIMEOUT = 2500;
+
+function refresh_instruments() {
 	$.ajax({
 		url: HOST + ":" + PORT + "/",
 		dataType: 'jsonp',
 		data: {"Instrument": "all"},
-		timeout: 1000,
+		timeout: TIMEOUT,
 		error: function(xhr, status, error){ 
-			window.alert("Error: JSON not read. Error was: " + error);
+			document.getElementById("time").setAttribute("style", "color:red")
 		},
-		success: function(data){ 
-			display_data(data);
-		}
+		jsonpCallback: "display_data"
 	});
+}
+
+function refresh_wall_display() {
+	// Refresh the wall display as it has a memory leak
+	var display = document.getElementById('wall_display');
+	display.src = display.src;
 }
 
 function clearBox(elementID){
@@ -38,10 +46,6 @@ function sortDictionary(o) {
     return sorted;
 }
 
-function close_window(){
-	clearBox("new_window");
-}
-
 function create_new_window(){
 	// create the container for jenkins builds or
 	// instrument dataweb information
@@ -59,6 +63,7 @@ function create_new_window(){
 function open_wall_display(){
 	create_new_window()
 	var newIframe = document.createElement("iframe");
+	newIframe.setAttribute("id", "wall_display");
 	
 	newIframe.src = "http://epics-jenkins.isis.rl.ac.uk/plugin/jenkinswalldisplay/walldisplay.html?viewName=WallDisplay&jenkinsUrl=http%3A%2F%2Fepics-jenkins.isis.rl.ac.uk%2F"
 	newIframe.height = String(windowHeight*2/5)+"px"
@@ -127,11 +132,12 @@ function display_data(data){
 		newButton.setAttributeNode(blockListStyle);
 
 		document.getElementById("buttons").appendChild(newButton);
-
 	}
+	var time = document.getElementById("time");
+	var date = new Date();
+	time.innerHTML = "Last updated at: " + date.toLocaleTimeString();
+	time.setAttribute("style", "color:black");
 }
-
-$(document).ready(refresh());
 
 var windowWidth = $(window).width();
 var windowHeight = $(window).height();
@@ -139,4 +145,7 @@ var buttonHeight = $(window).height();
 
 open_wall_display();
 
-setInterval(refresh, 5000);
+$(document).ready(refresh_instruments());
+
+setInterval(refresh_instruments, INST_REFRESH);
+setInterval(refresh_wall_display, WALL_DISP_REFRESH);
