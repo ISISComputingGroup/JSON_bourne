@@ -14,9 +14,7 @@ function refresh_instruments() {
 		error: function(xhr, status, error){ 
 			document.getElementById("time").setAttribute("style", "color:red")
 		},
-		success: function(data){ 
-			display_data(data);
-		}
+		jsonpCallback: "display_data"
 	});
 }
 
