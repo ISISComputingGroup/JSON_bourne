@@ -188,6 +188,7 @@ class WebScraper(Thread):
                     _scraped_data[self._name] = ""
                 self.wait(WAIT_BETWEEN_FAILED_UPDATES)
 
+
 if __name__ == '__main__':
     web_scrapers = []
     for inst_name, inst_host in ALL_INSTS.items():

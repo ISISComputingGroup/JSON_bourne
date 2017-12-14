@@ -4,6 +4,7 @@ import json
 from block import Block
 import logging
 
+
 def shorten_title(title):
     """
     Gets a PV title by shortening its address to the last segment.
@@ -53,10 +54,12 @@ def set_rc_values_for_block_from_pvs(block, pvs):
         elif "ENABLE.VAL" == suffix:
             block.set_rc_enabled(v.get_value())
 
+
 def set_rc_values_for_blocks(blocks, pvs):
     """Set all RC values for all the given blocks"""
     for block in blocks:
         set_rc_values_for_block_from_pvs(block, pvs)
+
 
 def format_blocks(blocks):
     """

@@ -35,7 +35,8 @@ dictInstPV = {
     MONITORFROM: 'Monitor From',
     MONITORTO: 'Monitor To',
     NUMTIMECHANNELS: 'Number of Time Channels',
-    NUMSPECTRA: 'Number of Spectra'
+    NUMSPECTRA: 'Number of Spectra',
+	SHUTTER: 'Shutter Status'
 };
 
 /**
