@@ -117,10 +117,9 @@ class InstrumentInformationCollator:
                         display_title_channel_name,
                         username_channel_name, "STARTTIME",
                         run_duration_channel_name, run_duration_pd_channel_name, "GOODFRAMES", "GOODFRAMES_PD",
-                        "RAWFRAMES", "RAWFRAMES_PD",
-                        "PERIOD", "NUMPERIODS", "PERIODSEQ", "BEAMCURRENT", "TOTALUAMPS", "COUNTRATE", "DAEMEMORYUSED",
-                        "TOTALCOUNTS", "DAETIMINGSOURCE", "MONITORCOUNTS", "MONITORSPECTRUM", "MONITORFROM",
-                        "MONITORTO", "NUMTIMECHANNELS", "NUMSPECTRA"]
+                        "RAWFRAMES", "RAWFRAMES_PD", "PERIOD", "NUMPERIODS", "PERIODSEQ", "BEAMCURRENT", "TOTALUAMPS",
+                        "COUNTRATE", "DAEMEMORYUSED", "TOTALCOUNTS", "DAETIMINGSOURCE", "MONITORCOUNTS",
+                        "MONITORSPECTRUM", "MONITORFROM", "MONITORTO", "NUMTIMECHANNELS", "NUMSPECTRA", "SHUTTER"]
 
         try:
             set_rc_values_for_blocks(blocks_all.values(), ans)
@@ -164,11 +163,11 @@ class InstrumentInformationCollator:
         hours, minutes = divmod(minutes, 60)
 
         if hours == 0 and minutes == 0:
-            block.set_value(old_value + " s")
+            block.set_value("{} s".format(old_value))
         elif hours == 0:
-            block.set_value(str(minutes) + " min " + str(seconds) + " s")
+            block.set_value("{} min {} s".format(str(minutes), str(seconds)))
         else:
-            block.set_value(str(hours) + " hr " + str(minutes) + " min " + str(seconds) + " s")
+            block.set_value("{} hr {} min {} s".format(str(hours), str(minutes), str(seconds)))
         block.set_units("")
 
     def collate(self):
