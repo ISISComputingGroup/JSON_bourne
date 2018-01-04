@@ -36,7 +36,8 @@ dictInstPV = {
     MONITORTO: 'Monitor To',
     NUMTIMECHANNELS: 'Number of Time Channels',
     NUMSPECTRA: 'Number of Spectra',
-	SHUTTER: 'Shutter Status'
+	SHUTTER: 'Shutter Status',
+	SIM_MODE: 'DAE Simulation mode'
 };
 
 /**
