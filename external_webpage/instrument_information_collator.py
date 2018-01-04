@@ -119,7 +119,8 @@ class InstrumentInformationCollator:
                         run_duration_channel_name, run_duration_pd_channel_name, "GOODFRAMES", "GOODFRAMES_PD",
                         "RAWFRAMES", "RAWFRAMES_PD", "PERIOD", "NUMPERIODS", "PERIODSEQ", "BEAMCURRENT", "TOTALUAMPS",
                         "COUNTRATE", "DAEMEMORYUSED", "TOTALCOUNTS", "DAETIMINGSOURCE", "MONITORCOUNTS",
-                        "MONITORSPECTRUM", "MONITORFROM", "MONITORTO", "NUMTIMECHANNELS", "NUMSPECTRA", "SHUTTER"]
+                        "MONITORSPECTRUM", "MONITORFROM", "MONITORTO", "NUMTIMECHANNELS", "NUMSPECTRA", "SHUTTER",
+                        "SIM_MODE"]
 
         try:
             set_rc_values_for_blocks(blocks_all.values(), ans)
