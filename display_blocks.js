@@ -178,7 +178,7 @@ function createTitle(inst_details){
 	document.getElementById("inst_name").style.padding = "10px";
 	document.getElementById("inst_name").style.backgroundColor = colour;
 	document.getElementById("inst_name").style.border = "black 2px solid";
-	var title = document.createElement("h3");
+	var title = document.createElement("h2");
 	title.innerHTML = instrument.toUpperCase() + " is " + runStatus;
 	var blockListClass = document.createAttribute("class");
 	blockListClass.value = "text-center";
@@ -236,7 +236,7 @@ function newPartOfTable(){
   *	Add an item to the table in the top bar.
   */
 function addItemToTable(name, value) {
-	var elem = document.createElement("h5");
+	var elem = document.createElement("h4");
 	var textnode = document.createTextNode(name + ": " + value);
 	elem.appendChild(textnode)
 	document.getElementById("next_part").appendChild(elem);
