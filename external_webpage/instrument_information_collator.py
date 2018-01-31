@@ -108,13 +108,11 @@ class InstrumentInformationCollator:
         """
         wanted = {}
 
-        display_title_channel_name = InstrumentInformationCollator.DISPLAY_TITLE_CHANNEL_NAME
         title_channel_name = InstrumentInformationCollator.TITLE_CHANNEL_NAME
         username_channel_name = InstrumentInformationCollator.USERNAME_CHANNEL_NAME
         run_duration_channel_name = InstrumentInformationCollator.RUN_DURATION_CHANNEL_NAME
         run_duration_pd_channel_name = InstrumentInformationCollator.RUN_DURATION_PD_CHANNEL_NAME
         required_pvs = ["RUNSTATE", "RUNNUMBER", "_RBNUMBER", title_channel_name,
-                        display_title_channel_name,
                         username_channel_name, "STARTTIME",
                         run_duration_channel_name, run_duration_pd_channel_name, "GOODFRAMES", "GOODFRAMES_PD",
                         "RAWFRAMES", "RAWFRAMES_PD", "PERIOD", "NUMPERIODS", "PERIODSEQ", "BEAMCURRENT", "TOTALUAMPS",
@@ -141,7 +139,8 @@ class InstrumentInformationCollator:
         except KeyError:
             pass
 
-        if display_title_channel_name not in wanted or wanted[display_title_channel_name].get_value().lower() != "yes":
+        display_title_channel_name = InstrumentInformationCollator.DISPLAY_TITLE_CHANNEL_NAME + ".VAL"
+        if display_title_channel_name not in ans or ans[display_title_channel_name].get_value().lower() != "yes":
             if title_channel_name in wanted:
                 wanted[title_channel_name].set_value(InstrumentInformationCollator.PRIVATE_VALUE)
             if username_channel_name in wanted:

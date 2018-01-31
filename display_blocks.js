@@ -121,10 +121,10 @@ function refresh() {
 		dataType: 'jsonp',
 		data: {"Instrument": instrument},
 		timeout: timeout,
-		error: function(xhr, status, error){ 
+		error: function(xhr, status, error){
 			displayError();
 		},
-		success: function(data){ 
+		success: function(data){
 			parseObject(data);
 		}
 	});
@@ -155,7 +155,7 @@ function parseObject(obj) {
     nodeConfigTitle.appendChild(document.createTextNode("Configuration: " + instrumentState.config_name));
 
     document.getElementById("config_name").appendChild(nodeConfigTitle);
-	
+
 	setVisibilityMode('block');
 }
 
@@ -169,16 +169,16 @@ function clearBox(elementID){
  */
 function createTitle(inst_details){
 	clearBox("top_bar");
-	
+  document.body.style.padding = '20px'
 	document.getElementById("top_bar").innerHTML = "<div id = \"inst_name\"></div><table style=\"width:100%\"><tr id = table_part><th id = \"next_part\" style = \"padding: 10px; width:33%; background-color:lightgrey ; border: black 2px solid\";></th></tr></table>";
 	runStatus = inst_details["inst_pvs"]["RUNSTATE"]["value"];
-	
+
 	colour = getColourFromRunState(runStatus);
-	
+
 	document.getElementById("inst_name").style.padding = "10px";
 	document.getElementById("inst_name").style.backgroundColor = colour;
 	document.getElementById("inst_name").style.border = "black 2px solid";
-	var title = document.createElement("h3"); 
+	var title = document.createElement("h2");
 	title.innerHTML = instrument.toUpperCase() + " is " + runStatus;
 	var blockListClass = document.createAttribute("class");
 	blockListClass.value = "text-center";
@@ -187,19 +187,19 @@ function createTitle(inst_details){
 
 	addItemToTable("Title", inst_details["inst_pvs"]["TITLE"]["value"]);
 	addItemToTable("Users", inst_details["inst_pvs"]["_USERNAME"]["value"]);
-	
+
 	newPartOfTable();
-	
+
 	addItemToTable("Good / Raw Frames", inst_details["inst_pvs"]["GOODFRAMES"]["value"]+"/"+inst_details["inst_pvs"]["RAWFRAMES"]["value"]);
 	addItemToTable("Current / Total", inst_details["inst_pvs"]["BEAMCURRENT"]["value"]+"/"+inst_details["inst_pvs"]["TOTALUAMPS"]["value"]);
 	addItemToTable("Monitor Counts", inst_details["inst_pvs"]["MONITORCOUNTS"]["value"]);
-	
+
 	newPartOfTable();
-	
-	addItemToTable("Inst. Time", inst_details["inst_pvs"]["STARTTIME"]["value"]);
+
+	addItemToTable("Start Time", inst_details["inst_pvs"]["STARTTIME"]["value"]);
 	addItemToTable("Run Time", inst_details["inst_pvs"]["RUNDURATION_PD"]["value"]);
 	addItemToTable("Period", inst_details["inst_pvs"]["PERIOD"]["value"]+"/"+inst_details["inst_pvs"]["NUMPERIODS"]["value"]);
-	
+
 }
 
 /**
@@ -221,7 +221,7 @@ function getColourFromRunState(runState){
 			return "DARK_RED";
 		default:
 			return "YELLOW"
-	}	
+	}
 }
 
 /**
@@ -234,9 +234,9 @@ function newPartOfTable(){
 
 /**
   *	Add an item to the table in the top bar.
-  */ 
+  */
 function addItemToTable(name, value) {
-	var elem = document.createElement("h5");
+	var elem = document.createElement("h4");
 	var textnode = document.createTextNode(name + ": " + value);
 	elem.appendChild(textnode)
 	document.getElementById("next_part").appendChild(elem);
@@ -253,7 +253,7 @@ function displayError() {
 
 	document.getElementById("top_bar").innerHTML = instrument;
 	document.getElementById("config_name").appendChild(nodeConfigTitle);
-	
+
 	setVisibilityMode('none');
 }
 
@@ -317,7 +317,7 @@ function displayOneBlock(node, block, blockName) {
     var value = block["value"];
     var status_text = block["status"];
     var alarm = block["alarm"];
-        
+
     var rc_inrange = block["rc_inrange"];
     var rc_enabled = block["rc_enabled"];
     var nodeBlock = document.createElement("LI");
@@ -356,7 +356,7 @@ function getDisplayBlocks(node, blocks) {
         var block = blocks[key];
         displayOneBlock(node, block, key);
     }
-	
+
 	return node;
 }
 
