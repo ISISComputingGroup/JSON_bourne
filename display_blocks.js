@@ -169,7 +169,7 @@ function clearBox(elementID){
  */
 function createTitle(inst_details){
 	clearBox("top_bar");
-
+  document.body.style.padding = '20px'
 	document.getElementById("top_bar").innerHTML = "<div id = \"inst_name\"></div><table style=\"width:100%\"><tr id = table_part><th id = \"next_part\" style = \"padding: 10px; width:33%; background-color:lightgrey ; border: black 2px solid\";></th></tr></table>";
 	runStatus = inst_details["inst_pvs"]["RUNSTATE"]["value"];
 
