@@ -21,7 +21,7 @@ HOST, PORT = '', 60000
 ALL_INSTS = {"MUONFE": "NDEMUONFE"}  # Used for non NDX hosts format of {name: host}
 
 NDX_INSTS = ["DEMO", "LARMOR", "IMAT", "IRIS", "VESUVIO", "ALF", "ZOOM", "POLARIS", "HRPD", "MERLIN", "ENGINX",
-             "RIKENFE"]
+             "RIKENFE", "EMMA-A", "SANDALS"]
 
 for inst in NDX_INSTS:
     ALL_INSTS[inst] = "NDX" + inst
