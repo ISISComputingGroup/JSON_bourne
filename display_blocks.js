@@ -5,7 +5,7 @@ var nodeInstTitle = document.createElement("H2");
 var nodeConfigTitle = document.createElement("H2");
 var instrumentState;
 var showHidden;
-var timeout = 1000;
+var timeout = 4000;
 
 dictInstPV = {
     RUNSTATE: 'Run Status',
