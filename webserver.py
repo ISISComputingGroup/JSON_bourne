@@ -1,6 +1,6 @@
-import json
+from external_webpage.request_handler_utils import get_detailed_state_of_specific_instrument, \
+    get_whether_ibex_is_running_on_all_instruments, get_instrument_and_callback
 import logging
-import re
 import traceback
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from SocketServer import ThreadingMixIn
@@ -39,69 +39,22 @@ class MyHandler(BaseHTTPRequestHandler):
     Handle for web calls for Json Borne
     """
 
-    @staticmethod
-    def _get_whether_ibex_is_running_on_all_instruments(data):
-        """
-        Gets whether ibex is running for each instrument.
-        :param data: The data scraped from the archiver webpage
-        :return: A json dictionary containing the states of each instrument
-        """
-        active = dict()
-        for key in data:
-            if data[key] != "":
-                active[key] = True
-            else:
-                active[key] = False
-        return str(json.dumps(active))
-
-    @staticmethod
-    def _get_detailed_state_of_specific_instrument(instrument, data):
-        """
-        Gets the detailed state of a specific instrument, used to display the instrument's dataweb screen
-        :param instrument: The instrument to get data for
-        :param data: The data scraped from the archiver webpage
-        :return: The data from the archiver webpage filtered to only contain data about the requested instrument
-        """
-        if instrument not in data.keys():
-            raise ValueError(str(instrument) + " not known")
-        if data[instrument] == "":
-            raise ValueError("Instrument has become unavailable")
-        try:
-            return str(json.dumps(_scraped_data[instrument]))
-        except Exception as err:
-            raise ValueError("Unable to convert instrument data to JSON: %s" % err.message)
-
     def do_GET(self):
         """
         This is called by BaseHTTPRequestHandler every time a client does a GET.
         The response is written to self.wfile
         """
         try:
-            # Look for the callback
-            # JSONP requires a response of the format "name_of_callback(json_string)"
-            # e.g. myFunction({ "a": 1, "b": 2})
-            result = re.search('/?callback=(\w+)&', self.path)
-
-            # Look for the instrument data
-            instruments = re.search('&Instrument=(\w+)&', self.path)
-
-            if result is None or instruments is None:
-                raise ValueError("No instrument specified")
-
-            if len(result.groups()) != 1 or len(instruments.groups()) != 1:
-                raise ValueError("No instrument specified")
-
-            callback = result.groups()[0]
-            inst_uppercase = instruments.groups()[0].upper()
+            instrument, callback = get_instrument_and_callback(self.path)
 
             # Warn level so as to avoid many log messages that come from other modules
-            logger.warn("Connected to from " + str(self.client_address) + " looking at " + str(inst_uppercase))
+            logger.warn("Connected to from " + str(self.client_address) + " looking at " + str(instrument))
 
             with _scraped_data_lock:
-                if inst_uppercase == "ALL":
-                    ans = self._get_whether_ibex_is_running_on_all_instruments(_scraped_data)
+                if instrument == "ALL":
+                    ans = get_whether_ibex_is_running_on_all_instruments(_scraped_data)
                 else:
-                    ans = self._get_detailed_state_of_specific_instrument(inst_uppercase, _scraped_data)
+                    ans = get_detailed_state_of_specific_instrument(instrument, _scraped_data)
 
             response = "{}({})".format(callback, ans)
 
@@ -111,7 +64,6 @@ class MyHandler(BaseHTTPRequestHandler):
             self.wfile.write(response)
         except ValueError as e:
             logger.error(e)
-            logger.warn("Return 400 because of error!")
             self.send_response(400)
         except Exception as e:
             self.send_response(404)
@@ -127,9 +79,9 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     """Handle requests in a separate thread."""
 
 
-class WebScraper(Thread):
+class InstrumentScrapper(Thread):
     """
-    Information for instruments based on external source.
+    Thread that continually scrapes data from an instrument's ArchiveEngine.
     """
     _running = True
     _previously_failed = False
@@ -156,7 +108,7 @@ class WebScraper(Thread):
             name: Name of instrument.
             host: Host for the instrument.
         """
-        super(WebScraper, self).__init__()
+        super(InstrumentScrapper, self).__init__()
         self._host = host
         self._name = name
 
@@ -192,7 +144,7 @@ class WebScraper(Thread):
 if __name__ == '__main__':
     web_scrapers = []
     for inst_name, inst_host in ALL_INSTS.items():
-        web_scraper = WebScraper(inst_name, inst_host)
+        web_scraper = InstrumentScrapper(inst_name, inst_host)
         web_scraper.start()
         web_scrapers.append(web_scraper)
 
