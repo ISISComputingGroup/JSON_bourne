@@ -74,8 +74,10 @@ def format_blocks(blocks):
 def format_block_value(val):
     """
     Formats block values using the same rules as the blocks screen in the GUI.
-    :param val: the block value to format
-    :return: the formatted block value
+    Args:
+        val: the block value to format
+    Returns:
+        the formatted block value
     """
 
     small_number_threshold = 0.001

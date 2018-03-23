@@ -148,10 +148,19 @@ class Block:
 
     def get_description(self):
         """ Returns the full description of this BoolStr object. """
-        if self.units == "":
-            formatted_value = format_block_value(self.value)
+
+        # Never format RB number or run number.
+        formatter = (lambda v: v) if self.name.lower() in ["runnumber.val", "_rbnumber.val"] else format_block_value
+
+        if self.should_format_value():
+            value = format_block_value(self.value)
         else:
-            formatted_value = "{value} {units}".format(value=format_block_value(self.value), units=self.units)
+            value = self.value
+
+        if self.units == "":
+            formatted_value = formatter(value)
+        else:
+            formatted_value = "{value} {units}".format(value=value, units=self.units)
 
         ans = {
             "status": self.status,
@@ -174,6 +183,17 @@ class Block:
             ans["rc_enabled"] = self.enabled
 
         return ans
+
+    def should_format_value(self):
+        """
+        True if the value of this block should be formatted, False otherwise.
+
+        Never format RB number or run number.
+
+        Returns:
+            True if the value of this block should be formatted, False otherwise.
+        """
+        return self.name.lower() not in ["_rbnumber.val", "nunnumber.val"]
 
     def __str__(self):
         return str(self.get_description())
