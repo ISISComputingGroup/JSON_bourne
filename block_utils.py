@@ -1,10 +1,3 @@
-from lxml import html
-import requests
-import json
-from block import Block
-import logging
-
-
 def shorten_title(title):
     """
     Gets a PV title by shortening its address to the last segment.
@@ -76,3 +69,27 @@ def format_blocks(blocks):
         blocks_formatted[name] = block.get_description()
 
     return blocks_formatted
+
+
+def format_block_value(val):
+    """
+    Formats block values using the same rules as the blocks screen in the GUI.
+    :param val: the block value to format
+    :return: the formatted block value
+    """
+
+    small_number_threshold = 0.001
+    big_number_threshold = 1000000
+    assert small_number_threshold < big_number_threshold
+
+    try:
+        float_val = float(val)
+    except (ValueError, TypeError):
+        # If number does not parse as a float, just return it unchanged.
+        return val
+    else:
+        if small_number_threshold < abs(float_val) < big_number_threshold or float_val == 0:
+            # Doesn't need further formatting. Return the original unchanged.
+            return val
+        else:
+            return "{:.2E}".format(float_val)

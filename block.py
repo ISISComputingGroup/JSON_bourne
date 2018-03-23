@@ -22,6 +22,8 @@ Classes for Blocks
 # while there is still a problem with getting rc values from the archiver.
 # Once that problem has been solved then this flag and it's usages can 
 # be removed. See issue #2446
+from block_utils import format_block_value
+
 RETURN_RC_VALUES = False
 
 
@@ -147,14 +149,16 @@ class Block:
     def get_description(self):
         """ Returns the full description of this BoolStr object. """
         if self.units == "":
-            formatted_value = self.value
+            formatted_value = format_block_value(self.value)
         else:
-            formatted_value = "{value} {units}".format(value=self.value, units=self.units)
+            formatted_value = "{value} {units}".format(value=format_block_value(self.value), units=self.units)
+
         ans = {
             "status": self.status,
             "value": formatted_value,
             "alarm": self.alarm,
-            "visibility": self.visibility}
+            "visibility": self.visibility
+        }
 
         if RETURN_RC_VALUES:
             # add rc values if they're set
@@ -172,4 +176,4 @@ class Block:
         return ans
 
     def __str__(self):
-        return self.get_description().__str__()
+        return str(self.get_description())
