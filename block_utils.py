@@ -1,3 +1,6 @@
+from __future__ import unicode_literals
+
+
 def shorten_title(title):
     """
     Gets a PV title by shortening its address to the last segment.
@@ -71,7 +74,7 @@ def format_blocks(blocks):
     return blocks_formatted
 
 
-def format_block_value(val):
+def format_block_value(val, precision):
     """
     Formats block values using the same rules as the blocks screen in the GUI.
     Args:
@@ -84,14 +87,18 @@ def format_block_value(val):
     big_number_threshold = 1000000
     assert small_number_threshold < big_number_threshold
 
+    # No precision specified = do not format.
+    if precision is None or precision < 0:
+        return u"{}".format(val)
     try:
         float_val = float(val)
-    except (ValueError, TypeError):
-        # If number does not parse as a float, just return it unchanged.
-        return val
-    else:
+
         if small_number_threshold < abs(float_val) < big_number_threshold or float_val == 0:
-            # Doesn't need further formatting. Return the original unchanged.
-            return val
+            format_str = u"{{:.{}f}}".format(precision)
         else:
-            return "{:.2E}".format(float_val)
+            format_str = u"{{:.{}G}}".format(precision)
+
+        return format_str.format(float_val)
+    except (ValueError, TypeError):
+        # If number does not parse as a float, or formatting failed, just return it in string form.
+        return u"{}".format(val)

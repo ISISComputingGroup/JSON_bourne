@@ -38,7 +38,7 @@ class Block:
     # Status hen the block is disconnected
     DISCONNECTED = "Disconnected"
 
-    def __init__(self, name, status, value, alarm, visibility, units=""):
+    def __init__(self, name, status, value, alarm, visibility, precision="", units=""):
         """
         Standard constructor.
 
@@ -59,6 +59,7 @@ class Block:
         self.inrange = None
         self.enabled = "NO"
         self.units = units
+        self.precision = precision
 
     def get_name(self):
         """ Returns the block status. """
@@ -149,18 +150,15 @@ class Block:
     def get_description(self):
         """ Returns the full description of this BoolStr object. """
 
-        # Never format RB number or run number.
-        formatter = (lambda v: v) if self.name.lower() in ["runnumber.val", "_rbnumber.val"] else format_block_value
-
         if self.should_format_value():
-            value = format_block_value(self.value)
+            value = format_block_value(self.value, self.precision)
         else:
             value = self.value
 
-        if self.units == "":
-            formatted_value = formatter(value)
+        if self.units == u"":
+            formatted_value = u"{}".format(value)
         else:
-            formatted_value = "{value} {units}".format(value=value, units=self.units)
+            formatted_value = u"{value} {units}".format(value=value, units=self.units)
 
         ans = {
             "status": self.status,
@@ -183,6 +181,10 @@ class Block:
             ans["rc_enabled"] = self.enabled
 
         return ans
+
+    def get_precision(self):
+        """Gets the precision of this block"""
+        return self.precision
 
     def should_format_value(self):
         """
