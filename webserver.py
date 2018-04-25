@@ -18,7 +18,7 @@ logger.addHandler(handler)
 
 HOST, PORT = '', 60000
 
-ALL_INSTS = {"MUONFE": "NDEMUONFE", "ME": "NDW1799"}  # Used for non NDX hosts format of {name: host}
+ALL_INSTS = {"MUONFE": "NDEMUONFE"}  # Used for non NDX hosts format of {name: host}
 
 NDX_INSTS = ["DEMO", "LARMOR", "IMAT", "IRIS", "VESUVIO", "ALF", "ZOOM", "POLARIS", "HRPD", "MERLIN", "ENGINX",
              "RIKENFE", "EMMA-A", "SANDALS", "GEM"]
