@@ -28,13 +28,14 @@ def get_instrument_and_callback(path):
     return instruments[0].upper(), callback[0]
 
 
-def get_whether_ibex_is_running_on_all_instruments(data):
+def get_whether_ibex_is_running_on_all_instruments(data, instrument_list_retrieval_errors):
     """
     Gets whether ibex is running for each instrument.
     :param data: The data scraped from the archiver webpage
     :return: A json dictionary containing the states of each instrument (True if running, False otherwise)
     """
-    active = {inst: (v != "") for inst, v in data.items()}
+    active = {"instruments": {inst: (v != "") for inst, v in data.items()},
+              "error": instrument_list_retrieval_errors}
     return str(json.dumps(active))
 
 

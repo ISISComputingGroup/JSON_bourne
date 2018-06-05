@@ -13,18 +13,10 @@ logger = logging.getLogger('JSON_bourne')
 log_filepath = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'log', 'JSON_bourne.log')
 handler = TimedRotatingFileHandler(log_filepath, when='midnight', backupCount=30)
 handler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
-logger.setLevel(logging.WARNING)
+logger.setLevel(logging.INFO)
 logger.addHandler(handler)
 
 HOST, PORT = '', 60000
-
-ALL_INSTS = {"MUONFE": "NDEMUONFE"}  # Used for non NDX hosts format of {name: host}
-
-NDX_INSTS = ["DEMO", "LARMOR", "IMAT", "IRIS", "VESUVIO", "ALF", "ZOOM", "POLARIS", "HRPD", "MERLIN", "ENGINX",
-             "RIKENFE", "EMMA-A", "SANDALS", "GEM", "MAPS"]
-
-for inst in NDX_INSTS:
-    ALL_INSTS[inst] = "NDX" + inst
 
 
 class MyHandler(BaseHTTPRequestHandler):
@@ -45,7 +37,7 @@ class MyHandler(BaseHTTPRequestHandler):
 
             with _scraped_data_lock:
                 if instrument == "ALL":
-                    ans = get_whether_ibex_is_running_on_all_instruments(_scraped_data)
+                    ans = get_whether_ibex_is_running_on_all_instruments(_scraped_data, web_manager.instrument_list_retrieval_errors())
                 else:
                     ans = get_detailed_state_of_specific_instrument(instrument, _scraped_data)
 
@@ -74,7 +66,7 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 
 if __name__ == '__main__':
     web_manager = WebScrapperManager()
-    web_manager.run()
+    web_manager.start()
 
     server = ThreadedHTTPServer(('', PORT), MyHandler)
 
@@ -83,4 +75,4 @@ if __name__ == '__main__':
             server.serve_forever()
     except KeyboardInterrupt:
         print("Shutting down")
-        web_manager.stop_all()
+        web_manager._stop_all()

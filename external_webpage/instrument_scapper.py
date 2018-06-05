@@ -31,7 +31,7 @@ class InstrumentScrapper(Thread):
 
         """
         for i in range(seconds):
-            if self._stop_event:
+            if self._stop_event.is_set():
                 return
             sleep(1)
 

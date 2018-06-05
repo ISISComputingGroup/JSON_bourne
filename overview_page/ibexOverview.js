@@ -88,8 +88,9 @@ function on_click(elmnt) {
 function display_data(data){
 	var onlineClients = new Array();
 	var offlineClients = new Array();
-	
-	for (value in data){
+
+	var instruments = data["instruments"];
+	for (value in instruments){
 		if (data[value] == true){
 			onlineClients.push(value);
 		} else{
@@ -97,15 +98,15 @@ function display_data(data){
 		};	
 	};
 	
-	data = sortDictionary(data);
-	var total_users = Object.keys(data).length;
+	instruments = sortDictionary(instruments);
+	var total_users = Object.keys(instruments).length;
 	
 	document.getElementById("totalUsers").innerHTML = total_users;
 	document.getElementById("onlineUsers").innerHTML = Object.keys(onlineClients).length;
 	document.getElementById("offlineUsers").innerHTML = Object.keys(offlineClients).length;
 	
 	clearBox("buttons")
-	for (value in data){
+	for (value in instruments){
 		var newButton = document.createElement("button");
 		
 		newButton.innerHTML = value
@@ -121,7 +122,7 @@ function display_data(data){
 			ending = "btn-xl";
 		};	
 		var blockListStyle = document.createAttribute("class");
-		if (data[value] == true){
+		if (instruments[value] == true){
 			blockListStyle.value = 'btn btn-success '+ending;
 		} else{
 			blockListStyle.value = 'btn btn-danger '+ending;
@@ -137,6 +138,14 @@ function display_data(data){
 	var date = new Date();
 	time.innerHTML = "Last updated at: " + date.toLocaleTimeString();
 	time.setAttribute("style", "color:black");
+
+	var error = document.getElementById("error");
+	if (data["error"] == "") {
+	    error.innerHTML ="";
+	} else {
+	    error.innerHTML = "Error: " + data["error"];
+	}
+
 }
 
 var windowWidth = $(window).width();
