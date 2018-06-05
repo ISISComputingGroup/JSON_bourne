@@ -13,9 +13,8 @@ from CaChannel.util import caget
 from external_webpage.instrument_scapper import InstrumentScrapper
 
 logger = logging.getLogger('JSON_bourne')
-#INST_LIST_PV = "CS:INSTLIST"
-INST_LIST_PV = "IN:DEMO:SIMPLE:CHARWAV"
-TIME_BETWEEN_INSTLIST_REFRESH = 10
+INST_LIST_PV = "CS:INSTLIST"
+TIME_BETWEEN_INSTLIST_REFRESH = 6000
 
 
 class InstList(object):
