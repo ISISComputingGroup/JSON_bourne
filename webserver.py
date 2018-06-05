@@ -1,3 +1,5 @@
+import os
+
 from external_webpage.request_handler_utils import get_detailed_state_of_specific_instrument, \
     get_whether_ibex_is_running_on_all_instruments, get_instrument_and_callback
 import logging
@@ -11,7 +13,8 @@ from time import sleep
 from external_webpage.instrument_information_collator import InstrumentInformationCollator
 
 logger = logging.getLogger('JSON_bourne')
-handler = TimedRotatingFileHandler('log\JSON_bourne.log', when='midnight', backupCount=30)
+log_filepath = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'log', 'JSON_bourne.log')
+handler = TimedRotatingFileHandler(log_filepath, when='midnight', backupCount=30)
 handler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
 logger.setLevel(logging.WARNING)
 logger.addHandler(handler)
