@@ -7,7 +7,7 @@ import traceback
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from SocketServer import ThreadingMixIn
 from logging.handlers import TimedRotatingFileHandler
-from threading import Thread, active_count, RLock
+from threading import Thread, active_count, RLock, Event
 from time import sleep
 
 from external_webpage.instrument_information_collator import InstrumentInformationCollator
@@ -86,7 +86,6 @@ class InstrumentScrapper(Thread):
     """
     Thread that continually scrapes data from an instrument's ArchiveEngine.
     """
-    _running = True
     _previously_failed = False
     _tries_since_logged = 0
 
@@ -100,7 +99,7 @@ class InstrumentScrapper(Thread):
 
         """
         for i in range(seconds):
-            if not self._running:
+            if self._stop_event:
                 return
             sleep(1)
 
@@ -114,6 +113,19 @@ class InstrumentScrapper(Thread):
         super(InstrumentScrapper, self).__init__()
         self._host = host
         self._name = name
+        self._stop_event = Event()
+
+    def is_instrument(self, name, host):
+        """
+        Is this scrapper for this name and _host
+        Args:
+            name: name of the instrument
+            host: _host of the instrument
+
+        Returns: True is _host and name match; False otherwise
+
+        """
+        return self._name == name and self._host == host
 
     def run(self):
         """
@@ -123,7 +135,7 @@ class InstrumentScrapper(Thread):
         """
         global _scraped_data
         web_page_scraper = InstrumentInformationCollator(self._host)
-        while self._running:
+        while not self._stop_event.is_set():
             try:
                 self._tries_since_logged += 1
                 temp_data = web_page_scraper.collate()
@@ -142,6 +154,12 @@ class InstrumentScrapper(Thread):
                 with _scraped_data_lock:
                     _scraped_data[self._name] = ""
                 self.wait(WAIT_BETWEEN_FAILED_UPDATES)
+
+    def stop(self):
+        """
+        Stop the thread at the next available point
+        """
+        self._stop_event.set()
 
 
 if __name__ == '__main__':
