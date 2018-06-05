@@ -1,16 +1,13 @@
-import os
-
-from external_webpage.request_handler_utils import get_detailed_state_of_specific_instrument, \
-    get_whether_ibex_is_running_on_all_instruments, get_instrument_and_callback
 import logging
-import traceback
+import os
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from SocketServer import ThreadingMixIn
 from logging.handlers import TimedRotatingFileHandler
-from threading import Thread, active_count, RLock, Event
-from time import sleep
 
-from external_webpage.instrument_information_collator import InstrumentInformationCollator
+from external_webpage.request_handler_utils import get_detailed_state_of_specific_instrument, \
+    get_whether_ibex_is_running_on_all_instruments, get_instrument_and_callback
+from external_webpage.web_scrapper_manager import WebScrapperManager
+from external_webpage.instrument_scapper import _scraped_data, _scraped_data_lock
 
 logger = logging.getLogger('JSON_bourne')
 log_filepath = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'log', 'JSON_bourne.log')
@@ -28,13 +25,6 @@ NDX_INSTS = ["DEMO", "LARMOR", "IMAT", "IRIS", "VESUVIO", "ALF", "ZOOM", "POLARI
 
 for inst in NDX_INSTS:
     ALL_INSTS[inst] = "NDX" + inst
-
-_scraped_data = {}
-_scraped_data_lock = RLock()
-
-WAIT_BETWEEN_UPDATES = 3
-WAIT_BETWEEN_FAILED_UPDATES = 60
-RETRIES_BETWEEN_LOGS = 60
 
 
 class MyHandler(BaseHTTPRequestHandler):
@@ -82,92 +72,9 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     """Handle requests in a separate thread."""
 
 
-class InstrumentScrapper(Thread):
-    """
-    Thread that continually scrapes data from an instrument's ArchiveEngine.
-    """
-    _previously_failed = False
-    _tries_since_logged = 0
-
-    def wait(self, seconds):
-        """
-        Wait for a number of seconds but in short waits so can stop thread more quickly
-        Args:
-            seconds: number of seconds to wait
-
-        Returns:
-
-        """
-        for i in range(seconds):
-            if self._stop_event:
-                return
-            sleep(1)
-
-    def __init__(self, name, host):
-        """
-        Initialize.
-        Args:
-            name: Name of instrument.
-            host: Host for the instrument.
-        """
-        super(InstrumentScrapper, self).__init__()
-        self._host = host
-        self._name = name
-        self._stop_event = Event()
-
-    def is_instrument(self, name, host):
-        """
-        Is this scrapper for this name and _host
-        Args:
-            name: name of the instrument
-            host: _host of the instrument
-
-        Returns: True is _host and name match; False otherwise
-
-        """
-        return self._name == name and self._host == host
-
-    def run(self):
-        """
-        Function to run continuously to update the scraped data.
-        Returns:
-
-        """
-        global _scraped_data
-        web_page_scraper = InstrumentInformationCollator(self._host)
-        while not self._stop_event.is_set():
-            try:
-                self._tries_since_logged += 1
-                temp_data = web_page_scraper.collate()
-                with _scraped_data_lock:
-                    _scraped_data[self._name] = temp_data
-                if self._previously_failed:
-                    logger.error("Reconnected with " + str(self._name))
-                self._previously_failed = False
-                self.wait(WAIT_BETWEEN_UPDATES)
-            except Exception as e:
-                if not self._previously_failed or self._tries_since_logged >= RETRIES_BETWEEN_LOGS:
-                    logger.error("Failed to get data from instrument: {0} at {1} error was: {2}{3}".format(
-                        self._name, self._host, e, " - Stack (1 line) {stack}:".format(stack=traceback.format_exc())))
-                    self._previously_failed = True
-                    self._tries_since_logged = 0
-                with _scraped_data_lock:
-                    _scraped_data[self._name] = ""
-                self.wait(WAIT_BETWEEN_FAILED_UPDATES)
-
-    def stop(self):
-        """
-        Stop the thread at the next available point
-        """
-        self._stop_event.set()
-
-
 if __name__ == '__main__':
-    web_scrapers = []
-    for inst_name, inst_host in ALL_INSTS.items():
-        web_scraper = InstrumentScrapper(inst_name, inst_host)
-        web_scraper.start()
-        web_scrapers.append(web_scraper)
+    web_manager = WebScrapperManager()
+    web_manager.run()
 
     server = ThreadedHTTPServer(('', PORT), MyHandler)
 
@@ -176,8 +83,4 @@ if __name__ == '__main__':
             server.serve_forever()
     except KeyboardInterrupt:
         print("Shutting down")
-        for w in web_scrapers:
-            w._running = False
-    while active_count() > 1:
-        for w in web_scrapers:
-            w.join()
+        web_manager.stop_all()

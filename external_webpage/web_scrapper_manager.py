@@ -1,7 +1,16 @@
 """
 Relation to web scrapper management.
 """
-from webserver import InstrumentScrapper
+import json
+import logging
+import zlib
+
+import six
+from CaChannel.util import caget
+
+from external_webpage.instrument_scapper import InstrumentScrapper
+
+logger = logging.getLogger('JSON_bourne')
 
 
 class InstList(object):
@@ -9,9 +18,53 @@ class InstList(object):
     Object that allows the instrument list to be requested from a PV
     """
 
+    def __init__(self):
+        """
+        Initialise.
+        """
+        self._cached_list = []
 
     def retrieve(self):
-        pass
+        """
+        retrieve the instrument list
+        Returns: list of instruments with their host names
+        """
+        try:
+            inst_list = {}
+            raw = caget("CS:INSTLIST", as_string=True)
+
+            full_inst_list_string = self._dehex_and_decompress(raw)
+            full_inst_list = json.loads(full_inst_list_string)
+
+            for full_inst in full_inst_list:
+                inst_list[full_inst["name"]] = full_inst["hostName"]
+
+            self._cached_list = inst_list
+
+        except Exception as ex:
+            logger.error("ERROR: Error getting instrument list. {}".format(ex))
+
+        return self._cached_list
+
+    def _dehex_and_decompress(self, value):
+        """
+        Decompress and dehex pv value
+        Args:
+            value: value to translate
+
+        Returns: dehexed value
+
+        """
+        if six.PY2:
+            return zlib.decompress(value.decode('hex'))
+
+        try:
+            # If it comes as bytes then cast to string
+            value = value.decode('utf-8')
+        except AttributeError:
+            pass
+
+        return zlib.decompress(bytes.fromhex(value)).decode("utf-8")
 
 
 class WebScrapperManager(object):
@@ -82,3 +135,14 @@ class WebScrapperManager(object):
                     break
             else:
                 yield name, host
+
+    def stop_all(self):
+        """
+        Stop all scrapper threads.
+
+        """
+        for scrapper in self.scrappers:
+            scrapper.stop()
+
+        for scrapper in self.scrappers:
+            scrapper.join()
