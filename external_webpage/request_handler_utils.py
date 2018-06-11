@@ -34,8 +34,21 @@ def get_whether_ibex_is_running_on_all_instruments(data, instrument_list_retriev
     :param data: The data scraped from the archiver webpage
     :return: A json dictionary containing the states of each instrument (True if running, False otherwise)
     """
-    active = {"instruments": {inst: (v != "") for inst, v in data.items()},
-              "error": instrument_list_retrieval_errors}
+
+    inst_data = {}
+    for inst, v in data.items():
+
+        try:
+            run_state = v["inst_pvs"]["RUNSTATE"]["value"]
+        except (KeyError, TypeError):
+            run_state = "UNKNOWN"
+
+        inst_data[inst] = {"is_up": (v != ''),
+                           "run_state": run_state}
+    active = {
+        "error": instrument_list_retrieval_errors,
+        "instruments": inst_data}
+
     return str(json.dumps(active))
 
 
