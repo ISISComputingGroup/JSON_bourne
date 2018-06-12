@@ -1,0 +1,1 @@
+robocopy ".\front_end" "C:\inetpub\wwwroot\DataWeb\IbexDataweb" /S
