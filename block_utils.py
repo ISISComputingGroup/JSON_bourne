@@ -78,7 +78,8 @@ def format_block_value(val, precision):
     """
     Formats block values using the same rules as the blocks screen in the GUI.
     Args:
-        val: the block value to format
+        val (str): the block value to format
+        precision (int): the precision to format the block to. If None then will not format.
     Returns:
         the formatted block value
     """

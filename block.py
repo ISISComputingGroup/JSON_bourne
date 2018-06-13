@@ -17,11 +17,6 @@
 Classes for Blocks
 """
 
-
-# Temporary fix to prevent RC values from being returned from the server
-# while there is still a problem with getting rc values from the archiver.
-# Once that problem has been solved then this flag and it's usages can 
-# be removed. See issue #2446
 from block_utils import format_block_value
 
 RETURN_RC_VALUES = False
@@ -38,7 +33,7 @@ class Block:
     # Status hen the block is disconnected
     DISCONNECTED = "Disconnected"
 
-    def __init__(self, name, status, value, alarm, visibility, precision="", units=""):
+    def __init__(self, name, status, value, alarm, visibility, precision=None, units=""):
         """
         Standard constructor.
 
@@ -47,6 +42,7 @@ class Block:
             status: the status of the block (e.g disconnected)
             value: the current block value
             alarm: the alarm status
+            precision (str): the precision of the PV (directly as a string from the PV)
             units: units associated with the value
         """
         self.name = name
@@ -59,7 +55,10 @@ class Block:
         self.inrange = None
         self.enabled = "NO"
         self.units = units
-        self.precision = precision
+        try:
+            self.precision = int(precision)
+        except (ValueError, TypeError):
+            self.precision = None
 
     def get_name(self):
         """ Returns the block status. """
@@ -182,10 +181,6 @@ class Block:
 
         return ans
 
-    def get_precision(self):
-        """Gets the precision of this block"""
-        return self.precision
-
     def should_format_value(self):
         """
         True if the value of this block should be formatted, False otherwise.
@@ -195,7 +190,7 @@ class Block:
         Returns:
             True if the value of this block should be formatted, False otherwise.
         """
-        return self.name.lower() not in ["_rbnumber.val", "nunnumber.val"]
+        return self.name.lower() not in ["_rbnumber.val", "runnumber.val"]
 
     def __str__(self):
         return str(self.get_description())
