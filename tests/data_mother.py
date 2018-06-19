@@ -150,6 +150,7 @@ class ConfigMother():
             "log_deadband": 0.0,
             "component": None,
             "runcontrol": False,
+            "Precision": 3,
             "visible": is_visibile,
             "pv": "TE:NDW1798:SIMPLE:VALUE1",
             "name": block_name,

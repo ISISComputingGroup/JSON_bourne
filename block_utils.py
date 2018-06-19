@@ -1,8 +1,4 @@
-from lxml import html
-import requests
-import json
-from block import Block
-import logging
+from __future__ import unicode_literals
 
 
 def shorten_title(title):
@@ -76,3 +72,34 @@ def format_blocks(blocks):
         blocks_formatted[name] = block.get_description()
 
     return blocks_formatted
+
+
+def format_block_value(val, precision):
+    """
+    Formats block values using the same rules as the blocks screen in the GUI.
+    Args:
+        val (str): the block value to format
+        precision (int): the precision to format the block to. If None then will not format.
+    Returns:
+        the formatted block value
+    """
+
+    small_number_threshold = 0.001
+    big_number_threshold = 1000000
+    assert small_number_threshold < big_number_threshold
+
+    # No precision specified = do not format.
+    if precision is None or precision < 0:
+        return u"{}".format(val)
+    try:
+        float_val = float(val)
+
+        if small_number_threshold < abs(float_val) < big_number_threshold or float_val == 0:
+            format_str = u"{{:.{}f}}".format(precision)
+        else:
+            format_str = u"{{:.{}G}}".format(precision)
+
+        return format_str.format(float_val)
+    except (ValueError, TypeError):
+        # If number does not parse as a float, or formatting failed, just return it in string form.
+        return u"{}".format(val)

@@ -17,11 +17,8 @@
 Classes for Blocks
 """
 
+from block_utils import format_block_value
 
-# Temporary fix to prevent RC values from being returned from the server
-# while there is still a problem with getting rc values from the archiver.
-# Once that problem has been solved then this flag and it's usages can 
-# be removed. See issue #2446
 RETURN_RC_VALUES = False
 
 
@@ -36,7 +33,7 @@ class Block:
     # Status hen the block is disconnected
     DISCONNECTED = "Disconnected"
 
-    def __init__(self, name, status, value, alarm, visibility, units=""):
+    def __init__(self, name, status, value, alarm, visibility, precision=None, units=""):
         """
         Standard constructor.
 
@@ -45,6 +42,7 @@ class Block:
             status: the status of the block (e.g disconnected)
             value: the current block value
             alarm: the alarm status
+            precision (str): the precision of the PV (directly as a string from the PV)
             units: units associated with the value
         """
         self.name = name
@@ -57,6 +55,10 @@ class Block:
         self.inrange = None
         self.enabled = "NO"
         self.units = units
+        try:
+            self.precision = int(precision)
+        except (ValueError, TypeError):
+            self.precision = None
 
     def get_name(self):
         """ Returns the block status. """
@@ -146,15 +148,23 @@ class Block:
 
     def get_description(self):
         """ Returns the full description of this BoolStr object. """
-        if self.units == "":
-            formatted_value = self.value
+
+        if self.should_format_value():
+            value = format_block_value(self.value, self.precision)
         else:
-            formatted_value = "{value} {units}".format(value=self.value, units=self.units)
+            value = self.value
+
+        if self.units == u"":
+            formatted_value = u"{}".format(value)
+        else:
+            formatted_value = u"{value} {units}".format(value=value, units=self.units)
+
         ans = {
             "status": self.status,
             "value": formatted_value,
             "alarm": self.alarm,
-            "visibility": self.visibility}
+            "visibility": self.visibility
+        }
 
         if RETURN_RC_VALUES:
             # add rc values if they're set
@@ -171,5 +181,16 @@ class Block:
 
         return ans
 
+    def should_format_value(self):
+        """
+        True if the value of this block should be formatted, False otherwise.
+
+        Never format RB number or run number.
+
+        Returns:
+            True if the value of this block should be formatted, False otherwise.
+        """
+        return self.name.lower() not in ["_rbnumber.val", "runnumber.val"]
+
     def __str__(self):
-        return self.get_description().__str__()
+        return str(self.get_description())
