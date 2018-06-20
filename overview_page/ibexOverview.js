@@ -115,7 +115,7 @@ function display_data(data){
 	for (value in instruments){
 		var newButton = document.createElement("button");
 		var run_state = instruments[value]["run_state"]
-		newButton.innerHTML = value + "<div style=\"background-color:" + getColourFromRunState(run_state) + "\">" +  run_state + "</div>"
+		newButton.innerHTML = value + "<div style=\"background-color:" + getColourFromRunState(run_state) + ";color:black\">" +  run_state + "</div>"
 
 		newButton.style.type = "btn";
 

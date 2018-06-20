@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
@@ -5,9 +6,9 @@ from SocketServer import ThreadingMixIn
 from logging.handlers import TimedRotatingFileHandler
 
 from external_webpage.request_handler_utils import get_detailed_state_of_specific_instrument, \
-    get_whether_ibex_is_running_on_all_instruments, get_instrument_and_callback
+    get_summary_details_of_all_instruments, get_instrument_and_callback
 from external_webpage.web_scrapper_manager import WebScrapperManager
-from external_webpage.instrument_scapper import _scraped_data, _scraped_data_lock
+from external_webpage.instrument_scapper import scraped_data, scraped_data_lock
 
 logger = logging.getLogger('JSON_bourne')
 log_filepath = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'log', 'JSON_bourne.log')
@@ -35,13 +36,21 @@ class MyHandler(BaseHTTPRequestHandler):
             # Warn level so as to avoid many log messages that come from other modules
             logger.warn("Connected to from " + str(self.client_address) + " looking at " + str(instrument))
 
-            with _scraped_data_lock:
+            with scraped_data_lock:
                 if instrument == "ALL":
-                    ans = get_whether_ibex_is_running_on_all_instruments(_scraped_data, web_manager.instrument_list_retrieval_errors())
-                else:
-                    ans = get_detailed_state_of_specific_instrument(instrument, _scraped_data)
+                    ans = {
+                        "error": web_manager.instrument_list_retrieval_errors(),
+                        "instruments": get_summary_details_of_all_instruments(scraped_data)}
 
-            response = "{}({})".format(callback, ans)
+                else:
+                    ans = get_detailed_state_of_specific_instrument(instrument, scraped_data)
+
+            try:
+                ans_as_json = str(json.dumps(ans))
+            except Exception as err:
+                raise ValueError("Unable to convert answer data to JSON: %s" % err.message)
+
+            response = "{}({})".format(callback, ans_as_json)
 
             self.send_response(200)
             self.send_header('Content-type', 'text/html')
@@ -75,4 +84,4 @@ if __name__ == '__main__':
             server.serve_forever()
     except KeyboardInterrupt:
         print("Shutting down")
-        web_manager._stop_all()
+        web_manager.stop_all()

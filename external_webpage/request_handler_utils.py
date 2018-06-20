@@ -1,4 +1,3 @@
-import json
 import re
 
 
@@ -28,7 +27,7 @@ def get_instrument_and_callback(path):
     return instruments[0].upper(), callback[0]
 
 
-def get_whether_ibex_is_running_on_all_instruments(data, instrument_list_retrieval_errors):
+def get_summary_details_of_all_instruments(data):
     """
     Gets whether ibex is running for each instrument.
     :param data: The data scraped from the archiver webpage
@@ -45,11 +44,8 @@ def get_whether_ibex_is_running_on_all_instruments(data, instrument_list_retriev
 
         inst_data[inst] = {"is_up": (v != ''),
                            "run_state": run_state}
-    active = {
-        "error": instrument_list_retrieval_errors,
-        "instruments": inst_data}
 
-    return str(json.dumps(active))
+    return inst_data
 
 
 def get_detailed_state_of_specific_instrument(instrument, data):
@@ -63,7 +59,4 @@ def get_detailed_state_of_specific_instrument(instrument, data):
         raise ValueError(str(instrument) + " not known")
     if data[instrument] == "":
         raise ValueError("Instrument has become unavailable")
-    try:
-        return str(json.dumps(data[instrument]))
-    except Exception as err:
-        raise ValueError("Unable to convert instrument data to JSON: %s" % err.message)
+    return data[instrument]

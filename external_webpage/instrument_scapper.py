@@ -5,8 +5,8 @@ from time import sleep
 
 from external_webpage.instrument_information_collator import InstrumentInformationCollator
 
-_scraped_data = {}
-_scraped_data_lock = RLock()
+scraped_data = {}
+scraped_data_lock = RLock()
 logger = logging.getLogger('JSON_bourne')
 
 WAIT_BETWEEN_UPDATES = 3
@@ -65,15 +65,15 @@ class InstrumentScrapper(Thread):
         Returns:
 
         """
-        global _scraped_data
+        global scraped_data
         web_page_scraper = InstrumentInformationCollator(self._host)
         logger.info("Scrapper started for {}".format(self._name))
         while not self._stop_event.is_set():
             try:
                 self._tries_since_logged += 1
                 temp_data = web_page_scraper.collate()
-                with _scraped_data_lock:
-                    _scraped_data[self._name] = temp_data
+                with scraped_data_lock:
+                    scraped_data[self._name] = temp_data
                 if self._previously_failed:
                     logger.error("Reconnected with " + str(self._name))
                 self._previously_failed = False
@@ -84,8 +84,8 @@ class InstrumentScrapper(Thread):
                         self._name, self._host, e, " - Stack (1 line) {stack}:".format(stack=traceback.format_exc())))
                     self._previously_failed = True
                     self._tries_since_logged = 0
-                with _scraped_data_lock:
-                    _scraped_data[self._name] = ""
+                with scraped_data_lock:
+                    scraped_data[self._name] = ""
                 self.wait(WAIT_BETWEEN_FAILED_UPDATES)
 
     def stop(self):

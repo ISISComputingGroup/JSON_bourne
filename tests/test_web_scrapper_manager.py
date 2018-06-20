@@ -66,7 +66,7 @@ class TestWebScrapperManager(unittest.TestCase):
     def test_GIVEN_no_instruments_on_list_WHEN_run_THEN_no_web_scrapper_created(self):
         web_scrapper_manager = WebScrapperManager(MockWebScrapper, MockInstList({}))
 
-        web_scrapper_manager.run()
+        web_scrapper_manager.maintain_scrapper_list()
 
         assert_that(web_scrapper_manager.scrappers, has_length(0))
 
@@ -75,7 +75,7 @@ class TestWebScrapperManager(unittest.TestCase):
         expected_host = "_host"
         web_scrapper_manager = WebScrapperManager(MockWebScrapper, MockInstList({expected_name: expected_host}))
 
-        web_scrapper_manager.run()
+        web_scrapper_manager.maintain_scrapper_list()
 
         assert_that(web_scrapper_manager.scrappers, has_length(1))
         assert_that(web_scrapper_manager.scrappers[0].name, is_(expected_name))
@@ -86,7 +86,7 @@ class TestWebScrapperManager(unittest.TestCase):
         expected_insts = {"inst1": "_host", "inst2": "host2", "inst3": "host3"}
         web_scrapper_manager = WebScrapperManager(MockWebScrapper, MockInstList(expected_insts))
 
-        web_scrapper_manager.run()
+        web_scrapper_manager.maintain_scrapper_list()
 
         result = {}
         for scrapper in web_scrapper_manager.scrappers:
@@ -98,21 +98,23 @@ class TestWebScrapperManager(unittest.TestCase):
         expected_name = "inst"
         expected_host = "_host"
         web_scrapper_manager = WebScrapperManager(MockWebScrapper, MockInstList({expected_name: expected_host}))
-        web_scrapper_manager.run()
+        web_scrapper_manager.maintain_scrapper_list()
         original_scrapper = web_scrapper_manager.scrappers[0]
 
-        web_scrapper_manager.run()
+        web_scrapper_manager.maintain_scrapper_list()
 
         assert_that(web_scrapper_manager.scrappers, is_([original_scrapper]))
 
     def test_GIVEN_no_instruments_on_list_but_scrapper_exists_WHEN_run_THEN_web_scrapper_stopped_and_removed(self):
         inst_list = MockInstList({"inst": "_host"})
         web_scrapper_manager = WebScrapperManager(MockWebScrapper, inst_list)
-        web_scrapper_manager.run()
+        web_scrapper_manager.maintain_scrapper_list()
+
         inst_list.instrument_host_dict = {}
         original_scrapper = web_scrapper_manager.scrappers[0]
 
-        web_scrapper_manager.run()
+        web_scrapper_manager.maintain_scrapper_list()
+
 
         assert_that(web_scrapper_manager.scrappers, has_length(0))
         assert_that(original_scrapper.stopped, is_(True), "thread has been stopped")
@@ -123,10 +125,12 @@ class TestWebScrapperManager(unittest.TestCase):
         different_name = "diff"
         mock_inst_list = MockInstList({different_name: expected_host})
         web_scrapper_manager = WebScrapperManager(MockWebScrapper, mock_inst_list)
-        web_scrapper_manager.run()
+        web_scrapper_manager.maintain_scrapper_list()
+
         mock_inst_list.instrument_host_dict = {expected_name: expected_host}
 
-        web_scrapper_manager.run()
+        web_scrapper_manager.maintain_scrapper_list()
+
 
         assert_that(web_scrapper_manager.scrappers, has_length(1))
         assert_that(web_scrapper_manager.scrappers[0].name, is_(expected_name))
@@ -138,10 +142,12 @@ class TestWebScrapperManager(unittest.TestCase):
         different_host = "diff"
         mock_inst_list = MockInstList({expected_name: different_host})
         web_scrapper_manager = WebScrapperManager(MockWebScrapper, mock_inst_list)
-        web_scrapper_manager.run()
+        web_scrapper_manager.maintain_scrapper_list()
+
         mock_inst_list.instrument_host_dict = {expected_name: expected_host}
 
-        web_scrapper_manager.run()
+        web_scrapper_manager.maintain_scrapper_list()
+
 
         assert_that(web_scrapper_manager.scrappers, has_length(1))
         assert_that(web_scrapper_manager.scrappers[0].name, is_(expected_name))
@@ -151,11 +157,13 @@ class TestWebScrapperManager(unittest.TestCase):
         expected_name = "inst"
         expected_host = "_host"
         web_scrapper_manager = WebScrapperManager(MockWebScrapper, MockInstList({expected_name: expected_host}))
-        web_scrapper_manager.run()
+        web_scrapper_manager.maintain_scrapper_list()
+
         original_scrapper = web_scrapper_manager.scrappers[0]
         original_scrapper.is_alive_flag = False
 
-        web_scrapper_manager.run()
+        web_scrapper_manager.maintain_scrapper_list()
+
 
         assert_that(web_scrapper_manager.scrappers, not_(contains(original_scrapper)))
         assert_that(web_scrapper_manager.scrappers, has_length(1))

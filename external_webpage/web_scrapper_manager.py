@@ -8,6 +8,7 @@ from threading import Thread, Event
 from time import sleep
 
 import six
+from CaChannel import CaChannelException
 from CaChannel.util import caget
 
 from external_webpage.instrument_scapper import InstrumentScrapper
@@ -21,13 +22,18 @@ class InstList(object):
     """
     Object that allows the instrument list to be requested from a PV
     """
+    INSTRUMENT_LIST_CAN_NOT_BE_READ = "Instrument list can not be read"
+    INSTRUMENT_LIST_NOT_DECOMPRESSED = "Instrument list can not decompressed"
+    INSTRUMENT_LIST_NOT_JSON = "Instrument list is not json"
+    INSTRUMENT_LIST_NOT_CORRECT_FORMAT = "Instrument list not in correct format"
 
-    def __init__(self):
+    def __init__(self, caget_fn=caget):
         """
         Initialise.
         """
         self._cached_list = {}
         self.error_on_retrieve = "Instrument list not yet retrieved"
+        self._caget_fn = caget_fn
 
     def retrieve(self):
         """
@@ -38,32 +44,36 @@ class InstList(object):
         inst_list = {}
         try:
 
-            raw = caget(INST_LIST_PV, as_string=True)
+            raw = self._caget_fn(INST_LIST_PV, as_string=True)
 
-        except Exception as ex:
-            self.error_on_retrieve = "Instrument list can not be read"
+        except CaChannelException as ex:
+
+            self.error_on_retrieve = InstList.INSTRUMENT_LIST_CAN_NOT_BE_READ
             logger.error("ERROR: Error getting instrument list. {}".format(ex))
             return self._cached_list
 
         try:
             full_inst_list_string = self._dehex_and_decompress(raw)
         except Exception as ex:
-            self.error_on_retrieve = "Instrument list can not decompressed"
+
+            self.error_on_retrieve = InstList.INSTRUMENT_LIST_NOT_DECOMPRESSED
             logger.error("ERROR: Error getting instrument list. {}".format(ex))
             return self._cached_list
 
         try:
             full_inst_list = json.loads(full_inst_list_string)
         except Exception as ex:
-            self.error_on_retrieve = "Instrument list is not json"
+
+            self.error_on_retrieve = InstList.INSTRUMENT_LIST_NOT_JSON
             logger.error("ERROR: Error getting instrument list. {}".format(ex))
             return self._cached_list
 
         try:
             for full_inst in full_inst_list:
                 inst_list[full_inst["name"]] = full_inst["hostName"]
-        except KeyError as ex:
-            self.error_on_retrieve = "Instrument list not in correct format"
+        except (KeyError, TypeError) as ex:
+
+            self.error_on_retrieve = InstList.INSTRUMENT_LIST_NOT_CORRECT_FORMAT
             logger.error("ERROR: Error getting instrument list. {}".format(ex))
             return self._cached_list
 
@@ -134,22 +144,26 @@ class WebScrapperManager(Thread):
         Perform a run of the web scrapper management cycle
         """
         while not self._stop_event.is_set():
-            inst_list = self._inst_list.retrieve()
-            new_scrappers_list = []
-            for scrapper in self.scrappers:
-                if scrapper.is_alive() and self._is_scrapper_in_inst_list(inst_list, scrapper):
-                    new_scrappers_list.append(scrapper)
-                else:
-                    scrapper.stop()
-            self.scrappers = new_scrappers_list
-
-            for name, host in self._scrapper_to_start(inst_list):
-                scrapper = self._scrapper_class(name, host)
-                scrapper.start()
-                self.scrappers.append(scrapper)
-
+            self.maintain_scrapper_list()
             self.wait(TIME_BETWEEN_INSTLIST_REFRESH)
-        self._stop_all()
+        self.stop_all()
+
+    def maintain_scrapper_list(self):
+        """
+        Maintain the scrapper list by starting any instrument scrapper on the list and stopping those not on the list
+        """
+        inst_list = self._inst_list.retrieve()
+        new_scrappers_list = []
+        for scrapper in self.scrappers:
+            if scrapper.is_alive() and self._is_scrapper_in_inst_list(inst_list, scrapper):
+                new_scrappers_list.append(scrapper)
+            else:
+                scrapper.stop()
+        self.scrappers = new_scrappers_list
+        for name, host in self._scrapper_to_start(inst_list):
+            scrapper = self._scrapper_class(name, host)
+            scrapper.start()
+            self.scrappers.append(scrapper)
 
     def _is_scrapper_in_inst_list(self, inst_list, scrapper):
         """
@@ -182,7 +196,7 @@ class WebScrapperManager(Thread):
             else:
                 yield name, host
 
-    def _stop_all(self):
+    def stop_all(self):
         """
         Stop all scrapper threads.
 
