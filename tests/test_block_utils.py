@@ -1,11 +1,15 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import os
 import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import unittest
 from block import Block, RETURN_RC_VALUES
 from block_utils import (format_blocks, set_rc_values_for_block_from_pvs,
-                         set_rc_values_for_blocks, shorten_title)
+                         set_rc_values_for_blocks, shorten_title, format_block_value)
 
 
 class TestBlockUtils(unittest.TestCase):
@@ -13,22 +17,22 @@ class TestBlockUtils(unittest.TestCase):
     def test_format_blocks_with_two_blocks(self):
         #Arrange
         test_blocks = {
-            "NEW_BLOCK": Block("NEW_BLOCK", "INVALID", 10, "UDF_ALARM", False), 
-            "NOT_NEW_BLOCK": Block("NOT_NEW_BLOCK", "GOOD", 100, "NO_ALARM", False)
+            "NEW_BLOCK": Block("NEW_BLOCK", "INVALID", "10", "UDF_ALARM", False, None),
+            "NOT_NEW_BLOCK": Block("NOT_NEW_BLOCK", "GOOD", "100", "NO_ALARM", False, None)
         }
         if RETURN_RC_VALUES:
             expected_result = {
                 'NEW_BLOCK': {'status': 'INVALID', 'alarm': 'UDF_ALARM',
-                    'visibility': False, 'value': 10, 'rc_enabled': 'NO'},
+                    'visibility': False, 'value': "10", 'rc_enabled': 'NO'},
                 'NOT_NEW_BLOCK': {'status': 'GOOD', 'alarm': 'NO_ALARM',
-                    'visibility': False, 'value': 100, 'rc_enabled': 'NO'}
+                    'visibility': False, 'value': "100", 'rc_enabled': 'NO'}
             }
         else:
             expected_result = {
                 'NEW_BLOCK': {'status': 'INVALID', 'alarm': 'UDF_ALARM',
-                              'visibility': False, 'value': 10},
+                              'visibility': False, 'value': "10"},
                 'NOT_NEW_BLOCK': {'status': 'GOOD', 'alarm': 'NO_ALARM',
-                                  'visibility': False, 'value': 100}
+                                  'visibility': False, 'value': "100"}
             }
 
         #Act
@@ -41,17 +45,17 @@ class TestBlockUtils(unittest.TestCase):
 
         #Arrange
         test_blocks = {
-            "NEW_BLOCK": Block("NEW_BLOCK", "", 10, "", False)
+            "NEW_BLOCK": Block("NEW_BLOCK", "", "10", "", False, None)
         }
         if RETURN_RC_VALUES:
             expected_result = {
                 'NEW_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
-                    'value': 10, 'rc_enabled': 'NO'},
+                    'value': "10", 'rc_enabled': 'NO'},
             }
         else:
             expected_result = {
                 'NEW_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
-                    'value': 10},
+                    'value': "10"},
             }
 
         #Act
@@ -62,7 +66,7 @@ class TestBlockUtils(unittest.TestCase):
 
     def test_format_blocks_with_one_block_with_rc_values(self):
         #Arrange
-        block = Block("NEW_BLOCK", "", 10, "", False)
+        block = Block("NEW_BLOCK", "", 10, "", False, None)
         block.set_rc_low(0)
         block.set_rc_high(100)
         block.set_rc_inrange(False)
@@ -74,13 +78,13 @@ class TestBlockUtils(unittest.TestCase):
         if RETURN_RC_VALUES:
             expected_result = {
                 'NEW_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
-                    'value': 10, 'rc_high': 100, 'rc_low': 0, 'rc_inrange': False,
+                    'value': "10", 'rc_high': 100, 'rc_low': 0, 'rc_inrange': False,
                     'rc_enabled': 'YES'},
             }
         else:
             expected_result = {
                 'NEW_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
-                              'value': 10}
+                              'value': "10"}
             }
 
         #Act
@@ -111,15 +115,15 @@ class TestBlockUtils(unittest.TestCase):
                     'value': 10, 'rc_high': 20, 'rc_low': 10, 'rc_inrange': True,
                     'rc_enabled': 'YES'},
                 'OLD_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
-                    'value': 10, 'rc_high': 100, 'rc_low': 0, 'rc_inrange': False,
+                    'value': "10", 'rc_high': 100, 'rc_low': 0, 'rc_inrange': False,
                     'rc_enabled': 'NO'},
             }
         else:
             expected_result = {
                 'NEW_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
-                              'value': 10},
+                              'value': "10"},
                 'OLD_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
-                              'value': 10},
+                              'value': "10"},
             }
 
         #Act
@@ -430,7 +434,121 @@ class TestBlockUtils(unittest.TestCase):
                                      key=expected_block_value_key, block=expected_block_key, actual=actual_block_value_value, expected=expected_block_value_value))
 
 
+class FormatBlockValueTests(unittest.TestCase):
+    def test_GIVEN_a_block_with_a_non_numeric_value_WHEN_formatted_with_no_prec_THEN_it_is_returned_unchanged(self):
+        value = "this is a string"
+        expected_formatted_value = value
 
+        self.assertEqual(format_block_value(value, None), expected_formatted_value)
+
+    def test_GIVEN_a_block_with_a_zero_value_WHEN_formatted_with_prec_3_THEN_it_is_returned_to_3_dp(self):
+        value = "0.0"
+        expected_formatted_value = "0.000"
+
+        self.assertEqual(format_block_value(value, 3), expected_formatted_value)
+
+    def test_GIVEN_a_block_with_a_negative_zero_value_WHEN_formatted_to_prec_3_THEN_it_is_returned_to_3_dp(self):
+        # Python does have a concept of "-0" so this is a test worth doing.
+        value = "-0.0"
+        expected_formatted_value = "-0.000"
+
+        self.assertEqual(format_block_value(value, 3), expected_formatted_value)
+
+    def test_GIVEN_a_block_with_a_medium_size_value_THEN_when_formatted_to_prec_0_THEN_it_is_returned_unchanged(self):
+        value = "327"
+        expected_formatted_value = value
+
+        self.assertEqual(format_block_value(value, 0), expected_formatted_value)
+
+    def test_GIVEN_a_block_with_a_medium_size_negative_value_WHEN_formatted_to_prec_3_THEN_it_is_returned_to_3_dp(self):
+        value = "-327"
+        expected_formatted_value = "-327.000"
+
+        self.assertEqual(format_block_value(value, 3), expected_formatted_value)
+
+    def test_GIVEN_a_block_with_a_small_value_WHEN_formatted_to_prec_3_THEN_it_is_returned_in_exponential_notation_to_3_sf(self):
+        value = "0.0000000567"
+        expected_formatted_value = "5.67E-08"
+
+        self.assertEqual(format_block_value(value, 3), expected_formatted_value)
+
+    def test_GIVEN_a_block_with_a_small_negative_value_WHEN_formatted_to_prec_3_THEN_it_is_returned_in_exponential_notation_to_3_sf(self):
+        value = "-0.0000000567"
+        expected_formatted_value = "-5.67E-08"
+
+        self.assertEqual(format_block_value(value, 3), expected_formatted_value)
+
+    def test_GIVEN_a_block_with_a_large_value_WHEN_formatted_to_prec_3_THEN_it_is_returned_in_exponential_notation_to_3_sf(self):
+        value = "12340000000000000"
+        expected_formatted_value = "1.23E+16"
+
+        self.assertEqual(format_block_value(value, 3), expected_formatted_value)
+
+    def test_GIVEN_a_block_with_a_large_negative_value_WHEN_formatted_to_prec_3_THEN_it_is_returned_in_exponential_notation_to_3_sf(self):
+        value = "-12340000000000000"
+        expected_formatted_value = "-1.23E+16"
+
+        self.assertEqual(format_block_value(value, 3), expected_formatted_value)
+
+    def test_GIVEN_a_block_with_a_NAN_value_WHEN_formatted_to_prec_3_THEN_it_is_returned_unchanged(self):
+        value = "NAN"
+        expected_formatted_value = value
+
+        self.assertEqual(format_block_value(value, 3), expected_formatted_value)
+
+    def test_GIVEN_a_block_with_a_INF_value_WHEN_formatted_to_prec_3_THEN_it_is_returned_unchanged(self):
+        value = "INF"
+        expected_formatted_value = value
+
+        self.assertEqual(format_block_value(value, 3), expected_formatted_value)
+
+    def test_GIVEN_a_block_with_a_negative_INF_value_WHEN_formatted_to_prec_3_THEN_it_is_returned_unchanged(self):
+        value = "-INF"
+        expected_formatted_value = value
+
+        self.assertEqual(format_block_value(value, 3), expected_formatted_value)
+
+    def test_GIVEN_a_block_with_an_arbitrary_object_as_its_value_THEN_when_formatted_to_prec_3_it_is_returned_unchanged(self):
+        value = object()
+        expected_formatted_value = str(value)
+
+        self.assertEqual(format_block_value(value, 3), expected_formatted_value)
+
+    def test_GIVEN_value_containing_unicode_WHEN_formatting_THEN_original_value_returned_unchanged(self):
+        precision = 5
+        value = u"ƀ Ɓ Ƃ ƃ Ƅ ƅ Ɔ Ƈ ƈ Ɖ Ɗ Ƌ ƌ ƍ Ǝ Ə Ɛ Ƒ ƒ Ɠ Ɣ ƕ Ɩ Ɨ Ƙ ƙ ƚ ƛ Ɯ Ɲ ƞ Ɵ Ơ ơ Ƣ ƣ Ƥ ƥ Ʀ Ƨ ƨ Ʃ ƪ ƫ Ƭ ƭ Ʈ"
+
+        self.assertEqual(format_block_value(value, precision), value)
+
+    def test_GIVEN_a_block_with_a_number_that_does_not_fit_in_a_float_WHEN_formatted_to_prec_3_THEN_it_is_formatted_as_infinity(self):
+        value = "5" * 10000
+        expected_formatted_value = "INF"
+
+        self.assertEqual(format_block_value(value, 3), expected_formatted_value)
+
+    def test_GIVEN_arbitrary_object_as_precision_WHEN_formatting_THEN_original_value_returned_unchanged(self):
+        precision = object()
+        value = "12.345"
+
+        self.assertEqual(format_block_value(value, precision), value)
+
+    def test_GIVEN_negative_precision_WHEN_formatting_THEN_original_value_returned_unchanged(self):
+        precision = -57
+        value = "12.345"
+
+        self.assertEqual(format_block_value(value, precision), value)
+
+    def test_GIVEN_nonsense_precision_WHEN_formatting_THEN_original_value_returned_unchanged(self):
+        precision = "this is clearly not a valid precision"
+        value = "12.345"
+
+        self.assertEqual(format_block_value(value, precision), value)
+
+    def test_GIVEN_nonsense_precision_containing_unicode_WHEN_formatting_THEN_original_value_returned_unchanged(self):
+        precision = u"ƀ Ɓ Ƃ ƃ Ƅ ƅ Ɔ Ƈ ƈ Ɖ Ɗ Ƌ ƌ ƍ Ǝ Ə Ɛ Ƒ ƒ Ɠ Ɣ ƕ Ɩ Ɨ Ƙ ƙ ƚ ƛ Ɯ Ɲ ƞ Ɵ Ơ ơ Ƣ ƣ Ƥ ƥ Ʀ Ƨ ƨ Ʃ ƪ ƫ Ƭ ƭ Ʈ"
+        value = "12.345"
+
+        self.assertEqual(format_block_value(value, precision), value)
 
 
 

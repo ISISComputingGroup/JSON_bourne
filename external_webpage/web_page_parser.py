@@ -87,6 +87,9 @@ class WebPageParser(object):
         current_value = channel["Current Value"]
         if connected:
             units = current_value.get("Units", "")
+
+            precision = unicode(current_value.get("Precision", ""))
+
             value = unicode(current_value["Value"])
 
             replaced = True
@@ -97,9 +100,10 @@ class WebPageParser(object):
             value = "null"
             alarm = ""
             units = ""
+            precision = 0
         status = Block.CONNECTED if connected else Block.DISCONNECTED
 
-        return Block(name, status, value, alarm, True, units)
+        return Block(name, status, value, alarm, True, precision, units)
 
     def _replace_fake_unicode(self, value):
         """
