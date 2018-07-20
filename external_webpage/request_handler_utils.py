@@ -1,4 +1,5 @@
 import re
+from collections import OrderedDict
 
 
 def get_instrument_and_callback(path):
@@ -34,8 +35,10 @@ def get_summary_details_of_all_instruments(data):
     :return: A json dictionary containing the states of each instrument (True if running, False otherwise)
     """
 
-    inst_data = {}
-    for inst, v in data.items():
+    inst_data = OrderedDict()
+    ordered_inst_list = sorted(data.keys(), key=lambda s: s.lower())
+    for inst in ordered_inst_list:
+        v = data[inst]
 
         try:
             run_state = v["inst_pvs"]["RUNSTATE"]["value"]

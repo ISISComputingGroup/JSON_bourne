@@ -84,7 +84,7 @@ class TestHandlerUtils_IbexRunning(unittest.TestCase):
 
         assert_that(result[inst], has_entry("is_up", False))
 
-    def test_GIVEN_dict_with_data_and_no_data_WHEN_get_ibex_running_called_THEN_running_and_not_running_instruments_returned(self):
+    def test_GIVEN_dict_with_instruments_with_and_without_data_WHEN_get_ibex_running_called_THEN_running_and_not_running_instruments_returned(self):
         running_inst, not_running_inst = "RUN", "NOT"
         inp = {not_running_inst: "", running_inst: "some_data"}
 
@@ -120,7 +120,6 @@ class TestHandlerUtils_IbexRunning(unittest.TestCase):
 
         assert_that(result[inst], has_entry("run_state", expected_state))
 
-
     def test_GIVEN_dict_with_no_run_state_value_WHEN_get_summary_details_THEN_run_state_is_unknown(self):
         inst = "TEST"
         expected_state = "UNKNOWN"
@@ -129,6 +128,15 @@ class TestHandlerUtils_IbexRunning(unittest.TestCase):
         result = get_summary_details_of_all_instruments(inp)
 
         assert_that(result[inst], has_entry("run_state", expected_state))
+
+    def test_GIVEN_dict_with_multiple_instruments_WHEN_get_summary_details_THEN_instruments_returned_in_named_order(self):
+        inst = "TEST"
+        expected_instrument_names = ["anInst", "Another", "B", "CAPITAL", "clower"]
+        inp = {"B": "", "Another": "", "CAPITAL": "", "clower": "", "anInst": ""}
+
+        result = get_summary_details_of_all_instruments(inp).keys()
+
+        assert_that(result, is_(expected_instrument_names))
 
 
 class TestHandlerUtils_DetailedInstrumentState(unittest.TestCase):

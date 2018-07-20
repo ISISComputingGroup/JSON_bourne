@@ -13,9 +13,14 @@ from CaChannel.util import caget
 
 from external_webpage.instrument_scapper import InstrumentScrapper
 
+# logger for the class
 logger = logging.getLogger('JSON_bourne')
+
+# PV that contains the instrument list
 INST_LIST_PV = "CS:INSTLIST"
-TIME_BETWEEN_INSTLIST_REFRESH = 6000
+
+# Time between the refresh of servers from the inst list (10 minutes)
+TIME_BETWEEN_INSTLIST_REFRESH = 600
 
 
 class InstList(object):
@@ -121,6 +126,7 @@ class WebScrapperManager(Thread):
             self._inst_list = InstList()
         else:
             self._inst_list = inst_list
+
         self._scrapper_class = scrapper_class
         self.scrappers = []
         self._stop_event = Event()
