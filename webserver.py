@@ -84,4 +84,5 @@ if __name__ == '__main__':
             server.serve_forever()
     except KeyboardInterrupt:
         print("Shutting down")
-        web_manager.stop_all()
+        web_manager.stop()
+        web_manager.join()

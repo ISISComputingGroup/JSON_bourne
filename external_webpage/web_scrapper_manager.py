@@ -210,8 +210,10 @@ class WebScrapperManager(Thread):
         for scrapper in self.scrappers:
             scrapper.stop()
 
+        print("   Waiting for scrappers to stop ...")
         for scrapper in self.scrappers:
             scrapper.join()
+        print("   ... finished")
 
     def instrument_list_retrieval_errors(self):
         """
