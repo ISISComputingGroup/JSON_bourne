@@ -32,13 +32,20 @@ class InstList(object):
     INSTRUMENT_LIST_NOT_JSON = "Instrument list is not json"
     INSTRUMENT_LIST_NOT_CORRECT_FORMAT = "Instrument list not in correct format"
 
-    def __init__(self, caget_fn=caget):
+    def __init__(self, caget_fn=caget, local_inst_list=None):
         """
         Initialise.
+        Args:
+            caget_fn: function to perform a caget
+            local_inst_list: local instrument list to override/add entries to the one from instrument list pv
         """
-        self._cached_list = {}
         self.error_on_retrieve = "Instrument list not yet retrieved"
         self._caget_fn = caget_fn
+        if local_inst_list is None:
+            self._local_inst_list = {}
+        else:
+            self._local_inst_list = local_inst_list
+        self._cached_list = self._local_inst_list
 
     def retrieve(self):
         """
@@ -83,6 +90,7 @@ class InstList(object):
             return self._cached_list
 
         self._cached_list = inst_list
+        self._cached_list.update(self._local_inst_list)
         self.error_on_retrieve = ""
 
         return self._cached_list
@@ -114,16 +122,17 @@ class WebScrapperManager(Thread):
     It is responsible for starting then and making sure they are running
     """
 
-    def __init__(self, scrapper_class=InstrumentScrapper, inst_list=None):
+    def __init__(self, scrapper_class=InstrumentScrapper, inst_list=None, local_inst_list=None):
         """
         Initialiser.
         Args:
             scrapper_class: the class for the Scrappers
             inst_list: the instrument list getter
+            local_inst_list: a local instrument list to add to global instrument list
         """
         super(WebScrapperManager, self).__init__()
         if inst_list is None:
-            self._inst_list = InstList()
+            self._inst_list = InstList(local_inst_list=local_inst_list)
         else:
             self._inst_list = inst_list
 

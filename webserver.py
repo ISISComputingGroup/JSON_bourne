@@ -74,7 +74,10 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 
 
 if __name__ == '__main__':
-    web_manager = WebScrapperManager()
+    # It can sometime be useful to define a local instrument list to add/override the instrument list do this here
+    # E.g. to add local instrument local_inst_list = {"localhost": "localhost"}
+    local_inst_list = {}
+    web_manager = WebScrapperManager(local_inst_list=local_inst_list)
     web_manager.start()
 
     server = ThreadedHTTPServer(('', PORT), MyHandler)
