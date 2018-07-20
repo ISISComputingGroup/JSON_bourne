@@ -23,7 +23,7 @@ from block_utils import format_block_value
 # while there is still a problem with getting rc values from the archiver.
 # Once that problem has been solved then this flag and it's usages can
 # be removed. See issue #2446
-RETURN_RC_VALUES = False
+RETURN_RC_VALUES = True
 
 
 class Block:

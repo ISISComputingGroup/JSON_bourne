@@ -95,13 +95,13 @@ class InstrumentInformationCollator:
 
         self.web_page_parser = WebPageParser()
 
-    def _get_inst_pvs(self, ans, blocks_all):
+    def _get_inst_pvs(self, instrument_archive_blocks, block_archive_blocks):
         """
         Extracts and formats a list of relevant instrument PVs from all instrument PVs.
 
         Args:
-            ans: List of blocks from the instrument archive.
-            blocks_all: List of blocks from the block and dataweb archives.
+            instrument_archive_blocks: List of blocks from the instrument archive.
+            block_archive_blocks: List of blocks and run control settings from the block and dataweb archives.
 
         Returns: A trimmed list of instrument PVs.
 
@@ -121,13 +121,13 @@ class InstrumentInformationCollator:
                         "SIM_MODE"]
 
         try:
-            set_rc_values_for_blocks(blocks_all.values(), ans)
+            set_rc_values_for_blocks(block_archive_blocks)
         except Exception as e:
             logging.error("Error in setting rc values for blocks: " + str(e))
 
         for pv in required_pvs:
-            if pv + ".VAL" in ans:
-                wanted[pv] = ans[pv + ".VAL"]
+            if pv + ".VAL" in instrument_archive_blocks:
+                wanted[pv] = instrument_archive_blocks[pv + ".VAL"]
 
         try:
             self._convert_seconds(wanted[run_duration_channel_name])
@@ -140,7 +140,8 @@ class InstrumentInformationCollator:
             pass
 
         display_title_channel_name = InstrumentInformationCollator.DISPLAY_TITLE_CHANNEL_NAME + ".VAL"
-        if display_title_channel_name not in ans or ans[display_title_channel_name].get_value().lower() != "yes":
+        if display_title_channel_name not in instrument_archive_blocks or \
+                instrument_archive_blocks[display_title_channel_name].get_value().lower() != "yes":
             if title_channel_name in wanted:
                 wanted[title_channel_name].set_value(InstrumentInformationCollator.PRIVATE_VALUE)
             if username_channel_name in wanted:

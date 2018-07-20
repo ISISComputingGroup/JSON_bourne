@@ -8,8 +8,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 import unittest
 from block import Block, RETURN_RC_VALUES
-from block_utils import (format_blocks, set_rc_values_for_block_from_pvs,
-                         set_rc_values_for_blocks, shorten_title, format_block_value)
+from block_utils import (format_blocks, set_rc_values_for_blocks, shorten_title, format_block_value)
 
 
 class TestBlockUtils(unittest.TestCase):
@@ -112,7 +111,7 @@ class TestBlockUtils(unittest.TestCase):
         if RETURN_RC_VALUES:
             expected_result = {
                 'NEW_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
-                    'value': 10, 'rc_high': 20, 'rc_low': 10, 'rc_inrange': True,
+                    'value': "10", 'rc_high': 20, 'rc_low': 10, 'rc_inrange': True,
                     'rc_enabled': 'YES'},
                 'OLD_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
                     'value': "10", 'rc_high': 100, 'rc_low': 0, 'rc_inrange': False,
@@ -121,9 +120,9 @@ class TestBlockUtils(unittest.TestCase):
         else:
             expected_result = {
                 'NEW_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
-                              'value': "10"},
+                              'value': 10},
                 'OLD_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
-                              'value': "10"},
+                              'value': 10},
             }
 
         #Act
@@ -289,38 +288,42 @@ class TestBlockUtils(unittest.TestCase):
 
     def test_set_rc_low_value_for_block_based_on_pv(self):
         # Arrange
-        test_block = Block("NEW_BLOCK", "", "", "", "")
-        test_pvs = {"NEW_BLOCK:RC:LOW.VAL": Block("", "", 10, "", ""),
+        block_name = "NEW_BLOCK"
+        expected_value = 10
+        test_pvs = {block_name: Block(block_name, "", "", "", ""),
+                    "{}:RC:LOW.VAL".format(block_name): Block("", "", expected_value, "", ""),
                     "NOT_NEW_BLOCK:RC:LOW.VAL": Block("", "", 100, "", ""),
                     "NEW_BLOCK:SOMETHINGELSE.VAL": Block("", "", False, "", ""),
                     "OLD_BLOCK:RC:LOW.VAL": Block("", "", 7, "", "")}
 
         # Act
-        set_rc_values_for_block_from_pvs(test_block, test_pvs)
+        set_rc_values_for_blocks(test_pvs)
 
         # Assert
-        self.assertEquals(test_block.get_rc_low(), 10)
+        self.assertEquals(test_pvs[block_name].get_rc_low(), expected_value)
 
     def test_set_rc_high_value_for_block_based_on_pv(self):
         # Arrange
-        test_block = Block("NEW_BLOCK", "", "", "", "")
-        test_pvs = {"NEW_BLOCK:RC:LOW.VAL": Block("", "", 10, "", ""),
+        block_name = "NEW_BLOCK"
+        test_pvs = {block_name: Block(block_name, "", "", "", ""),
+                    "{}:RC:LOW.VAL".format(block_name): Block("", "", 10, "", ""),
                     "NOT_NEW_BLOCK:RC:LOW.VAL": Block("", "", 100, "", ""),
-                    "NEW_BLOCK:SOMETHINGELSE.VAL": Block("", "", False, "", ""),
+                    "{}:SOMETHINGELSE.VAL".format(block_name): Block("", "", False, "", ""),
                     "OLD_BLOCK:RC:LOW.VAL": Block("", "", 7, "", ""),
-                    "NEW_BLOCK:RC:HIGH.VAL": Block("", "", 100, "", "")}
+                    "{}:RC:HIGH.VAL".format(block_name): Block("", "", 100, "", "")}
 
         # Act
-        set_rc_values_for_block_from_pvs(test_block, test_pvs)
+        set_rc_values_for_blocks(test_pvs)
 
         # Assert
-        self.assertEquals(test_block.get_rc_low(), 10)
-        self.assertEquals(test_block.get_rc_high(), 100)
+        self.assertEquals(test_pvs[block_name].get_rc_low(), 10)
+        self.assertEquals(test_pvs[block_name].get_rc_high(), 100)
 
     def test_set_rc_inrange_value_for_block_based_on_pv(self):
         # Arrange
-        test_block = Block("NEW_BLOCK", "", "", "", "")
-        test_pvs = {"NEW_BLOCK:RC:LOW.VAL": Block("", "", 10, "", ""),
+        block_name = "NEW_BLOCK"
+        test_pvs = {block_name: Block(block_name, "", "", "", ""),
+                    "NEW_BLOCK:RC:LOW.VAL": Block("", "", 10, "", ""),
                     "NOT_NEW_BLOCK:RC:LOW.VAL": Block("", "", 100, "", ""),
                     "NEW_BLOCK:SOMETHINGELSE.VAL": Block("", "", False, "", ""),
                     "OLD_BLOCK:RC:LOW.VAL": Block("", "", 7, "", ""),
@@ -328,90 +331,89 @@ class TestBlockUtils(unittest.TestCase):
                     "NEW_BLOCK:RC:INRANGE.VAL": Block("", "", False, "", "")}
 
         # Act
-        set_rc_values_for_block_from_pvs(test_block, test_pvs)
+        set_rc_values_for_blocks(test_pvs)
 
         # Assert
-        self.assertEquals(test_block.get_rc_low(), 10)
-        self.assertEquals(test_block.get_rc_high(), 100)
-        self.assertEquals(test_block.get_rc_inrange(), False)
+        self.assertEquals(test_pvs[block_name].get_rc_low(), 10)
+        self.assertEquals(test_pvs[block_name].get_rc_high(), 100)
+        self.assertEquals(test_pvs[block_name].get_rc_inrange(), False)
 
     def test_set_rc_not_low_value_for_block_based_on_pv(self):
         # Arrange
-        test_block = Block("NEW_BLOCK", "", "", "", "")
-        test_pvs = {"NEW_BLOCK:RC:NOTLOW.VAL": Block("", "", 10, "", ""),
+        block_name = "NEW_BLOCK"
+        test_pvs = {block_name: Block(block_name, "", "", "", ""),
+                    "NEW_BLOCK:RC:NOTLOW.VAL": Block("", "", 10, "", ""),
                     "NOT_NEW_BLOCK:RC:LOW.VAL": Block("", "", 100, "", ""),
                     "NEW_BLOCK:SOMETHINGELSE.VAL": Block("", "", False, "", ""),
                     "OLD_BLOCK:RC:LOW.VAL": Block("", "", 7, "", "")}
 
         # Act
-        set_rc_values_for_block_from_pvs(test_block, test_pvs)
+        set_rc_values_for_blocks(test_pvs)
 
         # Assert
-        self.assertEquals(test_block.get_rc_low(), None)
+        self.assertEquals(test_pvs[block_name].get_rc_low(), None)
 
     def test_set_rc_values_for_two_blocks_based_on_pv(self):
         # Arrange
-        test_blocks = [Block("NEW_BLOCK", "", "", "", ""),Block("NOT_NEW_BLOCK", "", "", "", "")]
-        test_pvs = {"NEW_BLOCK:RC:LOW.VAL": Block("", "", 10, "", ""),
-                    "NOT_NEW_BLOCK:RC:LOW.VAL": Block("", "", 100, "", ""),
-                    "NEW_BLOCK:SOMETHINGELSE.VAL": Block("", "", False, "", ""),
-                    "OLD_BLOCK:RC:LOW.VAL": Block("", "", 7, "", "")}
+        new_block_name = "NEW_BLOCK"
+        not_new_block_name = "NOT_NEW_BLOCK"
+        test_blocks = {new_block_name: Block(new_block_name, "", "", "", ""),
+                       not_new_block_name: Block(not_new_block_name, "", "", "", ""),
+                        "{}:RC:LOW.VAL".format(new_block_name): Block("", "", 10, "", ""),
+                        "{}:RC:LOW.VAL".format(not_new_block_name): Block("", "", 100, "", ""),
+                        "{}:SOMETHINGELSE.VAL".format(new_block_name): Block("", "", False, "", ""),
+                        "{}:RC:LOW.VAL".format("old_block"): Block("", "", 7, "", "")}
 
         # Act
-        set_rc_values_for_blocks(test_blocks, test_pvs)
+        set_rc_values_for_blocks(test_blocks)
 
         # Assert
-        self.assertEquals(test_blocks[0].get_rc_low(), 10)
-        self.assertEquals(test_blocks[1].get_rc_low(), 100)
+        self.assertEquals(test_blocks[new_block_name].get_rc_low(), 10)
+        self.assertEquals(test_blocks[not_new_block_name].get_rc_low(), 100)
 
     def test_set_rc_values_for_one_blocks_based_on_pv_leaves_other_unchanged(self):
         # Arrange
-        test_blocks = [Block("NEW_BLOCK", "", "", "", ""),Block("NOT_NEW_BLOCK", "", "", "", "")]
-        test_pvs = {"NEW_BLOCK:RC:LOW.VAL": Block("", "", 10, "", ""),
-                    "NOT_NEW_BLOCK:VALUE": Block("", "", "", "", "")}
+        new_block_name = "NEW_BLOCK"
+        new_block_rc_low_name = "{}:RC:LOW.VAL".format(new_block_name)
+        not_new_block_name = "NOT_NEW_BLOCK"
+        test_blocks = {new_block_name: Block(new_block_name, "", "", "", ""),
+                       not_new_block_name: Block(not_new_block_name, "", "", "", ""),
+                       new_block_rc_low_name: Block("", "", 10, "", ""),
+                        "NOT_NEW_BLOCK:VALUE": Block("", "", "", "", "")}
 
         # Act
-        set_rc_values_for_blocks(test_blocks, test_pvs)
+        set_rc_values_for_blocks(test_blocks)
 
         # Assert
-        self.assertEquals(test_blocks[0].get_rc_low(), 10)
-        self.assertEquals(test_blocks[1].get_rc_low(), None)
+        self.assertEquals(test_blocks[new_block_name].get_rc_low(), 10)
+        self.assertEquals(test_blocks[not_new_block_name].get_rc_low(), None)
 
     def test_set_rc_values_for_leaves_both_unchanged(self):
         # Arrange
-        test_blocks = [Block("NEW_BLOCK", "", "", "", ""),Block("NOT_NEW_BLOCK", "", "", "", "")]
-        test_pvs = {"NEW_BLOCK:VALUE": Block("", "", "", "", ""),
-                    "NOT_NEW_BLOCK:VALUE": Block("", "", "", "", "")}
+        block1_name = "NEW_BLOCK"
+        block2_name = "NOT_NEW_BLOCK"
+        test_blocks = {
+            block1_name: Block(block1_name, "", "", "", ""),
+            block2_name: Block(block2_name, "", "", "", ""),
+            "NEW_BLOCK:VALUE": Block("NEW_BLOCK:VALUE", "", "", "", ""),
+            "NOT_NEW_BLOCK:VALUE": Block("NOT_NEW_BLOCK:VALUE", "", "", "", "")}
 
         # Act
-        set_rc_values_for_blocks(test_blocks, test_pvs)
+        set_rc_values_for_blocks(test_blocks)
 
         # Assert
-        self.assertEquals(test_blocks[0].get_rc_low(), None)
-        self.assertEquals(test_blocks[1].get_rc_low(), None)
+        self.assertEquals(test_blocks[block1_name].get_rc_low(), None)
+        self.assertEquals(test_blocks[block2_name].get_rc_low(), None)
 
     def test_set_rc_values_with_empty_block_list(self):
         # Arrange
-        test_blocks = []
-        test_pvs = {"NEW_BLOCK:RC:LOW.VAL": Block("", "", 10, "", ""),
-                    "NOT_NEW_BLOCK:VALUE": Block("", "", "", "", "")}
+        test_blocks = {}
 
         # Act
         try:
-            set_rc_values_for_blocks(test_blocks, test_pvs)
+            set_rc_values_for_blocks(test_blocks)
         except Exception, e:
             self.fail("set_rc_values_for_blocks should handle empty block list")
-
-    def test_set_rc_values_with_empty_pv_list(self):
-        # Arrange
-        test_blocks = [Block("NEW_BLOCK", "", "", "", ""),Block("NOT_NEW_BLOCK", "", "", "", "")]
-        test_pvs = {}
-
-        # Act
-        try:
-            set_rc_values_for_blocks(test_blocks, test_pvs)
-        except Exception, e:
-            self.fail("set_rc_values_for_blocks should handle empty pv list")
 
     def _assert_blocks(self, actual_blocks, expected_blocks):
         # Check blocks are in both

@@ -23,38 +23,36 @@ def shorten_title(title):
         return title_parts[-1]
 
 
-def set_rc_values_for_block_from_pvs(block, pvs):
-    """Search pvs for RC values for given block and return them"""
-    block_name = block.get_name()
-    items = pvs.items()
+def set_rc_values_for_blocks(blocks):
+    """
+    Set all RC values for all the given blocks. Blocks contains the blocks and their run control settings
+    Args:
+        blocks: blocks and run control settings
+    """
+    for block in blocks.values():
+        block_name = block.get_name()
 
-    for k, v in items:
-        if k is None:
-            # not a valid key, skip this entry
-            continue
+        for k, v in blocks.items():
+            if k is None:
+                # not a valid key, skip this entry
+                continue
 
-        key_parts = k.split(':')
-        name = key_parts[0].strip()
-        suffix = key_parts[-1]
+            key_parts = k.split(':')
+            name = key_parts[0].strip()
+            suffix = key_parts[-1]
 
-        if block_name != name:
-            # block name does not match, skip this entry
-            continue
+            if block_name != name:
+                # block name does not match, skip this entry
+                continue
 
-        if "LOW.VAL" == suffix:
-            block.set_rc_low(v.get_value())
-        elif "HIGH.VAL" == suffix:
-            block.set_rc_high(v.get_value())
-        elif "INRANGE.VAL" == suffix:
-            block.set_rc_inrange(v.get_value())
-        elif "ENABLE.VAL" == suffix:
-            block.set_rc_enabled(v.get_value())
-
-
-def set_rc_values_for_blocks(blocks, pvs):
-    """Set all RC values for all the given blocks"""
-    for block in blocks:
-        set_rc_values_for_block_from_pvs(block, pvs)
+            if "LOW.VAL" == suffix:
+                block.set_rc_low(v.get_value())
+            elif "HIGH.VAL" == suffix:
+                block.set_rc_high(v.get_value())
+            elif "INRANGE.VAL" == suffix:
+                block.set_rc_inrange(v.get_value())
+            elif "ENABLE.VAL" == suffix:
+                block.set_rc_enabled(v.get_value())
 
 
 def format_blocks(blocks):
