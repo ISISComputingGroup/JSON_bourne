@@ -28,6 +28,28 @@ function clearBox(elementID){
     document.getElementById(elementID).innerHTML = "";
 }
 
+/**
+ *	Gets a colour for a particular run status.
+ */
+function getColourFromRunState(runState){
+	switch (runState){
+		case "RUNNING":
+			return "LIGHTGREEN";
+		case "SETUP":
+			return "LIGHTBLUE";
+		case "PAUSED":
+			return "RED";
+		case "WAITING" || "VETOING":
+			return "GOLDENROD";
+		case "ENDING" || "ABORTING":
+			return "BLUE";
+		case "PAUSING":
+			return "DARK_RED";
+		default:
+			return "YELLOW"
+	}
+}
+
 function sortDictionary(o) {
     var sorted = {};
     var a = [];
@@ -86,42 +108,27 @@ function on_click(elmnt) {
 }
 
 function display_data(data){
-	var onlineClients = new Array();
-	var offlineClients = new Array();
-	
-	for (value in data){
-		if (data[value] == true){
-			onlineClients.push(value);
-		} else{
-			offlineClients.push(value);
-		};	
-	};
-	
-	data = sortDictionary(data);
-	var total_users = Object.keys(data).length;
-	
-	document.getElementById("totalUsers").innerHTML = total_users;
-	document.getElementById("onlineUsers").innerHTML = Object.keys(onlineClients).length;
-	document.getElementById("offlineUsers").innerHTML = Object.keys(offlineClients).length;
-	
+	var instruments = data["instruments"];
+	var total_users = Object.keys(instruments).length;
+
 	clearBox("buttons")
-	for (value in data){
+	for (value in instruments){
 		var newButton = document.createElement("button");
-		
-		newButton.innerHTML = value
+		var run_state = instruments[value]["run_state"]
+		newButton.innerHTML = value + "<div style=\"background-color:" + getColourFromRunState(run_state) + ";color:black\">" +  run_state + "</div>"
 
 		newButton.style.type = "btn";
 
 		// Need to choose whether to display bigger or smaller buttons based on the
 		// number of users, otherwise page might overflow and require scrolling
-		var max_users_for_large_buttons = 15;
+		var max_users_for_large_buttons = 30;
 		if (total_users > max_users_for_large_buttons){
 			ending = "btn-large";
 		} else {
 			ending = "btn-xl";
 		};	
 		var blockListStyle = document.createAttribute("class");
-		if (data[value] == true){
+		if (instruments[value]["is_up"] == true){
 			blockListStyle.value = 'btn btn-success '+ending;
 		} else{
 			blockListStyle.value = 'btn btn-danger '+ending;
@@ -137,6 +144,14 @@ function display_data(data){
 	var date = new Date();
 	time.innerHTML = "Last updated at: " + date.toLocaleTimeString();
 	time.setAttribute("style", "color:black");
+
+	var error = document.getElementById("error");
+	if (data["error"] == "") {
+	    error.innerHTML ="";
+	} else {
+	    error.innerHTML = "Error: " + data["error"];
+	}
+
 }
 
 var windowWidth = $(window).width();

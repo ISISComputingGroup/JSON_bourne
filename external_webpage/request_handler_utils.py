@@ -1,5 +1,5 @@
-import json
 import re
+from collections import OrderedDict
 
 
 def get_instrument_and_callback(path):
@@ -28,14 +28,27 @@ def get_instrument_and_callback(path):
     return instruments[0].upper(), callback[0]
 
 
-def get_whether_ibex_is_running_on_all_instruments(data):
+def get_summary_details_of_all_instruments(data):
     """
     Gets whether ibex is running for each instrument.
     :param data: The data scraped from the archiver webpage
     :return: A json dictionary containing the states of each instrument (True if running, False otherwise)
     """
-    active = {inst: (v != "") for inst, v in data.items()}
-    return str(json.dumps(active))
+
+    inst_data = OrderedDict()
+    ordered_inst_list = sorted(data.keys(), key=lambda s: s.lower())
+    for inst in ordered_inst_list:
+        v = data[inst]
+
+        try:
+            run_state = v["inst_pvs"]["RUNSTATE"]["value"]
+        except (KeyError, TypeError):
+            run_state = "UNKNOWN"
+
+        inst_data[inst] = {"is_up": (v != ''),
+                           "run_state": run_state}
+
+    return inst_data
 
 
 def get_detailed_state_of_specific_instrument(instrument, data):
@@ -49,7 +62,4 @@ def get_detailed_state_of_specific_instrument(instrument, data):
         raise ValueError(str(instrument) + " not known")
     if data[instrument] == "":
         raise ValueError("Instrument has become unavailable")
-    try:
-        return str(json.dumps(data[instrument]))
-    except Exception as err:
-        raise ValueError("Unable to convert instrument data to JSON: %s" % err.message)
+    return data[instrument]
