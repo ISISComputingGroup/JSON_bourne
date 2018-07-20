@@ -121,7 +121,7 @@ function display_data(data){
 
 		// Need to choose whether to display bigger or smaller buttons based on the
 		// number of users, otherwise page might overflow and require scrolling
-		var max_users_for_large_buttons = 30;
+		var max_users_for_large_buttons = 20;
 		if (total_users > max_users_for_large_buttons){
 			ending = "btn-large";
 		} else {
