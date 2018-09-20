@@ -4,6 +4,7 @@ var HOST = "http://dataweb.isis.rl.ac.uk"
 var instrument = getURLParameter("Instrument");
 var nodeInstTitle = document.createElement("H2");
 var nodeConfigTitle = document.createElement("H2");
+var nodeTimeDiffTitle = document.createElement("H2");
 var instrumentState;
 var showHidden;
 var timeout = 4000;
@@ -37,8 +38,9 @@ dictInstPV = {
     MONITORTO: 'Monitor To',
     NUMTIMECHANNELS: 'Number of Time Channels',
     NUMSPECTRA: 'Number of Spectra',
-	SHUTTER: 'Shutter Status',
-	SIM_MODE: 'DAE Simulation mode'
+    SHUTTER: 'Shutter Status',
+    SIM_MODE: 'DAE Simulation mode',
+    TIME_OF_DAY: 'Instrument time',
 };
 
 /**
@@ -141,6 +143,7 @@ function parseObject(obj) {
     showHidden = document.getElementById("showHidden").checked;
     clear(nodeInstTitle);
     clear(nodeConfigTitle);
+    clear(nodeTimeDiffTitle);
 
     // populate blocks
     var nodeGroups = document.getElementById("groups");
@@ -151,6 +154,8 @@ function parseObject(obj) {
     var nodeInstPVList = document.createElement("ul");
 
     getDisplayRunInfo(nodeInstPVs, instrumentState.inst_pvs);
+
+    getDisplayTimeDiffInfo(instrumentState);
 
     nodeInstTitle.appendChild(document.createTextNode(instrument));
     nodeConfigTitle.appendChild(document.createTextNode("Configuration: " + instrumentState.config_name));
@@ -163,6 +168,14 @@ function parseObject(obj) {
 
 function clearBox(elementID){
     document.getElementById(elementID).innerHTML = "";
+}
+
+function getDisplayTimeDiffInfo(instrumentState){
+    if (instrumentState.outdated)  {
+      nodeTimeDiffTitle.appendChild(document.createTextNode("There is a time shift of " + instrumentState.time_diff + " seconds between the instrument and the web server. Dataweb may not be updating correctly."));
+      document.getElementById("time_diff").appendChild(nodeTimeDiffTitle);
+      document.getElementById("time_diff").style.color = "RED";
+    }
 }
 
 /**

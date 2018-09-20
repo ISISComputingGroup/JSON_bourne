@@ -118,7 +118,7 @@ class InstrumentInformationCollator:
                         "RAWFRAMES", "RAWFRAMES_PD", "PERIOD", "NUMPERIODS", "PERIODSEQ", "BEAMCURRENT", "TOTALUAMPS",
                         "COUNTRATE", "DAEMEMORYUSED", "TOTALCOUNTS", "DAETIMINGSOURCE", "MONITORCOUNTS",
                         "MONITORSPECTRUM", "MONITORFROM", "MONITORTO", "NUMTIMECHANNELS", "NUMSPECTRA", "SHUTTER",
-                        "SIM_MODE"]
+                        "SIM_MODE", "TIME_OF_DAY"]
 
         try:
             set_rc_values_for_blocks(blocks_all.values(), ans)

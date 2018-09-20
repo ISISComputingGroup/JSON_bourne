@@ -19,6 +19,10 @@ logger.addHandler(handler)
 
 HOST, PORT = '', 60000
 
+# If the instrument time differs by the webserver time by more than
+# TIME_SHIFT_THRESHOLD seconds, then this should be reported web dashboard.
+TIME_SHIFT_THRESHOLD = 5 * 3600
+
 
 class MyHandler(BaseHTTPRequestHandler):
     """
@@ -43,7 +47,7 @@ class MyHandler(BaseHTTPRequestHandler):
                         "instruments": get_summary_details_of_all_instruments(scraped_data)}
 
                 else:
-                    ans = get_detailed_state_of_specific_instrument(instrument, scraped_data)
+                    ans = get_detailed_state_of_specific_instrument(instrument, scraped_data, TIME_SHIFT_THRESHOLD)
 
             try:
                 ans_as_json = str(json.dumps(ans))
