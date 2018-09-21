@@ -21,7 +21,7 @@ HOST, PORT = '', 60000
 
 # If the instrument time differs by the webserver time by more than
 # TIME_SHIFT_THRESHOLD seconds, then this should be reported web dashboard.
-TIME_SHIFT_THRESHOLD = 5 * 3600
+TIME_SHIFT_THRESHOLD = 5 * 60
 
 
 class MyHandler(BaseHTTPRequestHandler):
