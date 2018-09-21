@@ -171,7 +171,7 @@ function clearBox(elementID){
 }
 
 function getDisplayTimeDiffInfo(instrumentState){
-    if (instrumentState.outdated)  {
+    if (instrumentState.out_of_sync)  {
       nodeTimeDiffTitle.appendChild(document.createTextNode("There is a time shift of " + instrumentState.time_diff + " seconds between the instrument and the web server. Dataweb may not be updating correctly."));
       document.getElementById("time_diff").appendChild(nodeTimeDiffTitle);
       document.getElementById("time_diff").style.color = "RED";

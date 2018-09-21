@@ -1,6 +1,10 @@
 import re
 from collections import OrderedDict
 import time
+import logging
+
+
+logger = logging.getLogger('JSON_bourne')
 
 
 def get_instrument_and_callback(path):
@@ -54,38 +58,60 @@ def get_summary_details_of_all_instruments(data):
 
 def get_instrument_time_since_epoch(instrument_data):
     """
-    Return the instrument time as seconds sind epoch.
+    Return the instrument time as seconds since epoch.
+
+    Raises: KeyError: instrument time cannot be parsed from instrument_data
+    Raises: ValueError: if instrument time has wrong time format
     """
 
-    inst_time_str = instrument_data['inst_pvs']['TIME_OF_DAY']['value']
-    inst_time_struct = time.strptime(inst_time_str, '%m/%d/%Y %H:%M:%S')
+    time_format = '%m/%d/%Y %H:%M:%S'
+    try:
+        inst_time_str = instrument_data['inst_pvs']['TIME_OF_DAY']['value']
+    except KeyError:
+        logger.error("Cannot parse TIME_OF_DAY from instrument data.")
+        raise
+
+    try:
+        inst_time_struct = time.strptime(inst_time_str, time_format)
+    except ValueError:
+        logger.error("Instrument time does not match format {}.".format(time_format))
+        raise
+
     inst_time = time.mktime(inst_time_struct)
 
     return inst_time
 
 
-def check_outdated(instrument_data, time_shift_threshold):
+def check_out_of_sync(instrument_data, time_shift_threshold, extract_time_from_instrument_func=get_instrument_time_since_epoch, current_time_func=time.time):
     """
     Update the instrument data with the time shift to the webserver.
+
     :param instrument_data: The data dictionary of an instrument
     :param time_shift_threshold: If the time shift is greater than this value the data is considered outdated
+
+    Raises: ValueError: if time_diff cannot calculated
+    Raises: TypeError: if time_diff cannot calculated
     """
     try:
-        inst_time = get_instrument_time_since_epoch(instrument_data)
-        current_time = time.time()
+        inst_time = extract_time_from_instrument_func(instrument_data)
+        current_time = current_time_func()
         time_diff = abs(current_time - inst_time)
-    except:
+    except (ValueError, TypeError, KeyError):
         time_diff = None
 
-    instrument_data['time_diff'] = time_diff
+    try:
+        instrument_data['time_diff'] = time_diff
 
-    if time_diff is not None and time_diff > time_shift_threshold:
-        instrument_data['outdated'] = True
-    else:
-        instrument_data['outdated'] = False
+        if time_diff is not None and time_diff > time_shift_threshold:
+            instrument_data['out_of_sync'] = True
+            logger.warning("There is a time shift of {} seconds between insrument and web server".format(time_diff))
+        else:
+            instrument_data['out_of_sync'] = False
+    except TypeError:
+        logger.error("Cannot set time shift information.")
 
 
-def get_detailed_state_of_specific_instrument(instrument, data, time_shift_threshold):
+def get_detailed_state_of_specific_instrument(instrument, data, time_shift_threshold=5*60):
     """
     Gets the detailed state of a specific instrument, used to display the instrument's dataweb screen
     :param instrument: The instrument to get data for
@@ -97,6 +123,6 @@ def get_detailed_state_of_specific_instrument(instrument, data, time_shift_thres
         raise ValueError(str(instrument) + " not known")
     if data[instrument] == "":
         raise ValueError("Instrument has become unavailable")
-    check_outdated(data[instrument], time_shift_threshold)
+    check_out_of_sync(data[instrument], time_shift_threshold)
 
     return data[instrument]
