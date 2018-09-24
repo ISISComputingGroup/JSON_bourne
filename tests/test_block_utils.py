@@ -7,7 +7,7 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import unittest
-from block import Block, RETURN_RC_VALUES
+from block import Block
 from block_utils import (format_blocks, set_rc_values_for_blocks, shorten_title, format_block_value)
 
 
@@ -19,20 +19,12 @@ class TestBlockUtils(unittest.TestCase):
             "NEW_BLOCK": Block("NEW_BLOCK", "INVALID", "10", "UDF_ALARM", False, None),
             "NOT_NEW_BLOCK": Block("NOT_NEW_BLOCK", "GOOD", "100", "NO_ALARM", False, None)
         }
-        if RETURN_RC_VALUES:
-            expected_result = {
-                'NEW_BLOCK': {'status': 'INVALID', 'alarm': 'UDF_ALARM',
-                    'visibility': False, 'value': "10", 'rc_enabled': 'NO'},
-                'NOT_NEW_BLOCK': {'status': 'GOOD', 'alarm': 'NO_ALARM',
-                    'visibility': False, 'value': "100", 'rc_enabled': 'NO'}
-            }
-        else:
-            expected_result = {
-                'NEW_BLOCK': {'status': 'INVALID', 'alarm': 'UDF_ALARM',
-                              'visibility': False, 'value': "10"},
-                'NOT_NEW_BLOCK': {'status': 'GOOD', 'alarm': 'NO_ALARM',
-                                  'visibility': False, 'value': "100"}
-            }
+        expected_result = {
+            'NEW_BLOCK': {'status': 'INVALID', 'alarm': 'UDF_ALARM',
+                'visibility': False, 'value': "10", 'rc_enabled': 'NO'},
+            'NOT_NEW_BLOCK': {'status': 'GOOD', 'alarm': 'NO_ALARM',
+                'visibility': False, 'value': "100", 'rc_enabled': 'NO'}
+        }
 
         #Act
         formatted_blocks = format_blocks(test_blocks)
@@ -46,16 +38,10 @@ class TestBlockUtils(unittest.TestCase):
         test_blocks = {
             "NEW_BLOCK": Block("NEW_BLOCK", "", "10", "", False, None)
         }
-        if RETURN_RC_VALUES:
-            expected_result = {
-                'NEW_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
-                    'value': "10", 'rc_enabled': 'NO'},
-            }
-        else:
-            expected_result = {
-                'NEW_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
-                    'value': "10"},
-            }
+        expected_result = {
+            'NEW_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
+                'value': "10", 'rc_enabled': 'NO'},
+        }
 
         #Act
         formatted_blocks = format_blocks(test_blocks)
@@ -74,17 +60,11 @@ class TestBlockUtils(unittest.TestCase):
         test_blocks = {
             "NEW_BLOCK": block
         }
-        if RETURN_RC_VALUES:
-            expected_result = {
-                'NEW_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
-                    'value': "10", 'rc_high': 100, 'rc_low': 0, 'rc_inrange': False,
-                    'rc_enabled': 'YES'},
-            }
-        else:
-            expected_result = {
-                'NEW_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
-                              'value': "10"}
-            }
+        expected_result = {
+            'NEW_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
+                'value': "10", 'rc_high': 100, 'rc_low': 0, 'rc_inrange': False,
+                'rc_enabled': 'YES'},
+        }
 
         #Act
         formatted_blocks = format_blocks(test_blocks)
@@ -108,22 +88,15 @@ class TestBlockUtils(unittest.TestCase):
         test_blocks = {
                 "NEW_BLOCK": block1, "OLD_BLOCK": block2
         }
-        if RETURN_RC_VALUES:
-            expected_result = {
-                'NEW_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
-                    'value': "10", 'rc_high': 20, 'rc_low': 10, 'rc_inrange': True,
-                    'rc_enabled': 'YES'},
-                'OLD_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
-                    'value': "10", 'rc_high': 100, 'rc_low': 0, 'rc_inrange': False,
-                    'rc_enabled': 'NO'},
-            }
-        else:
-            expected_result = {
-                'NEW_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
-                              'value': 10},
-                'OLD_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
-                              'value': 10},
-            }
+
+        expected_result = {
+            'NEW_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
+                'value': "10", 'rc_high': 20, 'rc_low': 10, 'rc_inrange': True,
+                'rc_enabled': 'YES'},
+            'OLD_BLOCK': {'status': '', 'alarm': '', 'visibility': False,
+                'value': "10", 'rc_high': 100, 'rc_low': 0, 'rc_inrange': False,
+                'rc_enabled': 'NO'},
+        }
 
         #Act
         formatted_blocks = format_blocks(test_blocks)
@@ -266,10 +239,9 @@ class TestBlockUtils(unittest.TestCase):
         self.assertEquals(description["visibility"], "OFF")
         self.assertEquals(description["status"], "INVALID")
         self.assertEquals(description["alarm"], "UDF_ALARM")
-        if RETURN_RC_VALUES:
-            self.assertEquals(description["rc_low"], 0)
-            self.assertEquals(description["rc_high"], 100)
-            self.assertEquals(description["rc_inrange"], False)
+        self.assertEquals(description["rc_low"], 0)
+        self.assertEquals(description["rc_high"], 100)
+        self.assertEquals(description["rc_inrange"], False)
 
     def test_when_rc_values_not_given_block_description_do_not_contain_rc_values(self):
         # Arrange
