@@ -64,38 +64,47 @@ def get_instrument_time_since_epoch(instrument_data):
     Raises: ValueError: if instrument time has wrong time format
     """
 
+    try:
+        channel = instrument_data['Channel']
+    except KeyError:
+        channel = "UNKNOWN"
+
     time_format = '%m/%d/%Y %H:%M:%S'
     try:
-        inst_time_str = instrument_data['inst_pvs']['TIME_OF_DAY']['value']
+        tod = 'TIME_OF_DAY'
+        inst_time_str = instrument_data['inst_pvs'][tod]['value']
     except KeyError:
-        logger.error("Cannot parse TIME_OF_DAY from instrument data.")
+        logger.exception("Cannot find {} in PV {}.".format(tod, channel))
         raise
 
     try:
         inst_time_struct = time.strptime(inst_time_str, time_format)
     except ValueError:
-        logger.error("Instrument time does not match format {}.".format(time_format))
+        logger.exception("Value {} from PV {} does not match time format {}.".format(inst_time_str, channel, time_format))
         raise
 
-    inst_time = time.mktime(inst_time_struct)
+    try:
+        inst_time = time.mktime(inst_time_struct)
+    except (ValueError, OverflowError):
+        inst_time = None
+        logger.error("Cannot parse value {} from PV {} as time".format(inst_time, channel))
 
     return inst_time
 
 
-def check_out_of_sync(instrument_data, time_shift_threshold, extract_time_from_instrument_func=get_instrument_time_since_epoch, current_time_func=time.time):
+def set_time_shift(instrument_data, time_shift_threshold,
+                   extract_time_from_instrument_func=get_instrument_time_since_epoch,
+                   current_time_func=time.time):
     """
     Update the instrument data with the time shift to the webserver.
 
     :param instrument_data: The data dictionary of an instrument
     :param time_shift_threshold: If the time shift is greater than this value the data is considered outdated
-
-    Raises: ValueError: if time_diff cannot calculated
-    Raises: TypeError: if time_diff cannot calculated
     """
     try:
         inst_time = extract_time_from_instrument_func(instrument_data)
         current_time = current_time_func()
-        time_diff = abs(current_time - inst_time)
+        time_diff = int(round(abs(current_time - inst_time)))
     except (ValueError, TypeError, KeyError):
         time_diff = None
 
@@ -123,6 +132,6 @@ def get_detailed_state_of_specific_instrument(instrument, data, time_shift_thres
         raise ValueError(str(instrument) + " not known")
     if data[instrument] == "":
         raise ValueError("Instrument has become unavailable")
-    check_out_of_sync(data[instrument], time_shift_threshold)
+    set_time_shift(data[instrument], time_shift_threshold)
 
     return data[instrument]

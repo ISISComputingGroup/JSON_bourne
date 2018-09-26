@@ -2,7 +2,7 @@ from hamcrest import *
 
 from external_webpage.request_handler_utils import get_instrument_and_callback, \
     get_summary_details_of_all_instruments, get_detailed_state_of_specific_instrument, \
-    get_instrument_time_since_epoch, check_out_of_sync
+    get_instrument_time_since_epoch, set_time_shift
 import json
 import unittest
 import time
@@ -171,7 +171,7 @@ class TestHandlerUtils_InstrumentTime(unittest.TestCase):
         instrument_data = {'inst_pvs': {'TIME_OF_DAY': {'value': '01/01/1970 01:00:00'}}}
         inst_time = get_instrument_time_since_epoch(instrument_data)
 
-        assert_that(inst_time, equal_to(3600.0))
+        assert_that(inst_time, equal_to(3600.0 + time.timezone))
 
     def test_that_GIVEN_wrong_formated_instrument_THEN_raise_value_error(self):
         instrument_data = {'inst_pvs': {'TIME_OF_DAY': {'value': 'this is no propper time format'}}}
@@ -189,44 +189,44 @@ class TestHandlerUtils_CheckOutOfSync(unittest.TestCase):
     def test_that_GIVEN_time_difference_is_greater_than_threshold_THEN_set_out_of_sync_to_true(self):
         instrument_data = {'inst_pvs': {'TIME_OF_DAY': {'value': 'does not matter'}}}
 
-        check_out_of_sync(instrument_data, time_shift_threshold=2,
+        set_time_shift(instrument_data, time_shift_threshold=2,
                           extract_time_from_instrument_func=lambda x : 5,
                           current_time_func=lambda : 10)
 
-        assert_that(instrument_data['out_of_sync'], equal_to(True)) 
+        assert_that(instrument_data['out_of_sync'], equal_to(True))
 
     def test_that_GIVEN_time_difference_is_less_than_threshold_THEN_set_out_of_sync_to_false(self):
         instrument_data = {'inst_pvs': {'TIME_OF_DAY': {'value': 'does not matter'}}}
 
-        check_out_of_sync(instrument_data, time_shift_threshold=17,
+        set_time_shift(instrument_data, time_shift_threshold=17,
                           extract_time_from_instrument_func=lambda x : 5,
                           current_time_func=lambda : 10)
 
-        assert_that(instrument_data['out_of_sync'], equal_to(False)) 
+        assert_that(instrument_data['out_of_sync'], equal_to(False))
 
     def test_that_GIVEN_time_difference_of_five_THEN_set_time_diff_to_five(self):
         instrument_data = {'inst_pvs': {'TIME_OF_DAY': {'value': 'does not matter'}}}
 
-        check_out_of_sync(instrument_data, time_shift_threshold=17,
+        set_time_shift(instrument_data, time_shift_threshold=17,
                           extract_time_from_instrument_func=lambda x : 5,
                           current_time_func=lambda : 10)
 
-        assert_that(instrument_data['time_diff'], equal_to(5)) 
+        assert_that(instrument_data['time_diff'], equal_to(5))
 
     def test_that_GIVEN_invalid_time_THEN_set_time_diff_to_None(self):
         instrument_data = {'inst_pvs': {'TIME_OF_DAY': {'value': 'does not matter'}}}
 
-        check_out_of_sync(instrument_data, time_shift_threshold=17,
+        set_time_shift(instrument_data, time_shift_threshold=17,
                           extract_time_from_instrument_func=lambda x : 'foo',
                           current_time_func=lambda : 10)
 
-        assert_that(instrument_data['time_diff'], equal_to(None)) 
+        assert_that(instrument_data['time_diff'], equal_to(None))
 
     def test_that_GIVEN_invalid_time_THEN_set_out_of_sync_to_false(self):
         instrument_data = {'inst_pvs': {'TIME_OF_DAY': {'value': 'does not matter'}}}
 
-        check_out_of_sync(instrument_data, time_shift_threshold=17,
+        set_time_shift(instrument_data, time_shift_threshold=17,
                           extract_time_from_instrument_func=lambda x : 'foo',
                           current_time_func=lambda : 10)
 
-        assert_that(instrument_data['out_of_sync'], equal_to(False)) 
+        assert_that(instrument_data['out_of_sync'], equal_to(False))
