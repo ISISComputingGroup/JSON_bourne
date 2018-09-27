@@ -1,5 +1,7 @@
 from __future__ import unicode_literals
+import logging
 
+logger = logging.getLogger('JSON_bourne')
 
 def shorten_title(title):
     """
@@ -23,38 +25,31 @@ def shorten_title(title):
         return title_parts[-1]
 
 
-def set_rc_values_for_block_from_pvs(block, pvs):
-    """Search pvs for RC values for given block and return them"""
-    block_name = block.get_name()
-    items = pvs.items()
+def set_rc_values_for_blocks(blocks, run_control_pvs):
+    """
+    Set all RC values for all the given blocks. Blocks contains the blocks and their run control settings
+    Args:
+        blocks: dictionary of {pv_names : block_objects} containing info blocks
+        run_control_pvs: dictionary of {pv_names : block_objects} containing run control settings
+    """
+    for pv, block_object in run_control_pvs.items():
+        pv_parts = pv.split(':')
+        name = pv_parts[0].strip()
+        suffix = pv_parts[-1]
 
-    for k, v in items:
-        if k is None:
-            # not a valid key, skip this entry
-            continue
+        try:
+            block = blocks[name]
 
-        key_parts = k.split(':')
-        name = key_parts[0].strip()
-        suffix = key_parts[-1]
-
-        if block_name != name:
-            # block name does not match, skip this entry
-            continue
-
-        if "LOW.VAL" == suffix:
-            block.set_rc_low(v.get_value())
-        elif "HIGH.VAL" == suffix:
-            block.set_rc_high(v.get_value())
-        elif "INRANGE.VAL" == suffix:
-            block.set_rc_inrange(v.get_value())
-        elif "ENABLE.VAL" == suffix:
-            block.set_rc_enabled(v.get_value())
-
-
-def set_rc_values_for_blocks(blocks, pvs):
-    """Set all RC values for all the given blocks"""
-    for block in blocks:
-        set_rc_values_for_block_from_pvs(block, pvs)
+            if "LOW.VAL" == suffix:
+                block.set_rc_low(block_object.get_value())
+            elif "HIGH.VAL" == suffix:
+                block.set_rc_high(block_object.get_value())
+            elif "INRANGE.VAL" == suffix:
+                block.set_rc_inrange(block_object.get_value())
+            elif "ENABLE.VAL" == suffix:
+                block.set_rc_enabled(block_object.get_value())
+        except KeyError as e:
+            logging.info("Could not find block but it has runcontrol pvs {}".format(name))
 
 
 def format_blocks(blocks):

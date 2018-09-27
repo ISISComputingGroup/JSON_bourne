@@ -95,13 +95,12 @@ class InstrumentInformationCollator:
 
         self.web_page_parser = WebPageParser()
 
-    def _get_inst_pvs(self, ans, blocks_all):
+    def _get_inst_pvs(self, instrument_archive_blocks):
         """
         Extracts and formats a list of relevant instrument PVs from all instrument PVs.
 
         Args:
-            ans: List of blocks from the instrument archive.
-            blocks_all: List of blocks from the block and dataweb archives.
+            instrument_archive_blocks: List of blocks from the instrument archive.
 
         Returns: A trimmed list of instrument PVs.
 
@@ -120,14 +119,9 @@ class InstrumentInformationCollator:
                         "MONITORSPECTRUM", "MONITORFROM", "MONITORTO", "NUMTIMECHANNELS", "NUMSPECTRA", "SHUTTER",
                         "SIM_MODE"]
 
-        try:
-            set_rc_values_for_blocks(blocks_all.values(), ans)
-        except Exception as e:
-            logging.error("Error in setting rc values for blocks: " + str(e))
-
         for pv in required_pvs:
-            if pv + ".VAL" in ans:
-                wanted[pv] = ans[pv + ".VAL"]
+            if pv + ".VAL" in instrument_archive_blocks:
+                wanted[pv] = instrument_archive_blocks[pv + ".VAL"]
 
         try:
             self._convert_seconds(wanted[run_duration_channel_name])
@@ -140,7 +134,8 @@ class InstrumentInformationCollator:
             pass
 
         display_title_channel_name = InstrumentInformationCollator.DISPLAY_TITLE_CHANNEL_NAME + ".VAL"
-        if display_title_channel_name not in ans or ans[display_title_channel_name].get_value().lower() != "yes":
+        if display_title_channel_name not in instrument_archive_blocks or \
+                instrument_archive_blocks[display_title_channel_name].get_value().lower() != "yes":
             if title_channel_name in wanted:
                 wanted[title_channel_name].set_value(InstrumentInformationCollator.PRIVATE_VALUE)
             if username_channel_name in wanted:
@@ -184,27 +179,30 @@ class InstrumentInformationCollator:
 
             # read blocks
             json_from_blocks_archive = self.reader.get_json_from_blocks_archive()
-            blocks_log = self.web_page_parser.extract_blocks(json_from_blocks_archive)
+            blocks = self.web_page_parser.extract_blocks(json_from_blocks_archive)
 
             json_from_dataweb_archive = self.reader.get_json_from_dataweb_archive()
-            blocks_nolog = self.web_page_parser.extract_blocks(json_from_dataweb_archive)
-
-            blocks_all = dict(blocks_log.items() + blocks_nolog.items())
-
-            # get block visibility from config
-            for block_name, block in blocks_all.items():
-                block.set_visibility(instrument_config.block_is_visible(block_name))
+            dataweb_blocks = self.web_page_parser.extract_blocks(json_from_dataweb_archive)
 
             json_from_instrument_archive = self.reader.get_json_from_instrument_archive()
             instrument_blocks = self.web_page_parser.extract_blocks(json_from_instrument_archive)
 
-            inst_pvs = format_blocks(self._get_inst_pvs(instrument_blocks, blocks_all))
+            inst_pvs = format_blocks(self._get_inst_pvs(instrument_blocks))
 
         except Exception as e:
             logger.error("Failed to read blocks: " + str(e))
             raise e
 
-        blocks_all_formatted = format_blocks(blocks_all)
+        try:
+            set_rc_values_for_blocks(blocks, dataweb_blocks)
+        except Exception as e:
+            logging.error("Error in setting rc values for blocks: " + str(e))
+
+        # get block visibility from config
+        for block_name, block in blocks.items():
+            block.set_visibility(instrument_config.block_is_visible(block_name))
+
+        blocks_all_formatted = format_blocks(blocks)
         groups = {}
         for group in instrument_config.groups:
             blocks = {}

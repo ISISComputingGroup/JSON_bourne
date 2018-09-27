@@ -399,7 +399,7 @@ function writeRangeInfo(nodeBlock, rc_inrange) {
         colour = "Green";
         mark_status = "\u2713"; // unicode check mark
     }
-	nodeBlockInrange.style = "color:"+color
+	nodeBlockInrange.style = "color:" + colour
     nodeBlockInrange.appendChild(document.createTextNode(mark_status));
     nodeBlock.appendChild(nodeBlockInrange);
 }

@@ -19,12 +19,6 @@ Classes for Blocks
 
 from block_utils import format_block_value
 
-# Temporary fix to prevent RC values from being returned from the server
-# while there is still a problem with getting rc values from the archiver.
-# Once that problem has been solved then this flag and it's usages can
-# be removed. See issue #2446
-RETURN_RC_VALUES = False
-
 
 class Block:
     """
@@ -170,18 +164,17 @@ class Block:
             "visibility": self.visibility
         }
 
-        if RETURN_RC_VALUES:
-            # add rc values if they're set
-            if self.low is not None:
-                ans["rc_low"] = self.low
+        # add rc values
+        if self.low is not None:
+            ans["rc_low"] = self.low
 
-            if self.high is not None:
-                ans["rc_high"] = self.high
+        if self.high is not None:
+            ans["rc_high"] = self.high
 
-            if self.inrange is not None:
-                ans["rc_inrange"] = self.inrange
+        if self.inrange is not None:
+            ans["rc_inrange"] = self.inrange
 
-            ans["rc_enabled"] = self.enabled
+        ans["rc_enabled"] = self.enabled
 
         return ans
 

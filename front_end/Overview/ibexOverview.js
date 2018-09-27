@@ -99,9 +99,9 @@ function on_click(elmnt) {
 	create_new_window();
 	var newIframe = document.createElement("iframe");
 	
-	newIframe.src = "http://dataweb.isis.rl.ac.uk/IbexDataweb/default.html?Instrument="+ elmnt.innerHTML
-	newIframe.height = "40%"
+	newIframe.src = "http://dataweb.isis.rl.ac.uk/IbexDataweb/default.html?Instrument="+ elmnt.childNodes[0].nodeValue
 	newIframe.width = "100%"
+	newIframe.height = "40%"
 	newIframe.frameborder = "0"
 	
 	document.getElementById("internal").appendChild(newIframe);
