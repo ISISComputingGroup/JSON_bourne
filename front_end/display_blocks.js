@@ -1,5 +1,5 @@
 var PORT = 60000;
-var HOST = "http://dataweb.isis.rl.ac.uk"
+var HOST = "http://localhost"
 
 var instrument = getURLParameter("Instrument");
 var nodeInstTitle = document.createElement("H2");
