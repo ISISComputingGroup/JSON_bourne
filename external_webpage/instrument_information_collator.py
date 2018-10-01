@@ -23,6 +23,8 @@ from block_utils import (format_blocks, set_rc_values_for_blocks)
 from external_webpage.data_source_reader import DataSourceReader
 from external_webpage.web_page_parser import WebPageParser
 
+from collections import OrderedDict
+
 logger = logging.getLogger('JSON_bourne')
 
 
@@ -41,7 +43,7 @@ class InstrumentConfig(object):
         self.groups = self._config["groups"]
         self.name = self._config["name"]
 
-        self.blocks = {}
+        self.blocks = OrderedDict()
         for block in self._config["blocks"]:
             self.blocks[block["name"]] = block
 
@@ -205,7 +207,7 @@ class InstrumentInformationCollator:
         blocks_all_formatted = format_blocks(blocks)
         groups = {}
         for group in instrument_config.groups:
-            blocks = {}
+            blocks = OrderedDict()
             for block in group["blocks"]:
                 if block in blocks_all_formatted.keys():
                     blocks[block] = blocks_all_formatted[block]

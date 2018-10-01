@@ -24,6 +24,8 @@ import re
 from block import Block
 from block_utils import shorten_title
 
+from collections import OrderedDict
+
 logger = logging.getLogger('JSON_bourne')
 
 
@@ -58,7 +60,7 @@ class WebPageParser(object):
         """
 
         try:
-            blocks = {}
+            blocks = OrderedDict()
             channels = info_page_as_json["Channels"]
         except (KeyError, TypeError):
             raise BlocksParseError("There is no json object for channels")
