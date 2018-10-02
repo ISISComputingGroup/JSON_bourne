@@ -9,7 +9,7 @@ scraped_data = {}
 scraped_data_lock = RLock()
 logger = logging.getLogger('JSON_bourne')
 
-WAIT_BETWEEN_UPDATES = 3
+WAIT_BETWEEN_UPDATES = 5
 WAIT_BETWEEN_FAILED_UPDATES = 60
 RETRIES_BETWEEN_LOGS = 60
 
