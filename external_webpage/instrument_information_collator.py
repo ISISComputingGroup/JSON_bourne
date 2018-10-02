@@ -174,7 +174,6 @@ class InstrumentInformationCollator:
         Returns: JSON of the instrument's configuration and status.
 
         """
-
         instrument_config = InstrumentConfig(self.reader.read_config())
 
         try:
@@ -205,7 +204,7 @@ class InstrumentInformationCollator:
             block.set_visibility(instrument_config.block_is_visible(block_name))
 
         blocks_all_formatted = format_blocks(blocks)
-        groups = {}
+        groups = OrderedDict()
         for group in instrument_config.groups:
             blocks = OrderedDict()
             for block in group["blocks"]:
