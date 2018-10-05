@@ -36,7 +36,7 @@ def create_groups_dictionary(archive_blocks, instrument_config):
         instrument_config (InstrumentConfig): Instrument configurations from the block server.
 
     Returns:
-        groups (dict): All groups and their associated blocks.
+        groups (dict[str, dict[str, dict]]): All groups and their associated blocks.
 
     """
     blocks_all_formatted = format_blocks(archive_blocks)

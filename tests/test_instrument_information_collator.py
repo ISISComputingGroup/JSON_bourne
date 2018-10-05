@@ -67,5 +67,8 @@ class TestInstrumentInformationCollator(unittest.TestCase):
                                     {'name': 'test_group_3', 'blocks': []}]
         result = create_groups_dictionary({}, instrument_config)
 
-
         self.assertTrue(result.keys(), [group['name'] for group in instrument_config.groups])
+
+
+if __name__ == '__main__':
+    unittest.main()
