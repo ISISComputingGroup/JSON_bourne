@@ -53,7 +53,7 @@ class InstList(object):
         Returns: list of instruments with their host names
         """
 
-        inst_list = {"ME":"localhost"}
+        inst_list = {}
         try:
 
             raw = self._caget_fn(INST_LIST_PV, as_string=True)

@@ -7,6 +7,7 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import unittest
+from mock import MagicMock
 from block import Block
 from block_utils import (format_blocks, set_rc_values_for_blocks, shorten_title, format_block_value)
 
@@ -114,6 +115,23 @@ class TestBlockUtils(unittest.TestCase):
 
         #Assert
         self.assertEquals(formatted_blocks, expected_result)
+
+    def test_GIVEN_dict_of_ordered_blocks_WHEN_formatted_blocks_called_THEN_return_same_block_order(self):
+        #Arrange
+        test_blocks = {"Block 1": MagicMock(),
+                       "Block 2": MagicMock(),
+                       "Block 3": MagicMock()}
+
+        expected_order_blocks = {"Block 1": MagicMock(),
+                                 "Block 2": MagicMock(),
+                                 "Block 3": MagicMock()}
+
+        #Act
+        formatted_blocks = format_blocks(test_blocks)
+
+        #Assert
+        self.assertListEqual(expected_order_blocks.keys(), formatted_blocks.keys())
+
 
     def test_shorten_title_for_default_case(self):
         #Arrange

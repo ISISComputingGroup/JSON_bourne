@@ -22,7 +22,7 @@ class TestInstrumentInformationCollator(unittest.TestCase):
 
         self.assertDictEqual(result, {'test_group': {}})
 
-    def test_GIVEN_instrument_config_with_3_known_groups_WHEN_create_groups_dictionary_called_THEN_return_5_groups(self):
+    def test_GIVEN_instrument_config_with_3_known_groups_WHEN_create_groups_dictionary_called_THEN_return_3_groups(self):
 
         instrument_config = Mock()
         instrument_config.groups = [{'name': 'test_group_1', 'blocks': []},
@@ -67,7 +67,7 @@ class TestInstrumentInformationCollator(unittest.TestCase):
                                     {'name': 'test_group_3', 'blocks': []}]
         result = create_groups_dictionary({}, instrument_config)
 
-        self.assertTrue(result.keys(), [group['name'] for group in instrument_config.groups])
+        self.assertListEqual(result.keys(), [group['name'] for group in instrument_config.groups])
 
 
 if __name__ == '__main__':
