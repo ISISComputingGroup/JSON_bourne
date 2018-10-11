@@ -23,7 +23,31 @@ from block_utils import (format_blocks, set_rc_values_for_blocks)
 from external_webpage.data_source_reader import DataSourceReader
 from external_webpage.web_page_parser import WebPageParser
 
+from collections import OrderedDict
+
 logger = logging.getLogger('JSON_bourne')
+
+
+def create_groups_dictionary(archive_blocks, instrument_config):
+    """
+    Populate groups with block information from the archive server.
+    Args:
+        archive_blocks (dict[str, block.Block]): Block information from the archive server.
+        instrument_config (InstrumentConfig): Instrument configurations from the block server.
+
+    Returns:
+        groups (dict[str, dict[str, dict]]): All groups and their associated blocks.
+
+    """
+    blocks_all_formatted = format_blocks(archive_blocks)
+    groups = OrderedDict()
+    for group in instrument_config.groups:
+        blocks = OrderedDict()
+        for block in group["blocks"]:
+            if block in blocks_all_formatted.keys():
+                blocks[block] = blocks_all_formatted[block]
+        groups[group["name"]] = blocks
+    return groups
 
 
 class InstrumentConfig(object):
@@ -41,7 +65,7 @@ class InstrumentConfig(object):
         self.groups = self._config["groups"]
         self.name = self._config["name"]
 
-        self.blocks = {}
+        self.blocks = OrderedDict()
         for block in self._config["blocks"]:
             self.blocks[block["name"]] = block
 
@@ -172,7 +196,6 @@ class InstrumentInformationCollator:
         Returns: JSON of the instrument's configuration and status.
 
         """
-
         instrument_config = InstrumentConfig(self.reader.read_config())
 
         try:
@@ -202,14 +225,7 @@ class InstrumentInformationCollator:
         for block_name, block in blocks.items():
             block.set_visibility(instrument_config.block_is_visible(block_name))
 
-        blocks_all_formatted = format_blocks(blocks)
-        groups = {}
-        for group in instrument_config.groups:
-            blocks = {}
-            for block in group["blocks"]:
-                if block in blocks_all_formatted.keys():
-                    blocks[block] = blocks_all_formatted[block]
-            groups[group["name"]] = blocks
+        groups = create_groups_dictionary(blocks, instrument_config)
 
         return {
             "config_name": instrument_config.name,

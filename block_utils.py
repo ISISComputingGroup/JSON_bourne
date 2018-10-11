@@ -1,6 +1,8 @@
 from __future__ import unicode_literals
 import logging
 
+from collections import OrderedDict
+
 logger = logging.getLogger('JSON_bourne')
 
 def shorten_title(title):
@@ -54,15 +56,15 @@ def set_rc_values_for_blocks(blocks, run_control_pvs):
 
 def format_blocks(blocks):
     """
-    Converts a list of block objects into JSON.
+    Converts a dictionary of blocks in the form of {name: Block} to a dictionary of {name: dict_describing_block}.
 
     Args:
         blocks: A dictionary of block names to block objects.
 
-    Returns: A JSON dictionary of block names to block descriptions.
+    Returns: A dictionary of block names to block descriptions.
 
     """
-    blocks_formatted = {}
+    blocks_formatted = OrderedDict()
     for name, block in blocks.items():
         blocks_formatted[name] = block.get_description()
 
