@@ -405,8 +405,10 @@ function writeRangeInfo(nodeBlock, rc_inrange) {
 }
 
 function writeAlarmInfo(nodeBlock, alarm) {
-    var nodeBlockAlarm = document.createElement("span");
+    var nodeBlockAlarm = document.createElement("a");
     nodeBlockAlarm.style = "color:red"
+    nodeBlockAlarm.href = "https://github.com/ISISComputingGroup/ibex_user_manual/wiki/Blocks#alarms"
+    nodeBlockAlarm.target = "_blank"
 	nodeBlockAlarm.appendChild(document.createTextNode("(" + alarm + ")"));
     nodeBlock.appendChild(nodeBlockAlarm);
 }
