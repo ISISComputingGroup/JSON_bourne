@@ -1,8 +1,12 @@
+from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
 import json
 import logging
 import os
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
-from SocketServer import ThreadingMixIn
+from http.server import BaseHTTPRequestHandler, HTTPServer
+from socketserver import ThreadingMixIn
 from logging.handlers import TimedRotatingFileHandler
 
 from external_webpage.request_handler_utils import get_detailed_state_of_specific_instrument, \
@@ -34,7 +38,7 @@ class MyHandler(BaseHTTPRequestHandler):
             instrument, callback = get_instrument_and_callback(self.path)
 
             # Warn level so as to avoid many log messages that come from other modules
-            logger.warn("Connected to from " + str(self.client_address) + " looking at " + str(instrument))
+            logger.warning("Connected to from " + str(self.client_address) + " looking at " + str(instrument))
 
             with scraped_data_lock:
                 if instrument == "ALL":
@@ -55,7 +59,7 @@ class MyHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-type', 'text/html')
             self.end_headers()
-            self.wfile.write(response)
+            self.wfile.write(response.encode("utf-8"))
         except ValueError as e:
             logger.error(e)
             self.send_response(400)

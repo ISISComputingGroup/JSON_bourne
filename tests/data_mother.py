@@ -1,3 +1,4 @@
+from builtins import object
 class ArchiveMother(object):
     """
     Data mother for JSON objects.
@@ -50,7 +51,7 @@ class ArchiveMother(object):
                 u'State': True}
 
 
-class ConfigMother():
+class ConfigMother(object):
 
     @staticmethod
     def create_config(name="conf", blocks=None, groups=None):

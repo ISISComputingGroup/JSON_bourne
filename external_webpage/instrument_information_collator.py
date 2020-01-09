@@ -17,6 +17,8 @@
 Classes getting external resources from an instrument and formating them for the info page.
 """
 
+from builtins import str
+from builtins import object
 import logging
 
 from block_utils import (format_blocks, set_rc_values_for_blocks)
@@ -87,7 +89,7 @@ class InstrumentConfig(object):
             return True
 
 
-class InstrumentInformationCollator:
+class InstrumentInformationCollator(object):
     """
     Collect instrument information and summarise as a dictionary.
     """
