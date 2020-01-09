@@ -516,8 +516,26 @@ class FormatBlockValueTests(unittest.TestCase):
 
         self.assertEqual(format_block_value(value, 3), expected_formatted_value)
 
+    def test_GIVEN_arbitrary_object_as_precision_WHEN_formatting_THEN_original_value_returned_unchanged(self):
+        precision = object()
+        value = "12.345"
+
+        self.assertEqual(format_block_value(value, precision), value)
+
     def test_GIVEN_negative_precision_WHEN_formatting_THEN_original_value_returned_unchanged(self):
         precision = -57
+        value = "12.345"
+
+        self.assertEqual(format_block_value(value, precision), value)
+
+    def test_GIVEN_nonsense_precision_WHEN_formatting_THEN_original_value_returned_unchanged(self):
+        precision = "this is clearly not a valid precision"
+        value = "12.345"
+
+        self.assertEqual(format_block_value(value, precision), value)
+
+    def test_GIVEN_nonsense_precision_containing_unicode_WHEN_formatting_THEN_original_value_returned_unchanged(self):
+        precision = u"ƀ Ɓ Ƃ ƃ Ƅ ƅ Ɔ Ƈ ƈ Ɖ Ɗ Ƌ ƌ ƍ Ǝ Ə Ɛ Ƒ ƒ Ɠ Ɣ ƕ Ɩ Ɨ Ƙ ƙ ƚ ƛ Ɯ Ɲ ƞ Ɵ Ơ ơ Ƣ ƣ Ƥ ƥ Ʀ Ƨ ƨ Ʃ ƪ ƫ Ƭ ƭ Ʈ"
         value = "12.345"
 
         self.assertEqual(format_block_value(value, precision), value)
