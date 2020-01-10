@@ -17,10 +17,11 @@
 Classes for Blocks
 """
 
+from builtins import object
 from block_utils import format_block_value
 
 
-class Block:
+class Block(object):
     """
     Class holding Block details. Used for displaying in dataweb
     """

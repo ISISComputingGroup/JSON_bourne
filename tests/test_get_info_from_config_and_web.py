@@ -180,5 +180,6 @@ class TestGetInfoFromConfigAndWeb(unittest.TestCase):
 
         assert_that(result["groups"][group_name][block_name]["visibility"], is_(expected_is_visible))
 
+
 if __name__ == '__main__':
     unittest.main()

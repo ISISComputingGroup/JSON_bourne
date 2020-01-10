@@ -7,7 +7,8 @@ import zlib
 from CaChannel import CaChannelException
 from hamcrest import *
 import unittest
-
+from builtins import bytes
+import binascii
 from mock import Mock
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -39,8 +40,8 @@ class TestInstList(unittest.TestCase):
         Returns:
             string : A compressed and hexed version of the inputted string
         """
-        compr = zlib.compress(value)
-        return compr.encode('hex')
+        compr = zlib.compress(bytes(value, 'utf-8'))
+        return binascii.hexlify(bytearray(compr))
 
     def test_GIVEN_caget_contains_one_instrument_WHEN_retrive_THEN_list_returned(self):
         global caget_value, caget_error

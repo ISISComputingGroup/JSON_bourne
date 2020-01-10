@@ -1,6 +1,9 @@
 """
 Relation to web scrapper management.
 """
+from __future__ import print_function
+from builtins import range
+from builtins import object
 import json
 import logging
 import zlib
@@ -190,7 +193,7 @@ class WebScrapperManager(Thread):
         Returns: True if in; False otherwise
 
         """
-        for name, host in inst_list.items():
+        for name, host in list(inst_list.items()):
             if scrapper.is_instrument(name, host):
                 return True
         return False
@@ -204,7 +207,7 @@ class WebScrapperManager(Thread):
         Returns:
 
         """
-        for name, host in instruments.items():
+        for name, host in list(instruments.items()):
             for scrapper in self.scrappers:
                 if scrapper.is_instrument(name, host):
                     break

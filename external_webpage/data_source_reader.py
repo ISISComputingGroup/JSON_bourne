@@ -101,9 +101,9 @@ class DataSourceReader(object):
         """
 
         # read config
-        page = requests.get('http://%s:%s/' % (self._host, PORT_CONFIG))
-        corrected_page = page.content\
-            .replace("'", '"')\
+        page = requests.get('http://{}:{}/'.format(self._host, PORT_CONFIG))
+        content = page.content.decode("utf-8")
+        corrected_page = content.replace("'", '"')\
             .replace("None", "null")\
             .replace("True", "true")\
             .replace("False", "false")

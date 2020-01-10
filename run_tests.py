@@ -1,3 +1,4 @@
+from __future__ import print_function
 # This file is part of the ISIS IBEX application.
 # Copyright (C) 2017 Science & Technology Facilities Council.
 # All rights reserved.
@@ -37,10 +38,10 @@ if __name__ == '__main__':
     test_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "tests"))
     test_suite = unittest.TestLoader().discover(test_dir, pattern="test_*.py")
 
-    print "\n\n------ BEGINNING JSON Bourne UNIT TESTS ------"
+    print("\n\n------ BEGINNING JSON Bourne UNIT TESTS ------")
     ret_vals = list()
     ret_vals.append(xmlrunner.XMLTestRunner(output=xml_dir).run(test_suite))
-    print "------ UNIT TESTS COMPLETE ------\n\n"
+    print("------ UNIT TESTS COMPLETE ------\n\n")
 
     # Return failure exit code if a test failed
     sys.exit(False in ret_vals)

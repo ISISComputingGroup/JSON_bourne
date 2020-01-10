@@ -86,7 +86,7 @@ def format_block_value(val, precision):
     assert small_number_threshold < big_number_threshold
 
     # No precision specified = do not format.
-    if precision is None or precision < 0:
+    if precision is None or not isinstance(precision, int) or precision < 0:
         return u"{}".format(val)
     try:
         float_val = float(val)

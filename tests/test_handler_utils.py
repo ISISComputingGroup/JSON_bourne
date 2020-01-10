@@ -134,7 +134,7 @@ class TestHandlerUtils_IbexRunning(unittest.TestCase):
         expected_instrument_names = ["anInst", "Another", "B", "CAPITAL", "clower"]
         inp = {"B": "", "Another": "", "CAPITAL": "", "clower": "", "anInst": ""}
 
-        result = get_summary_details_of_all_instruments(inp).keys()
+        result = list(get_summary_details_of_all_instruments(inp).keys())
 
         assert_that(result, is_(expected_instrument_names))
 

@@ -67,7 +67,7 @@ class TestInstrumentInformationCollator(unittest.TestCase):
                                     {'name': 'test_group_3', 'blocks': []}]
         result = create_groups_dictionary({}, instrument_config)
 
-        self.assertListEqual(result.keys(), [group['name'] for group in instrument_config.groups])
+        self.assertListEqual(list(result.keys()), [group['name'] for group in instrument_config.groups])
 
 
 if __name__ == '__main__':

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from builtins import str
 import os
 import sys
 
@@ -114,7 +115,7 @@ class TestBlockUtils(unittest.TestCase):
         formatted_blocks = format_blocks(test_blocks)
 
         #Assert
-        self.assertEquals(formatted_blocks, expected_result)
+        self.assertEqual(formatted_blocks, expected_result)
 
     def test_GIVEN_dict_of_ordered_blocks_WHEN_formatted_blocks_called_THEN_return_same_block_order(self):
         #Arrange
@@ -130,7 +131,7 @@ class TestBlockUtils(unittest.TestCase):
         formatted_blocks = format_blocks(test_blocks)
 
         #Assert
-        self.assertListEqual(expected_order_blocks.keys(), formatted_blocks.keys())
+        self.assertSequenceEqual(expected_order_blocks.keys(), formatted_blocks.keys())
 
 
     def test_shorten_title_for_default_case(self):
@@ -141,7 +142,7 @@ class TestBlockUtils(unittest.TestCase):
         shortened_title = shorten_title(test_pv)
 
         #Assert
-        self.assertEquals(shortened_title, "COUNTRATE.VAL")
+        self.assertEqual(shortened_title, "COUNTRATE.VAL")
 
     def test_shorten_title_with_rc_in_range(self):
         #Arrange
@@ -151,7 +152,7 @@ class TestBlockUtils(unittest.TestCase):
         shortened_title = shorten_title(test_pv)
 
         #Assert
-        self.assertEquals(shortened_title, "NEW_BLOCK:RC:INRANGE.VAL")
+        self.assertEqual(shortened_title, "NEW_BLOCK:RC:INRANGE.VAL")
 
     def test_shorten_title_with_rc_enabled(self):
         # Arrange
@@ -161,7 +162,7 @@ class TestBlockUtils(unittest.TestCase):
         shortened_title = shorten_title(test_pv)
 
         # Assert
-        self.assertEquals(shortened_title, "NEW_BLOCK:RC:ENABLE.VAL")
+        self.assertEqual(shortened_title, "NEW_BLOCK:RC:ENABLE.VAL")
 
     def test_shorten_title_with_rc_in_range(self):
         # Arrange
@@ -171,7 +172,7 @@ class TestBlockUtils(unittest.TestCase):
         shortened_title = shorten_title(test_pv)
 
         # Assert
-        self.assertEquals(shortened_title, "OLD_BLOCK:RC:INRANGE.VAL")
+        self.assertEqual(shortened_title, "OLD_BLOCK:RC:INRANGE.VAL")
 
     def test_shorten_title_with_empty_string(self):
         # Arrange
@@ -181,7 +182,7 @@ class TestBlockUtils(unittest.TestCase):
         shortened_title = shorten_title(test_pv)
 
         # Assert
-        self.assertEquals(shortened_title, "")
+        self.assertEqual(shortened_title, "")
 
     def test_shorten_title_with_bad_rc_value(self):
         # Arrange
@@ -191,7 +192,7 @@ class TestBlockUtils(unittest.TestCase):
         shortened_title = shorten_title(test_pv)
 
         # Assert
-        self.assertEquals(shortened_title, "OUTRANGE.VAL")
+        self.assertEqual(shortened_title, "OUTRANGE.VAL")
 
     def test_shorten_title_with_malformed_input_end_of_title(self):
         # Arrange
@@ -201,7 +202,7 @@ class TestBlockUtils(unittest.TestCase):
         shortened_title = shorten_title(test_pv)
 
         # Assert
-        self.assertEquals(shortened_title, "INRANGE.VAL")
+        self.assertEqual(shortened_title, "INRANGE.VAL")
 
     def test_shorten_title_with_malformed_input_rc_value(self):
         # Arrange
@@ -211,7 +212,7 @@ class TestBlockUtils(unittest.TestCase):
         shortened_title = shorten_title(test_pv)
 
         # Assert
-        self.assertEquals(shortened_title, "RC:INRANGE.VAL")
+        self.assertEqual(shortened_title, "RC:INRANGE.VAL")
 
     def test_shorten_title_rc_in_pv_doesnt_count(self):
         # Arrange
@@ -221,7 +222,7 @@ class TestBlockUtils(unittest.TestCase):
         shortened_title = shorten_title(test_pv)
 
         # Assert
-        self.assertEquals(shortened_title, "RC.VAL")
+        self.assertEqual(shortened_title, "RC.VAL")
 
     def test_shorten_title_larmor_block_high_rc(self):
         # Arrange
@@ -231,7 +232,7 @@ class TestBlockUtils(unittest.TestCase):
         shortened_title = shorten_title(test_pv)
 
         # Assert
-        self.assertEquals(shortened_title, "CJHCent:RC:HIGH.VAL")
+        self.assertEqual(shortened_title, "CJHCent:RC:HIGH.VAL")
 
     def test_shorten_title_larmor_block_low_rc(self):
         # Arrange
@@ -241,7 +242,7 @@ class TestBlockUtils(unittest.TestCase):
         shortened_title = shorten_title(test_pv)
 
         # Assert
-        self.assertEquals(shortened_title, "Chi:RC:LOW.VAL")
+        self.assertEqual(shortened_title, "Chi:RC:LOW.VAL")
 
     def test_when_rc_values_given_block_description_contains_rc_values(self):
         # Arrange
@@ -254,12 +255,12 @@ class TestBlockUtils(unittest.TestCase):
         description = test_block.get_description()
 
         # Assert
-        self.assertEquals(description["visibility"], "OFF")
-        self.assertEquals(description["status"], "INVALID")
-        self.assertEquals(description["alarm"], "UDF_ALARM")
-        self.assertEquals(description["rc_low"], 0)
-        self.assertEquals(description["rc_high"], 100)
-        self.assertEquals(description["rc_inrange"], False)
+        self.assertEqual(description["visibility"], "OFF")
+        self.assertEqual(description["status"], "INVALID")
+        self.assertEqual(description["alarm"], "UDF_ALARM")
+        self.assertEqual(description["rc_low"], 0)
+        self.assertEqual(description["rc_high"], 100)
+        self.assertEqual(description["rc_inrange"], False)
 
     def test_when_rc_values_not_given_block_description_do_not_contain_rc_values(self):
         # Arrange
@@ -269,9 +270,9 @@ class TestBlockUtils(unittest.TestCase):
         description = test_block.get_description()
 
         # Assert
-        self.assertEquals(description["visibility"], "OFF")
-        self.assertEquals(description["status"], "INVALID")
-        self.assertEquals(description["alarm"], "UDF_ALARM")
+        self.assertEqual(description["visibility"], "OFF")
+        self.assertEqual(description["status"], "INVALID")
+        self.assertEqual(description["alarm"], "UDF_ALARM")
         self.assertTrue("rc_low" not in description)
         self.assertTrue("rc_high" not in description)
         self.assertTrue("rc_inrange" not in description)
@@ -290,7 +291,7 @@ class TestBlockUtils(unittest.TestCase):
         set_rc_values_for_blocks(blocks, runcontrol)
 
         # Assert
-        self.assertEquals(blocks[block_name].get_rc_low(), expected_value)
+        self.assertEqual(blocks[block_name].get_rc_low(), expected_value)
 
     def test_set_rc_high_value_for_block_based_on_pv(self):
         # Arrange
@@ -306,8 +307,8 @@ class TestBlockUtils(unittest.TestCase):
         set_rc_values_for_blocks(blocks, runcontrol)
 
         # Assert
-        self.assertEquals(blocks[block_name].get_rc_low(), 10)
-        self.assertEquals(blocks[block_name].get_rc_high(), 100)
+        self.assertEqual(blocks[block_name].get_rc_low(), 10)
+        self.assertEqual(blocks[block_name].get_rc_high(), 100)
 
     def test_set_rc_inrange_value_for_block_based_on_pv(self):
         # Arrange
@@ -324,9 +325,9 @@ class TestBlockUtils(unittest.TestCase):
         set_rc_values_for_blocks(blocks, runcontrol)
 
         # Assert
-        self.assertEquals(blocks[block_name].get_rc_low(), 10)
-        self.assertEquals(blocks[block_name].get_rc_high(), 100)
-        self.assertEquals(blocks[block_name].get_rc_inrange(), False)
+        self.assertEqual(blocks[block_name].get_rc_low(), 10)
+        self.assertEqual(blocks[block_name].get_rc_high(), 100)
+        self.assertEqual(blocks[block_name].get_rc_inrange(), False)
 
     def test_set_rc_not_low_value_for_block_based_on_pv(self):
         # Arrange
@@ -341,7 +342,7 @@ class TestBlockUtils(unittest.TestCase):
         set_rc_values_for_blocks(blocks, runcontrol)
 
         # Assert
-        self.assertEquals(blocks[block_name].get_rc_low(), None)
+        self.assertEqual(blocks[block_name].get_rc_low(), None)
 
     def test_set_rc_values_for_two_blocks_based_on_pv(self):
         # Arrange
@@ -358,8 +359,8 @@ class TestBlockUtils(unittest.TestCase):
         set_rc_values_for_blocks(blocks, runcontrol)
 
         # Assert
-        self.assertEquals(blocks[new_block_name].get_rc_low(), 10)
-        self.assertEquals(blocks[not_new_block_name].get_rc_low(), 100)
+        self.assertEqual(blocks[new_block_name].get_rc_low(), 10)
+        self.assertEqual(blocks[not_new_block_name].get_rc_low(), 100)
 
     def test_set_rc_values_for_one_blocks_based_on_pv_leaves_other_unchanged(self):
         # Arrange
@@ -375,8 +376,8 @@ class TestBlockUtils(unittest.TestCase):
         set_rc_values_for_blocks(blocks, runcontrol)
 
         # Assert
-        self.assertEquals(blocks[new_block_name].get_rc_low(), 10)
-        self.assertEquals(blocks[not_new_block_name].get_rc_low(), None)
+        self.assertEqual(blocks[new_block_name].get_rc_low(), 10)
+        self.assertEqual(blocks[not_new_block_name].get_rc_low(), None)
 
     def test_set_rc_values_for_leaves_both_unchanged(self):
         # Arrange
@@ -392,14 +393,14 @@ class TestBlockUtils(unittest.TestCase):
         set_rc_values_for_blocks(blocks, {})
 
         # Assert
-        self.assertEquals(blocks[block1_name].get_rc_low(), None)
-        self.assertEquals(blocks[block2_name].get_rc_low(), None)
+        self.assertEqual(blocks[block1_name].get_rc_low(), None)
+        self.assertEqual(blocks[block2_name].get_rc_low(), None)
 
     def test_set_rc_values_with_empty_block_list(self):
         # Act
         try:
             set_rc_values_for_blocks({}, {})
-        except Exception, e:
+        except Exception as e:
             self.fail("set_rc_values_for_blocks should handle empty block list")
 
     def _assert_blocks(self, actual_blocks, expected_blocks):
@@ -538,7 +539,6 @@ class FormatBlockValueTests(unittest.TestCase):
         value = "12.345"
 
         self.assertEqual(format_block_value(value, precision), value)
-
 
 
 if __name__ == '__main__':
