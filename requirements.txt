@@ -1,0 +1,7 @@
+future
+mock
+PyHamcrest
+pyreadline
+requests
+unittest-xml-reporting
+CaChannel
