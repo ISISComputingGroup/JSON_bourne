@@ -20,8 +20,9 @@ def shorten_title(title):
     """
     title_parts = title.split(':')
     rc_values = ["HIGH.VAL", "LOW.VAL", "INRANGE.VAL", "ENABLE.VAL"]
-
     if "RC" in title_parts and title_parts[-1] in rc_values:
+        return ':'.join(title_parts[-3:])
+    elif "DASHBOARD" in title_parts:
         return ':'.join(title_parts[-3:])
     else:
         return title_parts[-1]

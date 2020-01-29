@@ -41,6 +41,19 @@ dictInstPV = {
 	SIM_MODE: 'DAE Simulation mode'
 };
 
+dictLongerInstPVs = {
+    "1:1:LABEL" : "1:1:VALUE",
+    "2:1:LABEL" : "2:1:VALUE",
+    "3:1:LABEL" : "3:1:VALUE",
+    "1:2:LABEL" : "1:2:VALUE",
+    "2:2:LABEL" : "2:2:VALUE",
+    "3:2:LABEL" : "3:2:VALUE",
+    "BANNER:MIDDLE:LABEL" : "BANNER:MIDDLE:VALUE",
+    "BANNER:RIGHT:LABEL"  : "BANNER:RIGHT:VALUE",
+    "BANNER:LEFT:LABEL"   : "BANNER:LEFT:VALUE",
+}
+
+
 /**
  * Gets the proper display title for a PV.
  *
@@ -185,21 +198,36 @@ function createTitle(inst_details){
 	blockListClass.value = "text-center";
 	title.setAttributeNode(blockListClass);
 	document.getElementById("inst_name").appendChild(title);
-
 	addItemToTable("Title", inst_details["inst_pvs"]["TITLE"]["value"]);
 	addItemToTable("Users", inst_details["inst_pvs"]["_USERNAME"]["value"]);
 
 	newPartOfTable();
+    try {
+        // after upgrade script
+        addItemToTable(inst_details["inst_pvs"]["1:1:LABEL"]["value"], inst_details["inst_pvs"]["1:1:VALUE"]["value"]);
+        addItemToTable(inst_details["inst_pvs"]["2:1:LABEL"]["value"], inst_details["inst_pvs"]["2:1:VALUE"]["value"]);
+        addItemToTable(inst_details["inst_pvs"]["3:1:LABEL"]["value"], inst_details["inst_pvs"]["3:1:VALUE"]["value"]);
 
-	addItemToTable("Good / Raw Frames", inst_details["inst_pvs"]["GOODFRAMES"]["value"]+"/"+inst_details["inst_pvs"]["RAWFRAMES"]["value"]);
-	addItemToTable("Current / Total", inst_details["inst_pvs"]["BEAMCURRENT"]["value"]+"/"+inst_details["inst_pvs"]["TOTALUAMPS"]["value"]);
-	addItemToTable("Monitor Counts", inst_details["inst_pvs"]["MONITORCOUNTS"]["value"]);
+        newPartOfTable();
 
-	newPartOfTable();
+        addItemToTable(inst_details["inst_pvs"]["2:2:LABEL"]["value"], inst_details["inst_pvs"]["2:2:VALUE"]["value"]);
+        addItemToTable(inst_details["inst_pvs"]["1:2:LABEL"]["value"], inst_details["inst_pvs"]["1:2:VALUE"]["value"]);
+        addItemToTable(inst_details["inst_pvs"]["3:2:LABEL"]["value"], inst_details["inst_pvs"]["3:2:VALUE"]["value"]);
+    } catch(err) {
+        // before upgrade script
 
-	addItemToTable("Start Time", inst_details["inst_pvs"]["STARTTIME"]["value"]);
-	addItemToTable("Run Time", inst_details["inst_pvs"]["RUNDURATION_PD"]["value"]);
-	addItemToTable("Period", inst_details["inst_pvs"]["PERIOD"]["value"]+"/"+inst_details["inst_pvs"]["NUMPERIODS"]["value"]);
+        addItemToTable("Good / Raw Frames", inst_details["inst_pvs"]["GOODFRAMES"]["value"]+"/"+inst_details["inst_pvs"]["RAWFRAMES"]["value"]);
+        addItemToTable("Current / Total", inst_details["inst_pvs"]["BEAMCURRENT"]["value"]+"/"+inst_details["inst_pvs"]["TOTALUAMPS"]["value"]);
+        addItemToTable("Monitor Counts", inst_details["inst_pvs"]["MONITORCOUNTS"]["value"]);
+
+        newPartOfTable();
+
+        addItemToTable("Start Time", inst_details["inst_pvs"]["STARTTIME"]["value"]);
+        addItemToTable("Run Time", inst_details["inst_pvs"]["RUNDURATION_PD"]["value"]);
+        addItemToTable("Period", inst_details["inst_pvs"]["PERIOD"]["value"]+"/"+inst_details["inst_pvs"]["NUMPERIODS"]["value"]);
+
+    }
+
 
 }
 
@@ -237,8 +265,10 @@ function newPartOfTable(){
   *	Add an item to the table in the top bar.
   */
 function addItemToTable(name, value) {
+    var splitter = " "
+    if (name.slice(-1) != ":") splitter = ": ";
 	var elem = document.createElement("h4");
-	var textnode = document.createTextNode(name + ": " + value);
+	var textnode = document.createTextNode(name + splitter + value);
 	elem.appendChild(textnode)
 	document.getElementById("next_part").appendChild(elem);
 }
@@ -353,12 +383,20 @@ function displayOneBlock(node, block, blockName) {
  * @return The updated node.
  */
 function getDisplayBlocks(node, blocks) {
+    var ignore_pvs = ["1:1:VALUE", "2:1:VALUE", "3:1:VALUE", "1:2:VALUE", "2:2:VALUE", "3:2:VALUE", "BANNER:RIGHT:VALUE", "BANNER:LEFT:VALUE", "BANNER:MIDDLE:VALUE"];
     for (var key in blocks) {
-        var block = blocks[key];
-        displayOneBlock(node, block, key);
+        if (key in dictLongerInstPVs) {
+            var block = blocks[key];
+            var label = block["value"] == "" ? "N/A" : block["value"].slice(0,-1);
+            displayOneBlock(node, blocks[dictLongerInstPVs[key]], label);
+        } else if (ignore_pvs.includes(key)) {
+            // Do nothing
+        } else {
+            var block = blocks[key];
+            displayOneBlock(node, block, key);
+        }
     }
-
-	return node;
+    return node;
 }
 
 /**
