@@ -1,5 +1,5 @@
 setlocal
-@echo off
+@echo on
 REM It only takes two or three minutes to do a full install, so for simplicity we do that.
 REM it is installed using xcopy /d, so if it hasn't changed then it doesn't do anything.
 
