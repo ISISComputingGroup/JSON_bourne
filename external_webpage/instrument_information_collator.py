@@ -143,7 +143,12 @@ class InstrumentInformationCollator(object):
                         "RAWFRAMES", "RAWFRAMES_PD", "PERIOD", "NUMPERIODS", "PERIODSEQ", "BEAMCURRENT", "TOTALUAMPS",
                         "COUNTRATE", "DAEMEMORYUSED", "TOTALCOUNTS", "DAETIMINGSOURCE", "MONITORCOUNTS",
                         "MONITORSPECTRUM", "MONITORFROM", "MONITORTO", "NUMTIMECHANNELS", "NUMSPECTRA", "SHUTTER",
-                        "SIM_MODE"]
+                        "SIM_MODE", "BANNER:RIGHT:LABEL", "BANNER:MIDDLE:LABEL", "BANNER:LEFT:LABEL",
+                        "1:1:LABEL", "2:1:LABEL", "3:1:LABEL", "1:2:LABEL", "2:2:LABEL", "3:2:LABEL",
+                        "BANNER:LEFT:LABEL", "BANNER:MIDDLE:LABEL", "BANNER:RIGHT:LABEL", "1:1:VALUE", "2:1:VALUE",
+                        "3:1:VALUE", "1:2:VALUE", "2:2:VALUE", "3:2:VALUE", "BANNER:LEFT:VALUE",
+                        "BANNER:MIDDLE:VALUE", "BANNER:RIGHT:VALUE"]
+
 
         for pv in required_pvs:
             if pv + ".VAL" in instrument_archive_blocks:
@@ -201,7 +206,6 @@ class InstrumentInformationCollator(object):
         instrument_config = InstrumentConfig(self.reader.read_config())
 
         try:
-
             # read blocks
             json_from_blocks_archive = self.reader.get_json_from_blocks_archive()
             blocks = self.web_page_parser.extract_blocks(json_from_blocks_archive)
