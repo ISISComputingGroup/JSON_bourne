@@ -37,8 +37,8 @@ class MyHandler(BaseHTTPRequestHandler):
         try:
             instrument, callback = get_instrument_and_callback(self.path)
 
-            # Warn level so as to avoid many log messages that come from other modules
-            logger.warning("Connected to from " + str(self.client_address) + " looking at " + str(instrument))
+            # Debug is only needed when debugging
+            logger.debug("Connection from " + str(self.client_address) + " looking at " + str(instrument))
 
             with scraped_data_lock:
                 if instrument == "ALL":
