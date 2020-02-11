@@ -34,6 +34,7 @@ class MyHandler(BaseHTTPRequestHandler):
         This is called by BaseHTTPRequestHandler every time a client does a GET.
         The response is written to self.wfile
         """
+        instrument = "Not set"
         try:
             instrument, callback = get_instrument_and_callback(self.path)
 
@@ -61,11 +62,13 @@ class MyHandler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(response.encode("utf-8"))
         except ValueError as e:
-            logger.error(e)
+            logger.exception("Value Error when getting data from {} for {}: {}".format(
+                self.client_address, instrument, e))
             self.send_response(400)
         except Exception as e:
+            logger.exception("Exception when getting data from {} for {}: {}".format(
+                self.client_address, instrument, e))
             self.send_response(404)
-            logger.error(e)
 
     def log_message(self, format, *args):
         """ By overriding this method and doing nothing we disable writing to console
