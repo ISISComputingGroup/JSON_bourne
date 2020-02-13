@@ -31,6 +31,9 @@ PORT_BLOCKS = 4813
 # Port for configuration
 PORT_CONFIG = 8008
 
+# Timeout for url get
+URL_GET_TIMEOUT = 60
+
 
 class DataSourceReader(object):
     """
@@ -86,7 +89,7 @@ class DataSourceReader(object):
         url = 'http://{host}:{port}/group?name={group_name}&format=json'.format(
             host=self._host, port=port, group_name=group_name)
         try:
-            page = requests.get(url)
+            page = requests.get(url, timeout=URL_GET_TIMEOUT)
             return page.json()
         except Exception as e:
             logger.error("URL not found or json not understood: " + str(url))
@@ -101,7 +104,7 @@ class DataSourceReader(object):
         """
 
         # read config
-        page = requests.get('http://{}:{}/'.format(self._host, PORT_CONFIG))
+        page = requests.get('http://{}:{}/'.format(self._host, PORT_CONFIG), timeout=URL_GET_TIMEOUT)
         content = page.content.decode("utf-8")
         corrected_page = content.replace("'", '"')\
             .replace("None", "null")\
