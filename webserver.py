@@ -42,7 +42,7 @@ class MyHandler(tornado.web.RequestHandler):
             instrument, callback = get_instrument_and_callback(path)
 
             # Debug is only needed when debugging
-            logger.debug("Connection from " + "str(self.client_address)" + " looking at " + str(instrument))
+            logger.debug("Connection from " + self.request.remote_ip + " looking at " + str(instrument))
 
             with scraped_data_lock:
                 if instrument == "ALL":
@@ -65,11 +65,11 @@ class MyHandler(tornado.web.RequestHandler):
             self.write(response.encode("utf-8"))
         except ValueError as e:
             logger.exception("Value Error when getting data from {} for {}: {}".format(
-                "self.client_address", instrument, e))
+                self.request.remote_ip, instrument, e))
             self.set_status(400)
         except Exception as e:
             logger.exception("Exception when getting data from {} for {}: {}".format(
-                "self.client_address", instrument, e))
+                self.request.remote_ip, instrument, e))
             self.set_status(404)
 
     def log_message(self, format, *args):
