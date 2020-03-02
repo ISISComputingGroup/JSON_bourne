@@ -42,7 +42,7 @@ class MyHandler(tornado.web.RequestHandler):
             instrument, callback = get_instrument_and_callback(path)
 
             # Debug is only needed when debugging
-            logger.info("Connection from {} looking at {}".format(self.request.remote_ip, instrument))
+            logger.debug("Connection from {} looking at {}".format(self.request.remote_ip, instrument))
 
             with scraped_data_lock:
                 if instrument == "ALL":
