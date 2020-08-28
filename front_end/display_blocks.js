@@ -313,7 +313,7 @@ function getDisplayGroups(node, groups) {
         var nodeBlockList = document.createElement("UL");
 
         var blocks = instrumentState.groups[key];
-        var displayBlocks = getDisplayBlocks(nodeBlockList, blocks);
+        var displayBlocks = getDisplayBlocks(nodeBlockList, blocks, true);
 
         // Do not display empty groups
         if (displayBlocks.childElementCount != 0) {
@@ -338,9 +338,10 @@ function getDisplayGroups(node, groups) {
  * @param node The parent node.
  * @param block The block to add.
  * @param blockName The name of the block to display.
+ * @param linkGraph link to block history graph.
  * @return The updated node.
  */
-function displayOneBlock(node, block, blockName) {
+function displayOneBlock(node, block, blockName, linkGraph) {
     if(block["visibility"] == false && !showHidden){
         return;
     }
@@ -352,17 +353,26 @@ function displayOneBlock(node, block, blockName) {
     var rc_inrange = block["rc_inrange"];
     var rc_enabled = block["rc_enabled"];
     var nodeBlock = document.createElement("LI");
-    var nodeBlockText = document.createTextNode(blockName + ":\u00A0\u00A0");
+    var nodeBlockNameText = document.createTextNode(blockName + ":\u00A0\u00A0");
 
-    // write block name
-    nodeBlock.appendChild(nodeBlockText);
+    if (linkGraph) {
+        var linkBlock = document.createElement("a");
+        linkBlock.target = "_blank";
+        linkBlock.href = "https://shadow.nd.rl.ac.uk/grafana/d/wMlwwaHMk/block-history?viewPanel=2&orgId=1&var-block=" +
+                         blockName + "&var-inst=" + instrument.toUpperCase();
+        linkBlock.appendChild(nodeBlockNameText);
+        nodeBlock.appendChild(linkBlock);
+    } else {
+        nodeBlock.appendChild(nodeBlockNameText);
+    }
 
     // write status if disconnected
     if (status_text == "Disconnected") {
-	    writeStatus(nodeBlock, status_text);
+        writeStatus(nodeBlock, status_text);
     // write value, range info & alarms
     } else {
-        nodeBlockText.nodeValue += value + "\u00A0\u00A0";
+        nodeBlockValueText = document.createTextNode(value + ":\u00A0\u00A0");
+        nodeBlock.appendChild(nodeBlockValueText);
         // write range information about the PV
         if (rc_enabled === "YES" && (rc_inrange === "YES" || rc_inrange === "NO")) {
             writeRangeInfo(nodeBlock, rc_inrange);
@@ -380,20 +390,21 @@ function displayOneBlock(node, block, blockName) {
  *
  * @param node The parent node.
  * @param blocks The list of block objects to display.
+ * @param linkGraph link to history graph.
  * @return The updated node.
  */
-function getDisplayBlocks(node, blocks) {
+function getDisplayBlocks(node, blocks, linkGraph) {
     var ignore_pvs = ["1:1:VALUE", "2:1:VALUE", "3:1:VALUE", "1:2:VALUE", "2:2:VALUE", "3:2:VALUE", "BANNER:RIGHT:VALUE", "BANNER:LEFT:VALUE", "BANNER:MIDDLE:VALUE"];
     for (var key in blocks) {
         if (key in dictLongerInstPVs) {
             var block = blocks[key];
             var label = block["value"] == "" ? "N/A" : block["value"].slice(0,-1);
-            displayOneBlock(node, blocks[dictLongerInstPVs[key]], label);
+            displayOneBlock(node, blocks[dictLongerInstPVs[key]], label, linkGraph);
         } else if (ignore_pvs.includes(key)) {
             // Do nothing
         } else {
             var block = blocks[key];
-            displayOneBlock(node, block, key);
+            displayOneBlock(node, block, key, linkGraph);
         }
     }
     return node;
@@ -412,13 +423,13 @@ function getDisplayRunInfo(node, blocks){
     for (var key in dictInstPV) {
         if (key in blocks) {
             var block = blocks[key];
-            displayOneBlock(node, block, getTitle(key));
+            displayOneBlock(node, block, getTitle(key), false);
             delete blocks[key]
         }
     }
 
     // Add any left over on to the end
-    getDisplayBlocks(node, blocks);
+    getDisplayBlocks(node, blocks, false);
 }
 
 function writeStatus(nodeBlock, status_text) {
