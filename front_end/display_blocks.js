@@ -400,7 +400,7 @@ function getDisplayBlocks(node, blocks, linkGraph) {
             var block = blocks[key];
             var label = block["value"] == "" ? "N/A" : block["value"].slice(0,-1);
             displayOneBlock(node, blocks[dictLongerInstPVs[key]], label, linkGraph);
-        } else if (ignore_pvs.includes(key)) {
+        } else if (key in ignore_pvs) {
             // Do nothing
         } else {
             var block = blocks[key];
