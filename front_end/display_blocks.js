@@ -359,7 +359,7 @@ function displayOneBlock(node, block, blockName, linkGraph) {
         var linkBlock = document.createElement("a");
         linkBlock.target = "_blank";
         linkBlock.href = "https://shadow.nd.rl.ac.uk/grafana/d/wMlwwaHMk/block-history?viewPanel=2&orgId=1&var-block=" +
-                         blockName + "&var-inst=" + instrument.toUpperCase();
+                         blockName + "&var-inst=" + instrument.toUpperCase().replace(/-/g, "_");
         linkBlock.appendChild(nodeBlockNameText);
         nodeBlock.appendChild(linkBlock);
     } else {
@@ -400,7 +400,7 @@ function getDisplayBlocks(node, blocks, linkGraph) {
             var block = blocks[key];
             var label = block["value"] == "" ? "N/A" : block["value"].slice(0,-1);
             displayOneBlock(node, blocks[dictLongerInstPVs[key]], label, linkGraph);
-        } else if (key in ignore_pvs) {
+        } else if (ignore_pvs.indexOf(key) >= 0) {
             // Do nothing
         } else {
             var block = blocks[key];
