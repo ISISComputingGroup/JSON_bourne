@@ -53,9 +53,6 @@ dictLongerInstPVs = {
     "BANNER:LEFT:LABEL"   : "BANNER:LEFT:VALUE",
 }
 
-instHiddenAlarms = {
-    "emu" : [dictInstPV.BEAMCURRENT, dictInstPV.TOTALUAMPS, dictInstPV.SIM_MODE]
-}
 
 /**
  * Gets the proper display title for a PV.
@@ -380,13 +377,9 @@ function displayOneBlock(node, block, blockName, linkGraph) {
         if (rc_enabled === "YES" && (rc_inrange === "YES" || rc_inrange === "NO")) {
             writeRangeInfo(nodeBlock, rc_inrange);
         }
-        
-        // if instrument does not have alarms set to hidden for this block
-        if (typeof instHiddenAlarms[instrument] === "undefined" || !instHiddenAlarms[instrument].includes(blockName)) {
-            // write alarm status if active
-            if (!alarm.startsWith("null") && alarm !== "") {
-                writeAlarmInfo(nodeBlock, alarm);
-            }
+        // write alarm status if active
+        if (!alarm.startsWith("null") && alarm !== "") {
+            writeAlarmInfo(nodeBlock, alarm);
         }
     }
     node.appendChild(nodeBlock);
@@ -405,10 +398,8 @@ function getDisplayBlocks(node, blocks, linkGraph) {
     for (var key in blocks) {
         if (key in dictLongerInstPVs) {
             var block = blocks[key];
-            if (block["value"] != "") {
-                var label = block["value"].slice(0, -1);
-                displayOneBlock(node, blocks[dictLongerInstPVs[key]], label, linkGraph);
-            }  
+            var label = block["value"] == "" ? "N/A" : block["value"].slice(0,-1);
+            displayOneBlock(node, blocks[dictLongerInstPVs[key]], label, linkGraph);
         } else if (ignore_pvs.indexOf(key) >= 0) {
             // Do nothing
         } else {
