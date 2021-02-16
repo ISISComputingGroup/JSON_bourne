@@ -12,8 +12,6 @@ dictInstPV = {
     RUNSTATE: 'Run Status',
     RUNNUMBER: 'Run Number',
     _RBNUMBER: 'RB Number',
-    _USERNAME: 'User(s)',
-    TITLE: 'Title',
     TITLEDISP: 'Show Title',
     STARTTIME: 'Start Time',
     RUNDURATION: 'Total Run Time',
@@ -22,22 +20,16 @@ dictInstPV = {
     GOODFRAMES_PD: 'Good Frames (Period)',
     RAWFRAMES: 'Raw Frames (Total)',
     RAWFRAMES_PD: 'Raw Frames (Period)',
-    PERIOD: 'Current Period',
-    NUMPERIODS: 'Number of Periods',
     PERIODSEQ: 'Period Sequence',
-    BEAMCURRENT: 'Beam Current',
-    TOTALUAMPS: 'Total Uamps',
     COUNTRATE: 'Count Rate',
     DAEMEMORYUSED: 'DAE Memory Used',
     TOTALCOUNTS: 'Total DAE Counts',
     DAETIMINGSOURCE: 'DAE Timing Source',
-    MONITORCOUNTS: 'Monitor Counts',
     MONITORSPECTRUM: 'Monitor Spectrum',
     MONITORFROM: 'Monitor From',
     MONITORTO: 'Monitor To',
     NUMTIMECHANNELS: 'Number of Time Channels',
     NUMSPECTRA: 'Number of Spectra',
-	SHUTTER: 'Shutter Status',
 	SIM_MODE: 'DAE Simulation mode'
 };
 
@@ -386,7 +378,7 @@ function displayOneBlock(node, block, blockName, linkGraph) {
 }
 
 /**
- * Adds html elements for a list of block objects to a given node.
+ * Adds html elements from a list of block objects to a given node.
  *
  * @param node The parent node.
  * @param blocks The list of block objects to display.
@@ -394,12 +386,21 @@ function displayOneBlock(node, block, blockName, linkGraph) {
  * @return The updated node.
  */
 function getDisplayBlocks(node, blocks, linkGraph) {
-    var ignore_pvs = ["1:1:VALUE", "2:1:VALUE", "3:1:VALUE", "1:2:VALUE", "2:2:VALUE", "3:2:VALUE", "BANNER:RIGHT:VALUE", "BANNER:LEFT:VALUE", "BANNER:MIDDLE:VALUE"];
+    ignore_pvs = [
+        "1:1:VALUE", "2:1:VALUE", "3:1:VALUE", "1:2:VALUE", "2:2:VALUE", "3:2:VALUE", "BANNER:RIGHT:VALUE", "BANNER:LEFT:VALUE", "BANNER:MIDDLE:VALUE", 
+        "BEAMCURRENT", "PERIOD", "NUMPERIODS", "TOTALUAMPS", "MONITORCOUNTS", "SHUTTER", "_USERNAME", "TITLE"
+    ];
+    
     for (var key in blocks) {
+        if (key in dictInstPV) {
+            continue
+        }
         if (key in dictLongerInstPVs) {
             var block = blocks[key];
-            var label = block["value"] == "" ? "N/A" : block["value"].slice(0,-1);
-            displayOneBlock(node, blocks[dictLongerInstPVs[key]], label, linkGraph);
+            if (block["value"] != "") {
+                var label = block["value"].slice(0, -1);
+                displayOneBlock(node, blocks[dictLongerInstPVs[key]], label, linkGraph);
+            }
         } else if (ignore_pvs.indexOf(key) >= 0) {
             // Do nothing
         } else {
@@ -419,17 +420,17 @@ function getDisplayBlocks(node, blocks, linkGraph) {
  */
 function getDisplayRunInfo(node, blocks){
     clear(node)
-    // Add all in order first
+
+    // Add variable parameters at the top of the list
+    getDisplayBlocks(node, blocks, false);
+
+    // Add the fixed parameters
     for (var key in dictInstPV) {
         if (key in blocks) {
             var block = blocks[key];
             displayOneBlock(node, block, getTitle(key), false);
-            delete blocks[key]
         }
     }
-
-    // Add any left over on to the end
-    getDisplayBlocks(node, blocks, false);
 }
 
 function writeStatus(nodeBlock, status_text) {
