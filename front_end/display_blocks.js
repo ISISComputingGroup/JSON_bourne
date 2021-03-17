@@ -8,10 +8,15 @@ var instrumentState;
 var showHidden;
 var timeout = 4000;
 
-dictInstPV = {
+dictDisplayFirstInstPVs = {
     RUNSTATE: 'Run Status',
     RUNNUMBER: 'Run Number',
     _RBNUMBER: 'RB Number',
+    _USERNAME: 'User(s)',
+    TITLE: 'Title'
+}
+
+dictInstPV = {
     TITLEDISP: 'Show Title',
     STARTTIME: 'Start Time',
     RUNDURATION: 'Total Run Time',
@@ -55,6 +60,8 @@ dictLongerInstPVs = {
 function getTitle(title) {
     if (title in dictInstPV){
         return dictInstPV[title];
+    } else if (title in dictDisplayFirstInstPVs) {
+        return dictDisplayFirstInstPVs[title];
     }
     return title;
 }
@@ -388,7 +395,7 @@ function displayOneBlock(node, block, blockName, linkGraph) {
 function getDisplayBlocks(node, blocks, linkGraph) {
     ignore_pvs = [
         "1:1:VALUE", "2:1:VALUE", "3:1:VALUE", "1:2:VALUE", "2:2:VALUE", "3:2:VALUE", "BANNER:RIGHT:VALUE", "BANNER:LEFT:VALUE", "BANNER:MIDDLE:VALUE", 
-        "BEAMCURRENT", "PERIOD", "NUMPERIODS", "TOTALUAMPS", "MONITORCOUNTS", "SHUTTER", "_USERNAME", "TITLE"
+        "BEAMCURRENT", "PERIOD", "NUMPERIODS", "TOTALUAMPS", "MONITORCOUNTS", "SHUTTER", "RUNSTATE", "RUNNUMBER", "_RBNUMBER", "_USERNAME", "TITLE"
     ];
     
     for (var key in blocks) {
@@ -421,10 +428,18 @@ function getDisplayBlocks(node, blocks, linkGraph) {
 function getDisplayRunInfo(node, blocks){
     clear(node)
 
-    // Add variable parameters at the top of the list
+    // Add display-first fixed parameters to the top of the list
+    for (var key in dictDisplayFirstInstPVs) {
+        if (key in blocks) {
+            var block = blocks[key];
+            displayOneBlock(node, block, getTitle(key), false);
+        }
+    }
+
+    // Add variable parameters
     getDisplayBlocks(node, blocks, false);
 
-    // Add the fixed parameters
+    // Add the rest of the fixed parameters
     for (var key in dictInstPV) {
         if (key in blocks) {
             var block = blocks[key];
