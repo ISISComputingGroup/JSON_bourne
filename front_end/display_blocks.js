@@ -1,5 +1,6 @@
 var PORT = 60000;
 var HOST = "http://dataweb.isis.rl.ac.uk"
+var DEFAULT_PV_VALUE = "UNKNOWN";
 
 var instrument = getURLParameter("Instrument");
 var nodeInstTitle = document.createElement("H2");
@@ -177,6 +178,10 @@ function clearBox(elementID){
     document.getElementById(elementID).innerHTML = "";
 }
 
+function get_inst_pv_value(inst_details, pv) {
+    return inst_details["inst_pvs"][pv]["value"] || DEFAULT_PV_VALUE;
+}
+
 /**
  * creates a Title at the top looking similar to the IBEX GUI
  */
@@ -184,7 +189,7 @@ function createTitle(inst_details){
 	clearBox("top_bar");
   document.body.style.padding = '20px'
 	document.getElementById("top_bar").innerHTML = "<div id = \"inst_name\"></div><table style=\"width:100%\"><tr id = table_part><th id = \"next_part\" style = \"padding: 10px; width:33%; background-color:lightgrey ; border: black 2px solid\";></th></tr></table>";
-	runStatus = inst_details["inst_pvs"]["RUNSTATE"]["value"];
+	runStatus = get_inst_pv_value(inst_details, "RUNSTATE");
 
 	colour = getColourFromRunState(runStatus);
 
@@ -197,33 +202,33 @@ function createTitle(inst_details){
 	blockListClass.value = "text-center";
 	title.setAttributeNode(blockListClass);
 	document.getElementById("inst_name").appendChild(title);
-	addItemToTable("Title", inst_details["inst_pvs"]["TITLE"]["value"]);
-	addItemToTable("Users", inst_details["inst_pvs"]["_USERNAME"]["value"]);
+	addItemToTable("Title", get_inst_pv_value(inst_details, "TITLE"));
+	addItemToTable("Users", get_inst_pv_value(inst_details, "_USERNAME"));
 
 	newPartOfTable();
     try {
         // after upgrade script
-        addItemToTable(inst_details["inst_pvs"]["1:1:LABEL"]["value"], inst_details["inst_pvs"]["1:1:VALUE"]["value"]);
-        addItemToTable(inst_details["inst_pvs"]["2:1:LABEL"]["value"], inst_details["inst_pvs"]["2:1:VALUE"]["value"]);
-        addItemToTable(inst_details["inst_pvs"]["3:1:LABEL"]["value"], inst_details["inst_pvs"]["3:1:VALUE"]["value"]);
+        addItemToTable(get_inst_pv_value(inst_details, "1:1:LABEL"), get_inst_pv_value(inst_details, "1:1:VALUE"));
+        addItemToTable(get_inst_pv_value(inst_details, "2:1:LABEL"), get_inst_pv_value(inst_details, "2:1:VALUE"));
+        addItemToTable(get_inst_pv_value(inst_details, "3:1:LABEL"), get_inst_pv_value(inst_details, "3:1:VALUE"));
 
         newPartOfTable();
 
-        addItemToTable(inst_details["inst_pvs"]["2:2:LABEL"]["value"], inst_details["inst_pvs"]["2:2:VALUE"]["value"]);
-        addItemToTable(inst_details["inst_pvs"]["1:2:LABEL"]["value"], inst_details["inst_pvs"]["1:2:VALUE"]["value"]);
-        addItemToTable(inst_details["inst_pvs"]["3:2:LABEL"]["value"], inst_details["inst_pvs"]["3:2:VALUE"]["value"]);
+        addItemToTable(get_inst_pv_value(inst_details, "2:2:LABEL"), get_inst_pv_value(inst_details, "2:2:VALUE"));
+        addItemToTable(get_inst_pv_value(inst_details, "1:2:LABEL"), get_inst_pv_value(inst_details, "1:2:VALUE"));
+        addItemToTable(get_inst_pv_value(inst_details, "3:2:LABEL"), get_inst_pv_value(inst_details, "3:2:VALUE"));
     } catch(err) {
         // before upgrade script
 
-        addItemToTable("Good / Raw Frames", inst_details["inst_pvs"]["GOODFRAMES"]["value"]+"/"+inst_details["inst_pvs"]["RAWFRAMES"]["value"]);
-        addItemToTable("Current / Total", inst_details["inst_pvs"]["BEAMCURRENT"]["value"]+"/"+inst_details["inst_pvs"]["TOTALUAMPS"]["value"]);
-        addItemToTable("Monitor Counts", inst_details["inst_pvs"]["MONITORCOUNTS"]["value"]);
+        addItemToTable("Good / Raw Frames", get_inst_pv_value(inst_details, "GOODFRAMES")+"/"+get_inst_pv_value(inst_details, "RAWFRAMES"));
+        addItemToTable("Current / Total", get_inst_pv_value(inst_details, "BEAMCURRENT")+"/"+get_inst_pv_value(inst_details, "TOTALUAMPS"));
+        addItemToTable("Monitor Counts", get_inst_pv_value(inst_details, "MONITORCOUNTS"));
 
         newPartOfTable();
 
-        addItemToTable("Start Time", inst_details["inst_pvs"]["STARTTIME"]["value"]);
-        addItemToTable("Run Time", inst_details["inst_pvs"]["RUNDURATION_PD"]["value"]);
-        addItemToTable("Period", inst_details["inst_pvs"]["PERIOD"]["value"]+"/"+inst_details["inst_pvs"]["NUMPERIODS"]["value"]);
+        addItemToTable("Start Time", get_inst_pv_value(inst_details, "STARTTIME"));
+        addItemToTable("Run Time", get_inst_pv_value(inst_details, "RUNDURATION_PD"));
+        addItemToTable("Period", get_inst_pv_value(inst_details, "PERIOD")+"/"+get_inst_pv_value(inst_details, "NUMPERIODS"));
 
     }
 
