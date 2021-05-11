@@ -213,14 +213,18 @@ class InstrumentInformationCollator(object):
             json_from_dataweb_archive = self.reader.get_json_from_dataweb_archive()
             dataweb_blocks = self.web_page_parser.extract_blocks(json_from_dataweb_archive)
 
+        except Exception as e:
+            logger.error("Failed to read blocks: " + str(e))
+            raise e
+        
+        try:
             json_from_instrument_archive = self.reader.get_json_from_instrument_archive()
             instrument_blocks = self.web_page_parser.extract_blocks(json_from_instrument_archive)
 
             inst_pvs = format_blocks(self._get_inst_pvs(instrument_blocks))
-
         except Exception as e:
-            logger.error("Failed to read blocks: " + str(e))
-            raise e
+            logger.error("Failed to read inst pvs: " + str(e))
+            inst_pvs = {}
 
         try:
             set_rc_values_for_blocks(blocks, dataweb_blocks)

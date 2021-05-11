@@ -179,7 +179,11 @@ function clearBox(elementID){
 }
 
 function get_inst_pv_value(inst_details, pv) {
-    return inst_details["inst_pvs"][pv]["value"] || DEFAULT_PV_VALUE;
+    try {
+        return inst_details["inst_pvs"][pv]["value"] || DEFAULT_PV_VALUE;
+    } catch(err) {
+        return DEFAULT_PV_VALUE;
+    }
 }
 
 /**
