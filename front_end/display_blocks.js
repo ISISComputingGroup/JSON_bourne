@@ -1,5 +1,5 @@
 var PORT = 60000;
-var HOST = "http://dataweb.isis.rl.ac.uk"
+var HOST = "http://localhost"
 var DEFAULT_PV_VALUE = "UNKNOWN";
 
 var instrument = getURLParameter("Instrument");
@@ -147,6 +147,27 @@ function refresh() {
 }
 
 /**
+ * Build the error status list from the given error statuses.
+ */
+function buildErrorStatusList(errorStatuses) {
+    nodeErrorStatusList = document.createElement("UL");
+    for (var statusIndex in errorStatuses) {
+        var status = errorStatuses[statusIndex];
+        buildErrorStatusListElement(status, nodeErrorStatusList)
+    }
+    nodeErrorStatus.appendChild(nodeErrorStatusList);
+}
+
+/**
+ * Build an error status list element and add it to the node given.
+ */
+function buildErrorStatusListElement(errorStatus, nodeErrorStatusList) {
+    nodeErrorStatusListELement = document.createElement("LI");
+    nodeErrorStatusListELement.appendChild(document.createTextNode(errorStatus));
+    nodeErrorStatusList.appendChild(nodeErrorStatusListELement);
+}
+
+/**
  * Parses error statuses and displays them.
  */
 function setErrorStatus(instrumentState) {
@@ -154,14 +175,7 @@ function setErrorStatus(instrumentState) {
     if (instrumentState.error_statuses.length > 0) {
         var textNode = "Problems were encountered when retrieving data from the instrument:";
         nodeErrorStatus.appendChild(document.createTextNode(textNode));
-        nodeErrorStatusList = document.createElement("UL");
-        for (var statusIndex in instrumentState.error_statuses) {
-            var status = instrumentState.error_statuses[statusIndex];
-            nodeErrorStatusListELement = document.createElement("LI");
-            nodeErrorStatusListELement.appendChild(document.createTextNode(status));
-            nodeErrorStatusList.appendChild(nodeErrorStatusListELement);
-        }
-        nodeErrorStatus.appendChild(nodeErrorStatusList);
+        buildErrorStatusList(instrumentState.error_statuses);
         document.getElementById("error_status").appendChild(nodeErrorStatus);        
     }
 }
