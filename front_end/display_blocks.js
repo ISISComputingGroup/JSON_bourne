@@ -5,6 +5,8 @@ var DEFAULT_PV_VALUE = "UNKNOWN";
 var instrument = getURLParameter("Instrument");
 var nodeInstTitle = document.createElement("H2");
 var nodeConfigTitle = document.createElement("H2");
+var nodeErrorStatus = document.createElement("H3");
+nodeErrorStatus.style.color = "RED";
 var instrumentState;
 var showHidden;
 var timeout = 4000;
@@ -145,6 +147,18 @@ function refresh() {
 }
 
 /**
+ * Parses error statuses and displays them.
+ */
+function setErrorStatus(instrumentState) {
+    clear(nodeErrorStatus);
+    if (instrumentState.error_statuses.length > 0) {
+        var textNode = instrumentState.error_statuses.join(", ") + ". Check ibex server is running or contact experiment controls."
+        nodeErrorStatus.appendChild(document.createTextNode(textNode));
+        document.getElementById("error_status").appendChild(nodeErrorStatus);
+    }
+}
+
+/**
  * Parses fetched instrument data into a human-readable html page.
  */
 function parseObject(obj) {
@@ -171,6 +185,9 @@ function parseObject(obj) {
     document.getElementById("config_name").appendChild(nodeConfigTitle);
 
 	setVisibilityMode('block');
+
+    // Write error status
+    setErrorStatus(instrumentState);
 }
 
 
