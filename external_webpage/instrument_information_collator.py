@@ -215,7 +215,7 @@ class InstrumentInformationCollator(object):
             dataweb_blocks = self.web_page_parser.extract_blocks(json_from_dataweb_archive)
 
         except Exception as e:
-            error_string = "Failed to read blocks"
+            error_string = "Failed to read block archiver"
             error_statuses.append(error_string)
             logger.error(f"{error_string}: " + str(e))
             blocks = {}
@@ -227,7 +227,7 @@ class InstrumentInformationCollator(object):
 
             inst_pvs = format_blocks(self._get_inst_pvs(instrument_blocks))
         except Exception as e:
-            error_string = "Failed to read instrument PVs"
+            error_string = "Failed to read instrument archiver"
             error_statuses.append(error_string)
             logger.error(f"{error_string}: " + str(e))
             inst_pvs = {}

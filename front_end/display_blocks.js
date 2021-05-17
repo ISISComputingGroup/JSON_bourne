@@ -152,9 +152,17 @@ function refresh() {
 function setErrorStatus(instrumentState) {
     clear(nodeErrorStatus);
     if (instrumentState.error_statuses.length > 0) {
-        var textNode = instrumentState.error_statuses.join(", ") + ". Check ibex server is running or contact experiment controls."
+        var textNode = "Problems were encountered when retrieving data from the instrument:";
         nodeErrorStatus.appendChild(document.createTextNode(textNode));
-        document.getElementById("error_status").appendChild(nodeErrorStatus);
+        nodeErrorStatusList = document.createElement("UL");
+        for (var statusIndex in instrumentState.error_statuses) {
+            var status = instrumentState.error_statuses[statusIndex];
+            nodeErrorStatusListELement = document.createElement("LI");
+            nodeErrorStatusListELement.appendChild(document.createTextNode(status));
+            nodeErrorStatusList.appendChild(nodeErrorStatusListELement);
+        }
+        nodeErrorStatus.appendChild(nodeErrorStatusList);
+        document.getElementById("error_status").appendChild(nodeErrorStatus);        
     }
 }
 
