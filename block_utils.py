@@ -5,6 +5,7 @@ from collections import OrderedDict
 
 logger = logging.getLogger('JSON_bourne')
 
+
 def shorten_title(title):
     """
     Gets a PV title by shortening its address to the last segment.
