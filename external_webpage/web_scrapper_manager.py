@@ -6,18 +6,17 @@ from builtins import range
 from builtins import object
 import json
 import logging
-import zlib
 from threading import Thread, Event
 from time import sleep
 
-import six
 from CaChannel import CaChannelException
 from CaChannel.util import caget
 
 from external_webpage.instrument_scapper import InstrumentScrapper
+from external_webpage.utils import dehex_and_decompress
 
 # logger for the class
-logger = logging.getLogger('JSON_bourne')
+logger = logging.getLogger("JSON_bourne")
 
 # PV that contains the instrument list
 INST_LIST_PV = "CS:INSTLIST"
@@ -30,6 +29,7 @@ class InstList(object):
     """
     Object that allows the instrument list to be requested from a PV
     """
+
     INSTRUMENT_LIST_CAN_NOT_BE_READ = "Instrument list can not be read"
     INSTRUMENT_LIST_NOT_DECOMPRESSED = "Instrument list can not decompressed"
     INSTRUMENT_LIST_NOT_JSON = "Instrument list is not json"
@@ -68,7 +68,7 @@ class InstList(object):
             return self._cached_list
 
         try:
-            full_inst_list_string = self._dehex_and_decompress(raw)
+            full_inst_list_string = dehex_and_decompress(raw)
         except Exception as ex:
 
             self.error_on_retrieve = InstList.INSTRUMENT_LIST_NOT_DECOMPRESSED
@@ -85,7 +85,7 @@ class InstList(object):
 
         try:
             for full_inst in full_inst_list:
-                inst_list[full_inst["name"]] = full_inst["hostName"]
+                inst_list[full_inst["name"]] = (full_inst["hostName"], full_inst["pvPrefix"])
         except (KeyError, TypeError) as ex:
 
             self.error_on_retrieve = InstList.INSTRUMENT_LIST_NOT_CORRECT_FORMAT
@@ -98,26 +98,6 @@ class InstList(object):
 
         return self._cached_list
 
-    def _dehex_and_decompress(self, value):
-        """
-        Decompress and dehex pv value
-        Args:
-            value: value to translate
-
-        Returns: dehexed value
-
-        """
-        if six.PY2:
-            return zlib.decompress(value.decode('hex'))
-
-        try:
-            # If it comes as bytes then cast to string
-            value = value.decode('utf-8')
-        except AttributeError:
-            pass
-
-        return zlib.decompress(bytes.fromhex(value)).decode("utf-8")
-
 
 class WebScrapperManager(Thread):
     """
@@ -125,7 +105,9 @@ class WebScrapperManager(Thread):
     It is responsible for starting then and making sure they are running
     """
 
-    def __init__(self, scrapper_class=InstrumentScrapper, inst_list=None, local_inst_list=None):
+    def __init__(
+        self, scrapper_class=InstrumentScrapper, inst_list=None, local_inst_list=None
+    ):
         """
         Initialiser.
         Args:
@@ -173,19 +155,21 @@ class WebScrapperManager(Thread):
         inst_list = self._inst_list.retrieve()
         new_scrappers_list = []
         for scrapper in self.scrappers:
-            if scrapper.is_alive() and self._is_scrapper_in_inst_list(inst_list, scrapper):
+            if scrapper.is_alive() and self._is_scrapper_in_inst_list(
+                inst_list, scrapper
+            ):
                 new_scrappers_list.append(scrapper)
             else:
                 scrapper.stop()
         self.scrappers = new_scrappers_list
-        for name, host in self._scrapper_to_start(inst_list):
-            scrapper = self._scrapper_class(name, host)
+        for name, host, pv_prefix in self._scrapper_to_start(inst_list):
+            scrapper = self._scrapper_class(name, host, pv_prefix)
             scrapper.start()
             self.scrappers.append(scrapper)
 
     def _is_scrapper_in_inst_list(self, inst_list, scrapper):
         """
-        Check if scapper is in instrument list
+        Check if scrapper is in instrument list
         Args:
             inst_list: the instrument list
             scrapper: scrapper to checker
@@ -193,7 +177,8 @@ class WebScrapperManager(Thread):
         Returns: True if in; False otherwise
 
         """
-        for name, host in list(inst_list.items()):
+        for name, data in inst_list.items():
+            host, pv_prefix = data
             if scrapper.is_instrument(name, host):
                 return True
         return False
@@ -207,12 +192,13 @@ class WebScrapperManager(Thread):
         Returns:
 
         """
-        for name, host in list(instruments.items()):
+        for name, data in instruments.items():
+            host, pv_prefix = data
             for scrapper in self.scrappers:
                 if scrapper.is_instrument(name, host):
                     break
             else:
-                yield name, host
+                yield name, host, pv_prefix
 
     def stop_all(self):
         """

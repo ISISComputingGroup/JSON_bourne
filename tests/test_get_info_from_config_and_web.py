@@ -22,7 +22,7 @@ class TestGetInfoFromConfigAndWeb(unittest.TestCase):
         config = ConfigMother.create_config()
         self.reader.read_config = Mock(return_value=config)
 
-        self.scraper = InstrumentInformationCollator(reader=self.reader)
+        self.scraper = InstrumentInformationCollator("host", "prefix", reader=self.reader)
 
     def test_GIVEN_no_blocks_WHEN_parse_THEN_normal_value_returned(self):
         expected_config_name = "test_config"

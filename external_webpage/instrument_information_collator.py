@@ -107,15 +107,16 @@ class InstrumentInformationCollator(object):
     # name of the channel fo the run duration for the current period
     RUN_DURATION_PD_CHANNEL_NAME = "RUNDURATION_PD"
 
-    def __init__(self, host="localhost", reader=None):
+    def __init__(self, host, pv_prefix, reader=None):
         """
         Initialize.
         Args:
             host: The host of the instrument from which to read the information.
+            pv_prefix: The pv_prefix of the instrument from which to read the information.
             reader: A reader object to get external information.
         """
         if reader is None:
-            self.reader = DataSourceReader(host)
+            self.reader = DataSourceReader(host, pv_prefix)
         else:
             self.reader = reader
 
