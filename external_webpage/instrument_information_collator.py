@@ -205,6 +205,7 @@ class InstrumentInformationCollator(object):
 
         """
         instrument_config = InstrumentConfig(self.reader.read_config())
+        error_statuses = []
 
         try:
             # read blocks
@@ -214,19 +215,28 @@ class InstrumentInformationCollator(object):
             json_from_dataweb_archive = self.reader.get_json_from_dataweb_archive()
             dataweb_blocks = self.web_page_parser.extract_blocks(json_from_dataweb_archive)
 
+        except Exception as e:
+            error_string = "Failed to read block archiver"
+            error_statuses.append(error_string)
+            logger.error(f"{error_string}: " + str(e))
+            blocks = {}
+            dataweb_blocks = {}
+        
+        try:
             json_from_instrument_archive = self.reader.get_json_from_instrument_archive()
             instrument_blocks = self.web_page_parser.extract_blocks(json_from_instrument_archive)
 
             inst_pvs = format_blocks(self._get_inst_pvs(instrument_blocks))
-
         except Exception as e:
-            logger.error("Failed to read blocks: " + str(e))
-            raise e
+            error_string = "Failed to read instrument archiver"
+            error_statuses.append(error_string)
+            logger.error(f"{error_string}: " + str(e))
+            inst_pvs = {}
 
         try:
             set_rc_values_for_blocks(blocks, dataweb_blocks)
         except Exception as e:
-            logging.error("Error in setting rc values for blocks: " + str(e))
+            logger.error("Error in setting rc values for blocks: " + str(e))
 
         # get block visibility from config
         for block_name, block in blocks.items():
@@ -237,4 +247,6 @@ class InstrumentInformationCollator(object):
         return {
             "config_name": instrument_config.name,
             "groups": groups,
-            "inst_pvs": inst_pvs}
+            "inst_pvs": inst_pvs,
+            "error_statuses": error_statuses
+        }
