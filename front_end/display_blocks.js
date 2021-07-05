@@ -533,3 +533,9 @@ $(document).ready(displayError());
 $(document).ready(refresh());
 
 setInterval(refresh, 5000);
+
+clippy.load('Clippy', function(agent) {
+	agent.show();
+	// Do anything with the loaded agent
+	agent.speak("I see you are trying to control "+instrument+"! Can I be of assistance?");
+});
