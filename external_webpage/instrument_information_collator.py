@@ -24,6 +24,7 @@ import logging
 from block_utils import (format_blocks, set_rc_values_for_blocks)
 from external_webpage.data_source_reader import DataSourceReader
 from external_webpage.web_page_parser import WebPageParser
+from external_webpage.emu_alarm_checker import EmuAlarmLogger
 
 from collections import OrderedDict
 
@@ -119,8 +120,11 @@ class InstrumentInformationCollator(object):
             self.reader = DataSourceReader(host, pv_prefix)
         else:
             self.reader = reader
+        
+        self.host = host
 
         self.web_page_parser = WebPageParser()
+        self.emu_alarm_logger = EmuAlarmLogger()
 
     def _get_inst_pvs(self, instrument_archive_blocks):
         """
@@ -243,6 +247,9 @@ class InstrumentInformationCollator(object):
             block.set_visibility(instrument_config.block_is_visible(block_name))
 
         groups = create_groups_dictionary(blocks, instrument_config)
+
+        if self.host.lower() == "ndxemu":
+            self.emu_alarm_logger.check_for_alarm(blocks)
 
         return {
             "config_name": instrument_config.name,
