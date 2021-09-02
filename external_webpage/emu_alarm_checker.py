@@ -88,4 +88,4 @@ if __name__ == "__main__":
         emu_alarm_checker.reformat_to_use_square_bracket()
     blocks_to_ignore = default_to_ignore + args.blocks_to_ignore
     if blocks_to_ignore != default_to_ignore:
-        emu_alarm_checker.print_filtered_alarm_logs(blocks_to_ignore=args.blocks_to_ignore)
+        emu_alarm_checker.print_filtered_alarm_logs(blocks_to_ignore=blocks_to_ignore)
