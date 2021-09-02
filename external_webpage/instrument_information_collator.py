@@ -124,7 +124,7 @@ class InstrumentInformationCollator(object):
         self.host = host
 
         self.web_page_parser = WebPageParser()
-        self.emu_alarm_logger = EmuAlarmLogger()
+        self.emu_alarm_logger = EmuAlarmLogger(host)
 
     def _get_inst_pvs(self, instrument_archive_blocks):
         """
@@ -248,8 +248,7 @@ class InstrumentInformationCollator(object):
 
         groups = create_groups_dictionary(blocks, instrument_config)
 
-        if self.host.lower() == "ndxemu":
-            self.emu_alarm_logger.check_for_alarm(blocks)
+        self.emu_alarm_logger.check_for_alarm(blocks)
 
         return {
             "config_name": instrument_config.name,

@@ -13,7 +13,7 @@ import asyncio
 
 from external_webpage.request_handler_utils import get_detailed_state_of_specific_instrument, \
     get_summary_details_of_all_instruments, get_instrument_and_callback
-from external_webpage.web_scrapper_manager import WebScrapperManager, LocalInstList
+from external_webpage.web_scrapper_manager import WebScrapperManager
 from external_webpage.instrument_scapper import scraped_data, scraped_data_lock
 
 logger = logging.getLogger('JSON_bourne')
@@ -82,7 +82,7 @@ if __name__ == '__main__':
     # It can sometime be useful to define a local instrument list to add/override the instrument list do this here
     # E.g. to add local instrument local_inst_list = {"localhost": "localhost"}
     local_inst_list = {}
-    web_manager = WebScrapperManager(inst_list=LocalInstList({"emu": ("NDXEMU", "IN:EMU:")}))
+    web_manager = WebScrapperManager(local_inst_list=local_inst_list)
     web_manager.start()
 
     # As documented at https://github.com/tornadoweb/tornado/issues/2608
