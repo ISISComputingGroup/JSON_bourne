@@ -115,6 +115,7 @@ class DataSourceReader(object):
             return config_details
         except Exception as ex:
             logger.error(f"Error getting instrument config details from {pv}, using webserver instead. {ex}")
+            raise ex
 
         page = requests.get('http://{}:{}/'.format(self._host, PORT_CONFIG), timeout=URL_GET_TIMEOUT)
         content = page.content.decode("utf-8")

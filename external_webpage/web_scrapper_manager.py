@@ -99,6 +99,16 @@ class InstList(object):
         return self._cached_list
 
 
+class LocalInstList(InstList):
+
+    def __init__(self, local_inst_list):
+        self.inst_list = local_inst_list
+        self.error_on_retrieve = "No error"
+    
+    def retrieve(self):
+        return self.inst_list
+
+
 class WebScrapperManager(Thread):
     """
     Manager for the web scrappers that are creating the data for the data web
