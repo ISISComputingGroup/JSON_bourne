@@ -1,6 +1,6 @@
 import logging
 import os
-from logging.handlers import TimedRotatingFileHandler
+from logging.handlers import DEFAULT_SOAP_LOGGING_PORT, TimedRotatingFileHandler
 import time
 import glob
 from typing import List, Dict
@@ -78,13 +78,14 @@ if __name__ == "__main__":
     argparser = argparse.ArgumentParser()
     # The following are blocks in alarm that we may want to ignore:
     # danfysik_auto_onoff field_hifi field_t20 t20_stable Beamlog_TS1_Freq Beamlog_Raw_Frames_Total Temp_SP Beamlog_Good_Frames_Period Beamlog_Good_Frames_Total Beamlog_Raw_Frames_Period Beamlog_Count_Rate 
-    # "Alarms checked at" "Started emu alarm logger" 
     # field_ZF_status field_ZF_x field_ZF_y field_ZF_z field_ZF_magnitude
+    default_to_ignore = ["Alarms checked at", "Started emu alarm logger"]
     argparser.add_argument("-b", "--blocks-to-ignore", nargs="+", default=[], dest="blocks_to_ignore")
     argparser.add_argument("-r", "--reformat-to-use-square-bracket", action="store_true", dest="reformat_to_use_square_bracket")
     args = argparser.parse_args()
     emu_alarm_checker = EmuAlarmChecker()
     if args.reformat_to_use_square_bracket:
         emu_alarm_checker.reformat_to_use_square_bracket()
-    if args.blocks_to_ignore != []:
+    blocks_to_ignore = default_to_ignore + args.blocks_to_ignore
+    if blocks_to_ignore != default_to_ignore:
         emu_alarm_checker.print_filtered_alarm_logs(blocks_to_ignore=args.blocks_to_ignore)
