@@ -1,9 +1,15 @@
+from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
 import json
 import logging
 import os
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
-from SocketServer import ThreadingMixIn
 from logging.handlers import TimedRotatingFileHandler
+
+import tornado.ioloop
+import tornado.web
+import asyncio
 
 from external_webpage.request_handler_utils import get_detailed_state_of_specific_instrument, \
     get_summary_details_of_all_instruments, get_instrument_and_callback
@@ -20,21 +26,23 @@ logger.addHandler(handler)
 HOST, PORT = '', 60000
 
 
-class MyHandler(BaseHTTPRequestHandler):
+class MyHandler(tornado.web.RequestHandler):
     """
     Handle for web calls for Json Borne
     """
 
-    def do_GET(self):
+    def get(self):
         """
         This is called by BaseHTTPRequestHandler every time a client does a GET.
         The response is written to self.wfile
         """
+        path = self.request.uri
+        instrument = "Not set"
         try:
-            instrument, callback = get_instrument_and_callback(self.path)
+            instrument, callback = get_instrument_and_callback(path)
 
-            # Warn level so as to avoid many log messages that come from other modules
-            logger.warn("Connected to from " + str(self.client_address) + " looking at " + str(instrument))
+            # Debug is only needed when debugging
+            logger.debug("Connection from {} looking at {}".format(self.request.remote_ip, instrument))
 
             with scraped_data_lock:
                 if instrument == "ALL":
@@ -48,29 +56,26 @@ class MyHandler(BaseHTTPRequestHandler):
             try:
                 ans_as_json = str(json.dumps(ans))
             except Exception as err:
-                raise ValueError("Unable to convert answer data to JSON: %s" % err.message)
+                raise ValueError("Unable to convert answer data to JSON: {}".format(err))
 
             response = "{}({})".format(callback, ans_as_json)
 
-            self.send_response(200)
-            self.send_header('Content-type', 'text/html')
-            self.end_headers()
-            self.wfile.write(response)
+            self.set_status(200)
+            self.set_header('Content-type', 'text/html')
+            self.write(response.encode("utf-8"))
         except ValueError as e:
-            logger.error(e)
-            self.send_response(400)
+            logger.exception("Value Error when getting data from {} for {}: {}".format(
+                self.request.remote_ip, instrument, e))
+            self.set_status(400)
         except Exception as e:
-            self.send_response(404)
-            logger.error(e)
+            logger.exception("Exception when getting data from {} for {}: {}".format(
+                self.request.remote_ip, instrument, e))
+            self.set_status(404)
 
     def log_message(self, format, *args):
         """ By overriding this method and doing nothing we disable writing to console
          for every client request. Remove this to re-enable """
         return
-
-
-class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
-    """Handle requests in a separate thread."""
 
 
 if __name__ == '__main__':
@@ -80,11 +85,15 @@ if __name__ == '__main__':
     web_manager = WebScrapperManager(local_inst_list=local_inst_list)
     web_manager.start()
 
-    server = ThreadedHTTPServer(('', PORT), MyHandler)
+    # As documented at https://github.com/tornadoweb/tornado/issues/2608
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
     try:
-        while True:
-            server.serve_forever()
+        application = tornado.web.Application([
+            (r"/", MyHandler),
+        ])
+        application.listen(PORT)
+        tornado.ioloop.IOLoop.current().start()
     except KeyboardInterrupt:
         print("Shutting down")
         web_manager.stop()

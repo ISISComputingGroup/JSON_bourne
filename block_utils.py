@@ -1,4 +1,9 @@
 from __future__ import unicode_literals
+import logging
+
+from collections import OrderedDict
+
+logger = logging.getLogger('JSON_bourne')
 
 
 def shorten_title(title):
@@ -16,58 +21,52 @@ def shorten_title(title):
     """
     title_parts = title.split(':')
     rc_values = ["HIGH.VAL", "LOW.VAL", "INRANGE.VAL", "ENABLE.VAL"]
-
     if "RC" in title_parts and title_parts[-1] in rc_values:
+        return ':'.join(title_parts[-3:])
+    elif "DASHBOARD" in title_parts:
         return ':'.join(title_parts[-3:])
     else:
         return title_parts[-1]
 
 
-def set_rc_values_for_block_from_pvs(block, pvs):
-    """Search pvs for RC values for given block and return them"""
-    block_name = block.get_name()
-    items = pvs.items()
+def set_rc_values_for_blocks(blocks, run_control_pvs):
+    """
+    Set all RC values for all the given blocks. Blocks contains the blocks and their run control settings
+    Args:
+        blocks: dictionary of {pv_names : block_objects} containing info blocks
+        run_control_pvs: dictionary of {pv_names : block_objects} containing run control settings
+    """
+    for pv, block_object in run_control_pvs.items():
+        pv_parts = pv.split(':')
+        name = pv_parts[0].strip()
+        suffix = pv_parts[-1]
 
-    for k, v in items:
-        if k is None:
-            # not a valid key, skip this entry
-            continue
+        try:
+            block = blocks[name]
 
-        key_parts = k.split(':')
-        name = key_parts[0].strip()
-        suffix = key_parts[-1]
-
-        if block_name != name:
-            # block name does not match, skip this entry
-            continue
-
-        if "LOW.VAL" == suffix:
-            block.set_rc_low(v.get_value())
-        elif "HIGH.VAL" == suffix:
-            block.set_rc_high(v.get_value())
-        elif "INRANGE.VAL" == suffix:
-            block.set_rc_inrange(v.get_value())
-        elif "ENABLE.VAL" == suffix:
-            block.set_rc_enabled(v.get_value())
-
-
-def set_rc_values_for_blocks(blocks, pvs):
-    """Set all RC values for all the given blocks"""
-    for block in blocks:
-        set_rc_values_for_block_from_pvs(block, pvs)
+            if "LOW.VAL" == suffix:
+                block.set_rc_low(block_object.get_value())
+            elif "HIGH.VAL" == suffix:
+                block.set_rc_high(block_object.get_value())
+            elif "INRANGE.VAL" == suffix:
+                block.set_rc_inrange(block_object.get_value())
+            elif "ENABLE.VAL" == suffix:
+                block.set_rc_enabled(block_object.get_value())
+        except KeyError as e:
+            logging.info("Could not find block but it has runcontrol pvs {}".format(name))
 
 
 def format_blocks(blocks):
     """
-    Converts a list of block objects into JSON.
+    Converts a dictionary of blocks in the form of {name: Block} to a dictionary of {name: dict_describing_block}.
 
     Args:
         blocks: A dictionary of block names to block objects.
 
-    Returns: A JSON dictionary of block names to block descriptions.
+    Returns: A dictionary of block names to block descriptions.
 
     """
-    blocks_formatted = {}
+    blocks_formatted = OrderedDict()
     for name, block in blocks.items():
         blocks_formatted[name] = block.get_description()
 
@@ -89,7 +88,7 @@ def format_block_value(val, precision):
     assert small_number_threshold < big_number_threshold
 
     # No precision specified = do not format.
-    if precision is None or precision < 0:
+    if precision is None or not isinstance(precision, int) or precision < 0:
         return u"{}".format(val)
     try:
         float_val = float(val)

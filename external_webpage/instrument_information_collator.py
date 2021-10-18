@@ -17,13 +17,39 @@
 Classes getting external resources from an instrument and formating them for the info page.
 """
 
+from builtins import str
+from builtins import object
 import logging
 
 from block_utils import (format_blocks, set_rc_values_for_blocks)
 from external_webpage.data_source_reader import DataSourceReader
 from external_webpage.web_page_parser import WebPageParser
 
+from collections import OrderedDict
+
 logger = logging.getLogger('JSON_bourne')
+
+
+def create_groups_dictionary(archive_blocks, instrument_config):
+    """
+    Populate groups with block information from the archive server.
+    Args:
+        archive_blocks (dict[str, block.Block]): Block information from the archive server.
+        instrument_config (InstrumentConfig): Instrument configurations from the block server.
+
+    Returns:
+        groups (dict[str, dict[str, dict]]): All groups and their associated blocks.
+
+    """
+    blocks_all_formatted = format_blocks(archive_blocks)
+    groups = OrderedDict()
+    for group in instrument_config.groups:
+        blocks = OrderedDict()
+        for block in group["blocks"]:
+            if block in blocks_all_formatted.keys():
+                blocks[block] = blocks_all_formatted[block]
+        groups[group["name"]] = blocks
+    return groups
 
 
 class InstrumentConfig(object):
@@ -41,7 +67,7 @@ class InstrumentConfig(object):
         self.groups = self._config["groups"]
         self.name = self._config["name"]
 
-        self.blocks = {}
+        self.blocks = OrderedDict()
         for block in self._config["blocks"]:
             self.blocks[block["name"]] = block
 
@@ -63,7 +89,7 @@ class InstrumentConfig(object):
             return True
 
 
-class InstrumentInformationCollator:
+class InstrumentInformationCollator(object):
     """
     Collect instrument information and summarise as a dictionary.
     """
@@ -81,27 +107,27 @@ class InstrumentInformationCollator:
     # name of the channel fo the run duration for the current period
     RUN_DURATION_PD_CHANNEL_NAME = "RUNDURATION_PD"
 
-    def __init__(self, host="localhost", reader=None):
+    def __init__(self, host, pv_prefix, reader=None):
         """
         Initialize.
         Args:
             host: The host of the instrument from which to read the information.
+            pv_prefix: The pv_prefix of the instrument from which to read the information.
             reader: A reader object to get external information.
         """
         if reader is None:
-            self.reader = DataSourceReader(host)
+            self.reader = DataSourceReader(host, pv_prefix)
         else:
             self.reader = reader
 
         self.web_page_parser = WebPageParser()
 
-    def _get_inst_pvs(self, ans, blocks_all):
+    def _get_inst_pvs(self, instrument_archive_blocks):
         """
         Extracts and formats a list of relevant instrument PVs from all instrument PVs.
 
         Args:
-            ans: List of blocks from the instrument archive.
-            blocks_all: List of blocks from the block and dataweb archives.
+            instrument_archive_blocks: List of blocks from the instrument archive.
 
         Returns: A trimmed list of instrument PVs.
 
@@ -118,16 +144,16 @@ class InstrumentInformationCollator:
                         "RAWFRAMES", "RAWFRAMES_PD", "PERIOD", "NUMPERIODS", "PERIODSEQ", "BEAMCURRENT", "TOTALUAMPS",
                         "COUNTRATE", "DAEMEMORYUSED", "TOTALCOUNTS", "DAETIMINGSOURCE", "MONITORCOUNTS",
                         "MONITORSPECTRUM", "MONITORFROM", "MONITORTO", "NUMTIMECHANNELS", "NUMSPECTRA", "SHUTTER",
-                        "SIM_MODE", "TIME_OF_DAY"]
+                        "SIM_MODE", "BANNER:RIGHT:LABEL", "BANNER:MIDDLE:LABEL", "BANNER:LEFT:LABEL",
+                        "1:1:LABEL", "2:1:LABEL", "3:1:LABEL", "1:2:LABEL", "2:2:LABEL", "3:2:LABEL",
+                        "BANNER:LEFT:LABEL", "BANNER:MIDDLE:LABEL", "BANNER:RIGHT:LABEL", "1:1:VALUE", "2:1:VALUE",
+                        "3:1:VALUE", "1:2:VALUE", "2:2:VALUE", "3:2:VALUE", "BANNER:LEFT:VALUE",
+                        "BANNER:MIDDLE:VALUE", "BANNER:RIGHT:VALUE", "TIME_OF_DAY"]
 
-        try:
-            set_rc_values_for_blocks(blocks_all.values(), ans)
-        except Exception as e:
-            logging.error("Error in setting rc values for blocks: " + str(e))
 
         for pv in required_pvs:
-            if pv + ".VAL" in ans:
-                wanted[pv] = ans[pv + ".VAL"]
+            if pv + ".VAL" in instrument_archive_blocks:
+                wanted[pv] = instrument_archive_blocks[pv + ".VAL"]
 
         try:
             self._convert_seconds(wanted[run_duration_channel_name])
@@ -140,7 +166,8 @@ class InstrumentInformationCollator:
             pass
 
         display_title_channel_name = InstrumentInformationCollator.DISPLAY_TITLE_CHANNEL_NAME + ".VAL"
-        if display_title_channel_name not in ans or ans[display_title_channel_name].get_value().lower() != "yes":
+        if display_title_channel_name not in instrument_archive_blocks or \
+                instrument_archive_blocks[display_title_channel_name].get_value().lower() != "yes":
             if title_channel_name in wanted:
                 wanted[title_channel_name].set_value(InstrumentInformationCollator.PRIVATE_VALUE)
             if username_channel_name in wanted:
@@ -177,43 +204,49 @@ class InstrumentInformationCollator:
         Returns: JSON of the instrument's configuration and status.
 
         """
-
         instrument_config = InstrumentConfig(self.reader.read_config())
+        error_statuses = []
 
         try:
-
             # read blocks
             json_from_blocks_archive = self.reader.get_json_from_blocks_archive()
-            blocks_log = self.web_page_parser.extract_blocks(json_from_blocks_archive)
+            blocks = self.web_page_parser.extract_blocks(json_from_blocks_archive)
 
             json_from_dataweb_archive = self.reader.get_json_from_dataweb_archive()
-            blocks_nolog = self.web_page_parser.extract_blocks(json_from_dataweb_archive)
+            dataweb_blocks = self.web_page_parser.extract_blocks(json_from_dataweb_archive)
 
-            blocks_all = dict(blocks_log.items() + blocks_nolog.items())
-
-            # get block visibility from config
-            for block_name, block in blocks_all.items():
-                block.set_visibility(instrument_config.block_is_visible(block_name))
-
+        except Exception as e:
+            error_string = "Failed to read block archiver"
+            error_statuses.append(error_string)
+            logger.error(f"{error_string}: " + str(e))
+            blocks = {}
+            dataweb_blocks = {}
+        
+        try:
             json_from_instrument_archive = self.reader.get_json_from_instrument_archive()
             instrument_blocks = self.web_page_parser.extract_blocks(json_from_instrument_archive)
 
-            inst_pvs = format_blocks(self._get_inst_pvs(instrument_blocks, blocks_all))
-
+            inst_pvs = format_blocks(self._get_inst_pvs(instrument_blocks))
         except Exception as e:
-            logger.error("Failed to read blocks: " + str(e))
-            raise e
+            error_string = "Failed to read instrument archiver"
+            error_statuses.append(error_string)
+            logger.error(f"{error_string}: " + str(e))
+            inst_pvs = {}
 
-        blocks_all_formatted = format_blocks(blocks_all)
-        groups = {}
-        for group in instrument_config.groups:
-            blocks = {}
-            for block in group["blocks"]:
-                if block in blocks_all_formatted.keys():
-                    blocks[block] = blocks_all_formatted[block]
-            groups[group["name"]] = blocks
+        try:
+            set_rc_values_for_blocks(blocks, dataweb_blocks)
+        except Exception as e:
+            logger.error("Error in setting rc values for blocks: " + str(e))
+
+        # get block visibility from config
+        for block_name, block in blocks.items():
+            block.set_visibility(instrument_config.block_is_visible(block_name))
+
+        groups = create_groups_dictionary(blocks, instrument_config)
 
         return {
             "config_name": instrument_config.name,
             "groups": groups,
-            "inst_pvs": inst_pvs}
+            "inst_pvs": inst_pvs,
+            "error_statuses": error_statuses
+        }

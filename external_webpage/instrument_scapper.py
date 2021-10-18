@@ -1,3 +1,5 @@
+from builtins import str
+from builtins import range
 import logging
 import traceback
 from threading import Thread, Event, RLock
@@ -9,7 +11,7 @@ scraped_data = {}
 scraped_data_lock = RLock()
 logger = logging.getLogger('JSON_bourne')
 
-WAIT_BETWEEN_UPDATES = 3
+WAIT_BETWEEN_UPDATES = 5
 WAIT_BETWEEN_FAILED_UPDATES = 60
 RETRIES_BETWEEN_LOGS = 60
 
@@ -35,15 +37,17 @@ class InstrumentScrapper(Thread):
                 return
             sleep(1)
 
-    def __init__(self, name, host):
+    def __init__(self, name, host, pv_prefix):
         """
         Initialize.
         Args:
             name: Name of instrument.
             host: Host for the instrument.
+            pv_prefix: The pv_prefix of the instrument.
         """
         super(InstrumentScrapper, self).__init__()
         self._host = host
+        self._pv_prefix = pv_prefix
         self._name = name
         self._stop_event = Event()
 
@@ -66,7 +70,7 @@ class InstrumentScrapper(Thread):
 
         """
         global scraped_data
-        web_page_scraper = InstrumentInformationCollator(self._host)
+        web_page_scraper = InstrumentInformationCollator(self._host, self._pv_prefix)
         logger.info("Scrapper started for {}".format(self._name))
         while not self._stop_event.is_set():
             try:

@@ -17,12 +17,16 @@
 Classes for parsing web pages
 """
 
+from builtins import str
+from builtins import object
 import logging
 
 import re
 
 from block import Block
 from block_utils import shorten_title
+
+from collections import OrderedDict
 
 logger = logging.getLogger('JSON_bourne')
 
@@ -58,7 +62,7 @@ class WebPageParser(object):
         """
 
         try:
-            blocks = {}
+            blocks = OrderedDict()
             channels = info_page_as_json["Channels"]
         except (KeyError, TypeError):
             raise BlocksParseError("There is no json object for channels")
@@ -88,9 +92,9 @@ class WebPageParser(object):
         if connected:
             units = current_value.get("Units", "")
 
-            precision = unicode(current_value.get("Precision", ""))
+            precision = str(current_value.get("Precision", ""))
 
-            value = unicode(current_value["Value"])
+            value = str(current_value["Value"])
 
             replaced = True
             while replaced:

@@ -21,6 +21,8 @@ import json
 
 import logging
 import requests
+from external_webpage.utils import dehex_and_decompress
+from CaChannel.util import caget
 
 logger = logging.getLogger('JSON_bourne')
 
@@ -31,19 +33,25 @@ PORT_BLOCKS = 4813
 # Port for configuration
 PORT_CONFIG = 8008
 
+CONFIG_PV = "CS:BLOCKSERVER:GET_CURR_CONFIG_DETAILS"
+
+# Timeout for url get
+URL_GET_TIMEOUT = 60
+
 
 class DataSourceReader(object):
     """
     Access of external data sources from urls.
     """
 
-    def __init__(self, host):
+    def __init__(self, host, pv_prefix):
         """
         Initialize.
         Args:
             host: The host name for the instrument.
         """
         self._host = host
+        self._pv_prefix = pv_prefix
 
     def get_json_from_blocks_archive(self):
         """
@@ -86,7 +94,7 @@ class DataSourceReader(object):
         url = 'http://{host}:{port}/group?name={group_name}&format=json'.format(
             host=self._host, port=port, group_name=group_name)
         try:
-            page = requests.get(url)
+            page = requests.get(url, timeout=URL_GET_TIMEOUT)
             return page.json()
         except Exception as e:
             logger.error("URL not found or json not understood: " + str(url))
@@ -94,16 +102,23 @@ class DataSourceReader(object):
 
     def read_config(self):
         """
-        Read the configuration from the instrument block server.
+        Read the configuration from the instrument block server. First using channel access then falling back to the
+        blockserver webserver.
 
         Returns: The configuration as a dictionary.
-
         """
+        try:
+            pv = self._pv_prefix + CONFIG_PV
+            raw = caget(pv, as_string=True)
+            config_details = dehex_and_decompress(raw)
+            config_details = json.loads(config_details)
+            return config_details
+        except Exception as ex:
+            logger.error(f"Error getting instrument config details from {pv}, using webserver instead. {ex}")
 
-        # read config
-        page = requests.get('http://%s:%s/' % (self._host, PORT_CONFIG))
-        corrected_page = page.content\
-            .replace("'", '"')\
+        page = requests.get('http://{}:{}/'.format(self._host, PORT_CONFIG), timeout=URL_GET_TIMEOUT)
+        content = page.content.decode("utf-8")
+        corrected_page = content.replace("'", '"')\
             .replace("None", "null")\
             .replace("True", "true")\
             .replace("False", "false")

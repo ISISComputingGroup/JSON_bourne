@@ -53,7 +53,7 @@ pipeline {
                     goto ERROR
             )
 
-            C:/Instrument/Apps/Python/python.exe run_tests.py || echo "running tests failed."
+            C:/Instrument/Apps/Python3/python.exe run_tests.py || echo "running tests failed."
             """
       }
     }
