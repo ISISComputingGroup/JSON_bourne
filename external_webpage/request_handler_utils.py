@@ -4,7 +4,6 @@ from collections import OrderedDict
 import time
 import logging
 
-
 logger = logging.getLogger('JSON_bourne')
 
 
@@ -57,12 +56,16 @@ def get_summary_details_of_all_instruments(data):
     return inst_data
 
 
-def get_instrument_time_since_epoch(instrument_data):
+def get_instrument_time_since_epoch(instrument_name, instrument_data):
     """
     Return the instrument time as seconds since epoch.
 
-    Raises: KeyError: instrument time cannot be parsed from instrument_data
-    Raises: ValueError: if instrument time has wrong time format
+    :param instrument_name: The name of the instrument
+    :param instrument_data: The data associated with the instrument
+    :return: the instrument time as seconds since epoch.
+
+    :raises: KeyError: instrument time cannot be parsed from instrument_data
+    :raises: ValueError: if instrument time has wrong time format
     """
 
     try:
@@ -75,35 +78,37 @@ def get_instrument_time_since_epoch(instrument_data):
         tod = 'TIME_OF_DAY'
         inst_time_str = instrument_data['inst_pvs'][tod]['value']
     except KeyError:
-        logger.exception("Cannot find {} in PV {}.".format(tod, channel))
+        logger.exception(f"{instrument_name}: Cannot find {tod} in PV {channel}.")
         raise
 
     try:
         inst_time_struct = time.strptime(inst_time_str, time_format)
     except ValueError:
-        logger.exception("Value {} from PV {} does not match time format {}.".format(inst_time_str, channel, time_format))
+        logger.exception(f"{instrument_name}: Value {inst_time_str} from PV {channel} does not match time format "
+                         f"{time_format}.")
         raise
 
     try:
         inst_time = time.mktime(inst_time_struct)
     except (ValueError, OverflowError):
         inst_time = None
-        logger.error("Cannot parse value {} from PV {} as time".format(inst_time, channel))
+        logger.error(f"{instrument_name}: Cannot parse value {inst_time} from PV {channel} as time")
 
     return inst_time
 
 
-def set_time_shift(instrument_data, time_shift_threshold,
+def set_time_shift(instrument_name, instrument_data, time_shift_threshold,
                    extract_time_from_instrument_func=get_instrument_time_since_epoch,
                    current_time_func=time.time):
     """
     Update the instrument data with the time shift to the webserver.
 
-    :param instrument_data: The data dictionary of an instrument
+    :param instrument_name: The name of the instrument
+    :param instrument_data: The data dictionary of the instrument
     :param time_shift_threshold: If the time shift is greater than this value the data is considered outdated
     """
     try:
-        inst_time = extract_time_from_instrument_func(instrument_data)
+        inst_time = extract_time_from_instrument_func(instrument_name, instrument_data)
         current_time = current_time_func()
         time_diff = int(round(abs(current_time - inst_time)))
     except (ValueError, TypeError, KeyError):
@@ -114,11 +119,11 @@ def set_time_shift(instrument_data, time_shift_threshold,
 
         if time_diff is not None and time_diff > time_shift_threshold:
             instrument_data['out_of_sync'] = True
-            logger.warning("There is a time shift of {} seconds between insrument and web server".format(time_diff))
+            logger.warning(f"There is a time shift of {time_diff} seconds between {instrument_name} and web server")
         else:
             instrument_data['out_of_sync'] = False
     except TypeError:
-        logger.error("Cannot set time shift information.")
+        logger.error(f"Cannot set time shift information for {instrument_name}.")
 
 
 def get_detailed_state_of_specific_instrument(instrument, data, time_shift_threshold=5*60):
@@ -133,6 +138,6 @@ def get_detailed_state_of_specific_instrument(instrument, data, time_shift_thres
         raise ValueError(str(instrument) + " not known")
     if data[instrument] == "":
         raise ValueError("Instrument has become unavailable")
-    set_time_shift(data[instrument], time_shift_threshold)
+    set_time_shift(instrument, data[instrument], time_shift_threshold)
 
     return data[instrument]
