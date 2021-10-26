@@ -7,6 +7,7 @@ var nodeInstTitle = document.createElement("H2");
 var nodeConfigTitle = document.createElement("H2");
 var nodeErrorStatus = document.createElement("H3");
 nodeErrorStatus.style.color = "RED";
+var nodeTimeDiffTitle = document.createElement("H2");
 var instrumentState;
 var showHidden;
 var timeout = 4000;
@@ -38,7 +39,9 @@ dictInstPV = {
     MONITORTO: 'Monitor To',
     NUMTIMECHANNELS: 'Number of Time Channels',
     NUMSPECTRA: 'Number of Spectra',
-	SIM_MODE: 'DAE Simulation mode'
+    SHUTTER: 'Shutter Status',
+    SIM_MODE: 'DAE Simulation mode',
+    TIME_OF_DAY: 'Instrument time',
 };
 
 dictLongerInstPVs = {
@@ -190,6 +193,7 @@ function parseObject(obj) {
     showHidden = document.getElementById("showHidden").checked;
     clear(nodeInstTitle);
     clear(nodeConfigTitle);
+    clear(nodeTimeDiffTitle);
 
     // populate blocks
     var nodeGroups = document.getElementById("groups");
@@ -200,6 +204,8 @@ function parseObject(obj) {
     var nodeInstPVList = document.createElement("ul");
 
     getDisplayRunInfo(nodeInstPVs, instrumentState.inst_pvs);
+
+    getDisplayTimeDiffInfo(instrumentState);
 
     nodeInstTitle.appendChild(document.createTextNode(instrument));
     nodeConfigTitle.appendChild(document.createTextNode("Configuration: " + instrumentState.config_name));
@@ -222,6 +228,14 @@ function get_inst_pv_value(inst_details, pv) {
         return inst_details["inst_pvs"][pv]["value"] || DEFAULT_PV_VALUE;
     } catch(err) {
         return DEFAULT_PV_VALUE;
+    }
+}
+
+function getDisplayTimeDiffInfo(instrumentState){
+    if (instrumentState.out_of_sync)  {
+      nodeTimeDiffTitle.appendChild(document.createTextNode("There is a time shift of " + instrumentState.time_diff + " seconds between the instrument and the web server. Dataweb may not be updating correctly."));
+      document.getElementById("time_diff").appendChild(nodeTimeDiffTitle);
+      document.getElementById("time_diff").style.color = "RED";
     }
 }
 

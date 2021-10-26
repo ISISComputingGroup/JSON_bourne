@@ -148,7 +148,7 @@ class InstrumentInformationCollator(object):
                         "1:1:LABEL", "2:1:LABEL", "3:1:LABEL", "1:2:LABEL", "2:2:LABEL", "3:2:LABEL",
                         "BANNER:LEFT:LABEL", "BANNER:MIDDLE:LABEL", "BANNER:RIGHT:LABEL", "1:1:VALUE", "2:1:VALUE",
                         "3:1:VALUE", "1:2:VALUE", "2:2:VALUE", "3:2:VALUE", "BANNER:LEFT:VALUE",
-                        "BANNER:MIDDLE:VALUE", "BANNER:RIGHT:VALUE"]
+                        "BANNER:MIDDLE:VALUE", "BANNER:RIGHT:VALUE", "TIME_OF_DAY"]
 
 
         for pv in required_pvs:

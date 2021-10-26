@@ -80,7 +80,7 @@ class MyHandler(tornado.web.RequestHandler):
 
 if __name__ == '__main__':
     # It can sometime be useful to define a local instrument list to add/override the instrument list do this here
-    # E.g. to add local instrument local_inst_list = {"localhost": "localhost"}
+    # E.g. to add local instrument local_inst_list = {"LOCALHOST": ("localhost", "MYPVPREFIX")}
     local_inst_list = {}
     web_manager = WebScrapperManager(local_inst_list=local_inst_list)
     web_manager.start()
