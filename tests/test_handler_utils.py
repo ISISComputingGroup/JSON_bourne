@@ -190,7 +190,7 @@ class TestHandlerUtils_CheckOutOfSync(unittest.TestCase):
         instrument_data = {'inst_pvs': {'TIME_OF_DAY': {'value': 'does not matter'}}}
 
         set_time_shift("", instrument_data, time_shift_threshold=2,
-                          extract_time_from_instrument_func=lambda x : 5,
+                          extract_time_from_instrument_func=lambda _, __ : 5,
                           current_time_func=lambda : 10)
 
         assert_that(instrument_data['out_of_sync'], equal_to(True))
@@ -199,7 +199,7 @@ class TestHandlerUtils_CheckOutOfSync(unittest.TestCase):
         instrument_data = {'inst_pvs': {'TIME_OF_DAY': {'value': 'does not matter'}}}
 
         set_time_shift("", instrument_data, time_shift_threshold=17,
-                          extract_time_from_instrument_func=lambda x : 5,
+                          extract_time_from_instrument_func=lambda _, __ : 5,
                           current_time_func=lambda : 10)
 
         assert_that(instrument_data['out_of_sync'], equal_to(False))
@@ -208,7 +208,7 @@ class TestHandlerUtils_CheckOutOfSync(unittest.TestCase):
         instrument_data = {'inst_pvs': {'TIME_OF_DAY': {'value': 'does not matter'}}}
 
         set_time_shift("", instrument_data, time_shift_threshold=17,
-                          extract_time_from_instrument_func=lambda x : 5,
+                          extract_time_from_instrument_func=lambda _, __ : 5,
                           current_time_func=lambda : 10)
 
         assert_that(instrument_data['time_diff'], equal_to(5))
@@ -217,7 +217,7 @@ class TestHandlerUtils_CheckOutOfSync(unittest.TestCase):
         instrument_data = {'inst_pvs': {'TIME_OF_DAY': {'value': 'does not matter'}}}
 
         set_time_shift("", instrument_data, time_shift_threshold=17,
-                       extract_time_from_instrument_func=lambda x: 'foo',
+                       extract_time_from_instrument_func=lambda _, __: 'foo',
                        current_time_func=lambda: 10)
 
         assert_that(instrument_data['time_diff'], equal_to(None))
@@ -226,7 +226,7 @@ class TestHandlerUtils_CheckOutOfSync(unittest.TestCase):
         instrument_data = {'inst_pvs': {'TIME_OF_DAY': {'value': 'does not matter'}}}
 
         set_time_shift("", instrument_data, time_shift_threshold=17,
-                       extract_time_from_instrument_func=lambda x: 'foo',
+                       extract_time_from_instrument_func=lambda _, __: 'foo',
                        current_time_func=lambda: 10)
 
         assert_that(instrument_data['out_of_sync'], equal_to(False))
