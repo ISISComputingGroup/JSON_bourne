@@ -111,7 +111,7 @@ function display_data(data){
 	var instruments = data["instruments"];
 	var total_users = Object.keys(instruments).length;
 
-	//TODO use the instlist for this?
+	//TODO use the instlist for this - https://github.com/ISISComputingGroup/IBEX/issues/7011
 	var TS2_instruments = ["LET", "POLREF", "NIMROD", "IMAT", "SANS2D", "LARMOR", "WISH", "INTER", "CHIPIR", "OFFSPEC", "ZOOM"]; 
 	clearBox("TS1buttons")
 	clearBox("TS2buttons")
