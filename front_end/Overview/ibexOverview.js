@@ -111,7 +111,10 @@ function display_data(data){
 	var instruments = data["instruments"];
 	var total_users = Object.keys(instruments).length;
 
-	clearBox("buttons")
+	//TODO use the instlist for this?
+	var TS2_instruments = ["LET", "POLREF", "NIMROD", "IMAT", "SANS2D", "LARMOR", "WISH", "INTER", "CHIPIR", "OFFSPEC", "ZOOM"]; 
+	clearBox("TS1buttons")
+	clearBox("TS2buttons")
 	for (value in instruments){
 		var newButton = document.createElement("button");
 		var run_state = instruments[value]["run_state"]
@@ -137,8 +140,11 @@ function display_data(data){
 		var blockListStyle = document.createAttribute("onclick");
         blockListStyle.value = "on_click(this)"
 		newButton.setAttributeNode(blockListStyle);
-
-		document.getElementById("buttons").appendChild(newButton);
+		var div_id = "TS1buttons";
+		if (TS2_instruments.includes(value)) {
+			div_id = "TS2buttons"
+		}
+		document.getElementById(div_id).appendChild(newButton);
 	}
 	var time = document.getElementById("time");
 	var date = new Date();
