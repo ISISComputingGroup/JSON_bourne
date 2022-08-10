@@ -7,7 +7,7 @@ pipeline {
     label {
       label "JSON_Bourne"
       // Use custom workspace to avoid issue with long filepaths on Win32
-      customWorkspace "C:/JSON_Bourne/${env.BRANCH_NAME}"
+      //customWorkspace "C:/JSON_Bourne/${env.BRANCH_NAME}"
     }
   }
   
