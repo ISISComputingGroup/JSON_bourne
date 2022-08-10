@@ -1,5 +1,5 @@
 var PORT = 60000;
-var HOST = "http://dataweb.isis.rl.ac.uk"
+var HOST = "https://dataweb.isis.rl.ac.uk"
 var DEFAULT_PV_VALUE = "UNKNOWN";
 
 var instrument = getURLParameter("Instrument");
