@@ -92,7 +92,6 @@ if __name__ == '__main__':
         application = tornado.web.Application([
             (r"/", MyHandler),
         ])
-        #application.listen(PORT)
         http_server = tornado.httpserver.HTTPServer(application, ssl_options={
             "certfile": r"C:\Users\ibexbuilder\dataweb_isis_rl_ac_uk.crt",
             "keyfile": r"C:\Users\ibexbuilder\dataweb_isis_rl_ac_uk.key",
