@@ -1,5 +1,5 @@
 var PORT = 60000;
-var HOST = "http://dataweb.isis.rl.ac.uk"
+var HOST = "https://dataweb.isis.rl.ac.uk"
 
 var INST_REFRESH = 5000;
 var WALL_DISP_REFRESH = 2 * 60 * 1000;
@@ -87,7 +87,7 @@ function open_wall_display(){
 	var newIframe = document.createElement("iframe");
 	newIframe.setAttribute("id", "wall_display");
 	
-	newIframe.src = "http://epics-jenkins.isis.rl.ac.uk/plugin/jenkinswalldisplay/walldisplay.html?viewName=WallDisplay&jenkinsUrl=https%3A%2F%2Fepics-jenkins.isis.rl.ac.uk%2F"
+	newIframe.src = "https://epics-jenkins.isis.rl.ac.uk/plugin/jenkinswalldisplay/walldisplay.html?viewName=WallDisplay&jenkinsUrl=https%3A%2F%2Fepics-jenkins.isis.rl.ac.uk%2F"
 	newIframe.height = String(windowHeight*2/5)+"px"
 	newIframe.width = "100%"
 	
@@ -99,7 +99,7 @@ function on_click(elmnt) {
 	create_new_window();
 	var newIframe = document.createElement("iframe");
 	
-	newIframe.src = "http://dataweb.isis.rl.ac.uk/IbexDataweb/default.html?Instrument="+ elmnt.childNodes[0].nodeValue
+	newIframe.src = "https://dataweb.isis.rl.ac.uk/IbexDataweb/default.html?Instrument="+ elmnt.childNodes[0].nodeValue
 	newIframe.width = "100%"
 	newIframe.height = "40%"
 	newIframe.frameborder = "0"
