@@ -3,6 +3,14 @@ var HOST = "http://dataweb.isis.rl.ac.uk"
 var DEFAULT_PV_VALUE = "UNKNOWN";
 
 var instrument = getURLParameter("Instrument");
+
+if (!instrument.match("^[a-zA-Z0-9_-]+$")) { 
+    // instrument is untrusted user input.
+	// Sanitize it to only contain alphanumeric, _, -
+    instrument = "none";
+	console.log("invalid instrument selected, did not instrument name format. Check 'Instrument' URL parameter format.");
+}
+
 var nodeInstTitle = document.createElement("H2");
 var nodeConfigTitle = document.createElement("H2");
 var nodeErrorStatus = document.createElement("H3");
@@ -343,7 +351,10 @@ function displayError() {
     clear(nodeConfigTitle);
     nodeConfigTitle.appendChild(document.createTextNode("Could not connect to " + instrument + ", check IBEX server is running."));
 
-	document.getElementById("top_bar").innerHTML = instrument;
+	top_bar = document.getElementById("top_bar")
+	clear(top_bar)
+	elem = document.createTextNode(instrument);
+	top_bar.appendChild(elem);
 	document.getElementById("config_name").appendChild(nodeConfigTitle);
 
 	setVisibilityMode('none');
