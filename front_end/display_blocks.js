@@ -8,7 +8,7 @@ if (!instrument.match("^[a-zA-Z0-9_-]+$")) {
     // instrument is untrusted user input.
 	// Sanitize it to only contain alphanumeric, _, -
     instrument = "none";
-	console.log("invalid instrument selected, did not instrument name format. Check 'Instrument' URL parameter format.");
+	console.log("invalid instrument selected, did not match instrument name format. Check 'Instrument' URL parameter format.");
 }
 
 var nodeInstTitle = document.createElement("H2");
