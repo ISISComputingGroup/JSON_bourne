@@ -6,9 +6,9 @@ var instrument = getURLParameter("Instrument");
 
 if (!instrument.match("^[a-zA-Z0-9_-]+$")) { 
     // instrument is untrusted user input.
-	// Sanitize it to only contain alphanumeric, _, -
+    // Sanitize it to only contain alphanumeric, _, -
     instrument = "none";
-	console.log("invalid instrument selected, did not match instrument name format. Check 'Instrument' URL parameter format.");
+    console.log("invalid instrument selected, did not match instrument name format. Check 'Instrument' URL parameter format.");
 }
 
 var nodeInstTitle = document.createElement("H2");
@@ -351,13 +351,13 @@ function displayError() {
     clear(nodeConfigTitle);
     nodeConfigTitle.appendChild(document.createTextNode("Could not connect to " + instrument + ", check IBEX server is running."));
 
-	top_bar = document.getElementById("top_bar")
-	clear(top_bar)
-	elem = document.createTextNode(instrument);
-	top_bar.appendChild(elem);
-	document.getElementById("config_name").appendChild(nodeConfigTitle);
+    top_bar = document.getElementById("top_bar");
+    clear(top_bar);
+    elem = document.createTextNode(instrument);
+    top_bar.appendChild(elem);
+    document.getElementById("config_name").appendChild(nodeConfigTitle);
 
-	setVisibilityMode('none');
+    setVisibilityMode('none');
 }
 
 /*
