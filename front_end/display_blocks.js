@@ -367,6 +367,7 @@ function displayError() {
 	document.getElementById("run_information").style.display = mode;
 	document.getElementById("blocks").style.display = mode;
 	document.getElementById("showHiddenContainer").style.display = mode;
+	document.getElementById("instrumentJournal").innerHTML = "<a href=\"https://shadow.nd.rl.ac.uk/journals/cgi-bin/journal.py?inst=NDX" + instrument + "\">Instrument Journal</a>";
  }
 
 /**
