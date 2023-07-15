@@ -23,8 +23,8 @@ handler.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
 logger.setLevel(logging.INFO)
 logger.addHandler(handler)
 
-HOST, PORT = '', 60000
-
+# use dataweb2.isis.rl.ac.uk / ndaextweb3-data.nd.rl.ac.uk (130.246.92.89)
+HOST, PORT = '130.246.92.89', 443
 
 class MyHandler(tornado.web.RequestHandler):
     """
@@ -93,10 +93,10 @@ if __name__ == '__main__':
             (r"/", MyHandler),
         ])
         http_server = tornado.httpserver.HTTPServer(application, ssl_options={
-            "certfile": r"C:\Users\ibexbuilder\dataweb_isis_rl_ac_uk.crt",
-            "keyfile": r"C:\Users\ibexbuilder\dataweb_isis_rl_ac_uk.key",
+            "certfile": r"C:\Users\ibexbuilder\dataweb2_isis_rl_ac_uk.crt",
+            "keyfile": r"C:\Users\ibexbuilder\dataweb2_isis_rl_ac_uk.key",
         })
-        http_server.listen(PORT)
+        http_server.listen(PORT, HOST)
         tornado.ioloop.IOLoop.current().start()
     except KeyboardInterrupt:
         print("Shutting down")

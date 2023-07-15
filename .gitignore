@@ -1,6 +1,7 @@
 /log/*.log
 /log/*.log.*
 JSON_bourne.log
-*.pyc
+*.py[co]
 test-reports/
 .idea/
+__pycache__/

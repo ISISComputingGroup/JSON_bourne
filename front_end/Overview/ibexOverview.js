@@ -1,5 +1,5 @@
-var PORT = 60000;
-var HOST = "https://dataweb.isis.rl.ac.uk"
+var PORT = 443;
+var HOST = "https://dataweb2.isis.rl.ac.uk"
 
 var INST_REFRESH = 5000;
 var WALL_DISP_REFRESH = 2 * 60 * 1000;
@@ -104,7 +104,7 @@ function display_data(data){
 	var total_users = Object.keys(instruments).length;
 
 	//TODO use the instlist for this - https://github.com/ISISComputingGroup/IBEX/issues/7011
-	var TS2_instruments = ["LET", "POLREF", "NIMROD", "IMAT", "SANS2D", "LARMOR", "WISH", "INTER", "CHIPIR", "OFFSPEC", "ZOOM", "WISH_SETUP"]; 
+	var TS2_instruments = ["LET", "POLREF", "NIMROD", "IMAT", "SANS2D", "LARMOR", "WISH", "INTER", "CHIPIR", "OFFSPEC", "ZOOM", "WISH_SETUP"];
 	clearBox("TS1buttons")
 	clearBox("TS2buttons")
 	for (value in instruments){
