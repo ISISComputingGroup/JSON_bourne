@@ -95,7 +95,7 @@ class InstrumentInformationCollator(object):
     """
 
     # String to use for title and username if they are private
-    PRIVATE_VALUE = "Unavailable"
+    PRIVATE_VALUE = "Hidden"
     # Name of the username channel
     USERNAME_CHANNEL_NAME = "_USERNAME"
     # name of the title channel
