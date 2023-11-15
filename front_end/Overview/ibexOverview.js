@@ -102,11 +102,11 @@ function on_click(elmnt) {
 function display_data(data){
 	var instruments = data["instruments"];
 	var total_users = Object.keys(instruments).length;
-
-	//TODO use the instlist for this - https://github.com/ISISComputingGroup/IBEX/issues/7011
-	var TS2_instruments = ["LET", "POLREF", "NIMROD", "IMAT", "SANS2D", "LARMOR", "WISH", "INTER", "CHIPIR", "OFFSPEC", "ZOOM", "WISH_SETUP"];
+	var TS2_instruments = ["LET", "POLREF", "NIMROD", "IMAT", "SANS2D", "LARMOR", "WISH", "INTER", "CHIPIR", "OFFSPEC", "ZOOM"];
+	var misc_machines = ["WISH_SETUP", "DETMON", "IRIS_SETUP", "DEMO", "PEARL_SETUP", "HRPD_SETUP", "SELAB", "SOFTMAT", "ENGINX_SETUP"];
 	clearBox("TS1buttons")
 	clearBox("TS2buttons")
+	clearBox("Miscbuttons")
 	for (value in instruments){
 		var newButton = document.createElement("button");
 		var run_state = instruments[value]["run_state"]
@@ -135,6 +135,9 @@ function display_data(data){
 		var div_id = "TS1buttons";
 		if (TS2_instruments.includes(value)) {
 			div_id = "TS2buttons"
+		}
+		if (misc_machines.includes(value)) {
+			div_id = "Miscbuttons"
 		}
 		document.getElementById(div_id).appendChild(newButton);
 	}
