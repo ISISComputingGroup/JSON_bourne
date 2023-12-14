@@ -68,6 +68,13 @@ pipeline {
     failure {
       step([$class: 'Mailer', notifyEveryUnstableBuild: true, recipients: 'icp-buildserver@lists.isis.rl.ac.uk', sendToIndividuals: true])
     }
+    logParser ([
+            projectRulePath: 'parse_rules',
+            parsingRulesPath: '',
+            showGraphs: true, 
+            unstableOnWarning: true,
+            useProjectRule: true,
+        ])
   }
   
   // The options directive is for configuration that applies to the whole job.
