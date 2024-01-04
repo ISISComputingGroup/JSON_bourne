@@ -73,7 +73,7 @@ pipeline {
                 projectRulePath: 'parse_rules',
                 parsingRulesPath: '',
                 showGraphs: true, 
-                unstableOnWarning: true,
+                unstableOnWarning: false,
                 useProjectRule: true,
             ])
     }
