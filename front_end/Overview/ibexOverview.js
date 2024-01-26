@@ -103,7 +103,7 @@ function display_data(data){
 	var instruments = data["instruments"];
 	var total_users = Object.keys(instruments).length;
 	var TS2_instruments = ["LET", "POLREF", "NIMROD", "IMAT", "SANS2D", "LARMOR", "WISH", "INTER", "OFFSPEC", "ZOOM"];
-	var misc_machines = ["WISH_SETUP", "DETMON", "IRIS_SETUP", "DEMO", "PEARL_SETUP", "HRPD_SETUP", "SELAB", "SOFTMAT", "ENGINX_SETUP", "CHIPIR", "MUSR", "CHRONUS", "ARGUS", "HIFI"];
+	var misc_machines = ["WISH_SETUP", "DETMON", "IRIS_SETUP", "DEMO", "PEARL_SETUP", "HRPD_SETUP", "SELAB", "SOFTMAT", "ENGINX_SETUP", "CHIPIR", "MUSR", "CHRONUS", "ARGUS", "HIFI", "MOTION"];
 	clearBox("TS1buttons")
 	clearBox("TS2buttons")
 	clearBox("Miscbuttons")
