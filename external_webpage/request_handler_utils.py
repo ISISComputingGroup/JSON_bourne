@@ -4,7 +4,7 @@ import time
 from builtins import str
 from collections import OrderedDict
 
-logger = logging.getLogger('JSON_bourne')
+logger = logging.getLogger("JSON_bourne")
 
 
 def get_instrument_and_callback(path):
@@ -19,10 +19,10 @@ def get_instrument_and_callback(path):
     """
     # JSONP requires a response of the format "name_of_callback(json_string)"
     # e.g. myFunction({ "a": 1, "b": 2})
-    callback = re.findall('/?callback=(\w+)&', path)
+    callback = re.findall("/?callback=(\w+)&", path)
 
     # Look for the instrument data
-    instruments = re.findall('&Instrument=([^&]+)&', path)
+    instruments = re.findall("&Instrument=([^&]+)&", path)
 
     if len(callback) != 1:
         raise ValueError("Invalid number of callbacks specified: {}".format(path))
@@ -50,8 +50,7 @@ def get_summary_details_of_all_instruments(data):
         except (KeyError, TypeError):
             run_state = "UNKNOWN"
 
-        inst_data[inst] = {"is_up": (v != ''),
-                           "run_state": run_state}
+        inst_data[inst] = {"is_up": (v != ""), "run_state": run_state}
 
     return inst_data
 
@@ -69,14 +68,14 @@ def get_instrument_time_since_epoch(instrument_name, instrument_data):
     """
 
     try:
-        channel = instrument_data['Channel']
+        channel = instrument_data["Channel"]
     except KeyError:
         channel = "UNKNOWN"
 
-    time_format = '%m/%d/%Y %H:%M:%S'
+    time_format = "%m/%d/%Y %H:%M:%S"
     try:
-        tod = 'TIME_OF_DAY'
-        inst_time_str = instrument_data['inst_pvs'][tod]['value']
+        tod = "TIME_OF_DAY"
+        inst_time_str = instrument_data["inst_pvs"][tod]["value"]
     except KeyError:
         logger.exception(f"{instrument_name}: Cannot find {tod} in PV {channel}.")
         raise
@@ -84,8 +83,10 @@ def get_instrument_time_since_epoch(instrument_name, instrument_data):
     try:
         inst_time_struct = time.strptime(inst_time_str, time_format)
     except ValueError:
-        logger.exception(f"{instrument_name}: Value {inst_time_str} from PV {channel} does not match time format "
-                         f"{time_format}.")
+        logger.exception(
+            f"{instrument_name}: Value {inst_time_str} from PV {channel} does not match time format "
+            f"{time_format}."
+        )
         raise
 
     try:
@@ -97,9 +98,13 @@ def get_instrument_time_since_epoch(instrument_name, instrument_data):
     return inst_time
 
 
-def set_time_shift(instrument_name, instrument_data, time_shift_threshold,
-                   extract_time_from_instrument_func=get_instrument_time_since_epoch,
-                   current_time_func=time.time):
+def set_time_shift(
+    instrument_name,
+    instrument_data,
+    time_shift_threshold,
+    extract_time_from_instrument_func=get_instrument_time_since_epoch,
+    current_time_func=time.time,
+):
     """
     Update the instrument data with the time shift to the webserver.
 
@@ -115,18 +120,20 @@ def set_time_shift(instrument_name, instrument_data, time_shift_threshold,
         time_diff = None
 
     try:
-        instrument_data['time_diff'] = time_diff
+        instrument_data["time_diff"] = time_diff
 
         if time_diff is not None and time_diff > time_shift_threshold:
-            instrument_data['out_of_sync'] = True
-            logger.warning(f"There is a time shift of {time_diff} seconds between {instrument_name} and web server")
+            instrument_data["out_of_sync"] = True
+            logger.warning(
+                f"There is a time shift of {time_diff} seconds between {instrument_name} and web server"
+            )
         else:
-            instrument_data['out_of_sync'] = False
+            instrument_data["out_of_sync"] = False
     except TypeError:
         logger.error(f"Cannot set time shift information for {instrument_name}.")
 
 
-def get_detailed_state_of_specific_instrument(instrument, data, time_shift_threshold=5*60):
+def get_detailed_state_of_specific_instrument(instrument, data, time_shift_threshold=5 * 60):
     """
     Gets the detailed state of a specific instrument, used to display the instrument's dataweb screen
     :param instrument: The instrument to get data for

@@ -25,7 +25,7 @@ from block_utils import format_blocks, set_rc_values_for_blocks
 from external_webpage.data_source_reader import DataSourceReader
 from external_webpage.web_page_parser import WebPageParser
 
-logger = logging.getLogger('JSON_bourne')
+logger = logging.getLogger("JSON_bourne")
 
 
 def create_groups_dictionary(archive_blocks, instrument_config):
@@ -136,18 +136,59 @@ class InstrumentInformationCollator(object):
         username_channel_name = InstrumentInformationCollator.USERNAME_CHANNEL_NAME
         run_duration_channel_name = InstrumentInformationCollator.RUN_DURATION_CHANNEL_NAME
         run_duration_pd_channel_name = InstrumentInformationCollator.RUN_DURATION_PD_CHANNEL_NAME
-        required_pvs = ["RUNSTATE", "RUNNUMBER", "_RBNUMBER", title_channel_name,
-                        username_channel_name, "STARTTIME",
-                        run_duration_channel_name, run_duration_pd_channel_name, "GOODFRAMES", "GOODFRAMES_PD",
-                        "RAWFRAMES", "RAWFRAMES_PD", "PERIOD", "NUMPERIODS", "PERIODSEQ", "BEAMCURRENT", "TOTALUAMPS",
-                        "COUNTRATE", "DAEMEMORYUSED", "TOTALCOUNTS", "DAETIMINGSOURCE", "MONITORCOUNTS",
-                        "MONITORSPECTRUM", "MONITORFROM", "MONITORTO", "NUMTIMECHANNELS", "NUMSPECTRA", "SHUTTER",
-                        "SIM_MODE", "BANNER:RIGHT:LABEL", "BANNER:MIDDLE:LABEL", "BANNER:LEFT:LABEL",
-                        "1:1:LABEL", "2:1:LABEL", "3:1:LABEL", "1:2:LABEL", "2:2:LABEL", "3:2:LABEL",
-                        "BANNER:LEFT:LABEL", "BANNER:MIDDLE:LABEL", "BANNER:RIGHT:LABEL", "1:1:VALUE", "2:1:VALUE",
-                        "3:1:VALUE", "1:2:VALUE", "2:2:VALUE", "3:2:VALUE", "BANNER:LEFT:VALUE",
-                        "BANNER:MIDDLE:VALUE", "BANNER:RIGHT:VALUE", "TIME_OF_DAY"]
-
+        required_pvs = [
+            "RUNSTATE",
+            "RUNNUMBER",
+            "_RBNUMBER",
+            title_channel_name,
+            username_channel_name,
+            "STARTTIME",
+            run_duration_channel_name,
+            run_duration_pd_channel_name,
+            "GOODFRAMES",
+            "GOODFRAMES_PD",
+            "RAWFRAMES",
+            "RAWFRAMES_PD",
+            "PERIOD",
+            "NUMPERIODS",
+            "PERIODSEQ",
+            "BEAMCURRENT",
+            "TOTALUAMPS",
+            "COUNTRATE",
+            "DAEMEMORYUSED",
+            "TOTALCOUNTS",
+            "DAETIMINGSOURCE",
+            "MONITORCOUNTS",
+            "MONITORSPECTRUM",
+            "MONITORFROM",
+            "MONITORTO",
+            "NUMTIMECHANNELS",
+            "NUMSPECTRA",
+            "SHUTTER",
+            "SIM_MODE",
+            "BANNER:RIGHT:LABEL",
+            "BANNER:MIDDLE:LABEL",
+            "BANNER:LEFT:LABEL",
+            "1:1:LABEL",
+            "2:1:LABEL",
+            "3:1:LABEL",
+            "1:2:LABEL",
+            "2:2:LABEL",
+            "3:2:LABEL",
+            "BANNER:LEFT:LABEL",
+            "BANNER:MIDDLE:LABEL",
+            "BANNER:RIGHT:LABEL",
+            "1:1:VALUE",
+            "2:1:VALUE",
+            "3:1:VALUE",
+            "1:2:VALUE",
+            "2:2:VALUE",
+            "3:2:VALUE",
+            "BANNER:LEFT:VALUE",
+            "BANNER:MIDDLE:VALUE",
+            "BANNER:RIGHT:VALUE",
+            "TIME_OF_DAY",
+        ]
 
         for pv in required_pvs:
             if pv + ".VAL" in instrument_archive_blocks:
@@ -163,9 +204,13 @@ class InstrumentInformationCollator(object):
         except KeyError:
             pass
 
-        display_title_channel_name = InstrumentInformationCollator.DISPLAY_TITLE_CHANNEL_NAME + ".VAL"
-        if display_title_channel_name not in instrument_archive_blocks or \
-                instrument_archive_blocks[display_title_channel_name].get_value().lower() != "yes":
+        display_title_channel_name = (
+            InstrumentInformationCollator.DISPLAY_TITLE_CHANNEL_NAME + ".VAL"
+        )
+        if (
+            display_title_channel_name not in instrument_archive_blocks
+            or instrument_archive_blocks[display_title_channel_name].get_value().lower() != "yes"
+        ):
             if title_channel_name in wanted:
                 wanted[title_channel_name].set_value(InstrumentInformationCollator.PRIVATE_VALUE)
             if username_channel_name in wanted:
@@ -219,7 +264,7 @@ class InstrumentInformationCollator(object):
             logger.error(f"{error_string}: " + str(e))
             blocks = {}
             dataweb_blocks = {}
-        
+
         try:
             json_from_instrument_archive = self.reader.get_json_from_instrument_archive()
             instrument_blocks = self.web_page_parser.extract_blocks(json_from_instrument_archive)
@@ -246,5 +291,5 @@ class InstrumentInformationCollator(object):
             "config_name": instrument_config.name,
             "groups": groups,
             "inst_pvs": inst_pvs,
-            "error_statuses": error_statuses
+            "error_statuses": error_statuses,
         }

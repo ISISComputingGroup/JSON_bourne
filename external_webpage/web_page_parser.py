@@ -25,7 +25,7 @@ from collections import OrderedDict
 from block import Block
 from block_utils import shorten_title
 
-logger = logging.getLogger('JSON_bourne')
+logger = logging.getLogger("JSON_bourne")
 
 
 class BlocksParseError(Exception):

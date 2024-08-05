@@ -8,7 +8,7 @@ from external_webpage.instrument_information_collator import InstrumentInformati
 
 scraped_data = {}
 scraped_data_lock = RLock()
-logger = logging.getLogger('JSON_bourne')
+logger = logging.getLogger("JSON_bourne")
 
 WAIT_BETWEEN_UPDATES = 5
 WAIT_BETWEEN_FAILED_UPDATES = 60
@@ -19,6 +19,7 @@ class InstrumentScrapper(Thread):
     """
     Thread that continually scrapes data from an instrument's ArchiveEngine.
     """
+
     _previously_failed = False
     _tries_since_logged = 0
 
@@ -83,8 +84,14 @@ class InstrumentScrapper(Thread):
                 self.wait(WAIT_BETWEEN_UPDATES)
             except Exception as e:
                 if not self._previously_failed or self._tries_since_logged >= RETRIES_BETWEEN_LOGS:
-                    logger.error("Failed to get data from instrument: {0} at {1} error was: {2}{3}".format(
-                        self._name, self._host, e, " - Stack (1 line) {stack}:".format(stack=traceback.format_exc())))
+                    logger.error(
+                        "Failed to get data from instrument: {0} at {1} error was: {2}{3}".format(
+                            self._name,
+                            self._host,
+                            e,
+                            " - Stack (1 line) {stack}:".format(stack=traceback.format_exc()),
+                        )
+                    )
                     self._previously_failed = True
                     self._tries_since_logged = 0
                 with scraped_data_lock:

@@ -1,6 +1,7 @@
 """
 Relation to web scrapper management.
 """
+
 from __future__ import print_function
 
 import json
@@ -58,11 +59,9 @@ class InstList(object):
 
         inst_list = {}
         try:
-
             raw = self._caget_fn(INST_LIST_PV, as_string=True)
 
         except CaChannelException as ex:
-
             self.error_on_retrieve = InstList.INSTRUMENT_LIST_CAN_NOT_BE_READ
             logger.error("ERROR: Error getting instrument list. {}".format(ex))
             return self._cached_list
@@ -70,7 +69,6 @@ class InstList(object):
         try:
             full_inst_list_string = dehex_and_decompress(raw)
         except Exception as ex:
-
             self.error_on_retrieve = InstList.INSTRUMENT_LIST_NOT_DECOMPRESSED
             logger.error("ERROR: Error getting instrument list. {}".format(ex))
             return self._cached_list
@@ -78,7 +76,6 @@ class InstList(object):
         try:
             full_inst_list = json.loads(full_inst_list_string)
         except Exception as ex:
-
             self.error_on_retrieve = InstList.INSTRUMENT_LIST_NOT_JSON
             logger.error("ERROR: Error getting instrument list. {}".format(ex))
             return self._cached_list
@@ -87,7 +84,6 @@ class InstList(object):
             for full_inst in full_inst_list:
                 inst_list[full_inst["name"]] = (full_inst["hostName"], full_inst["pvPrefix"])
         except (KeyError, TypeError) as ex:
-
             self.error_on_retrieve = InstList.INSTRUMENT_LIST_NOT_CORRECT_FORMAT
             logger.error("ERROR: Error getting instrument list. {}".format(ex))
             return self._cached_list
@@ -105,9 +101,7 @@ class WebScrapperManager(Thread):
     It is responsible for starting then and making sure they are running
     """
 
-    def __init__(
-        self, scrapper_class=InstrumentScrapper, inst_list=None, local_inst_list=None
-    ):
+    def __init__(self, scrapper_class=InstrumentScrapper, inst_list=None, local_inst_list=None):
         """
         Initialiser.
         Args:
@@ -155,9 +149,7 @@ class WebScrapperManager(Thread):
         inst_list = self._inst_list.retrieve()
         new_scrappers_list = []
         for scrapper in self.scrappers:
-            if scrapper.is_alive() and self._is_scrapper_in_inst_list(
-                inst_list, scrapper
-            ):
+            if scrapper.is_alive() and self._is_scrapper_in_inst_list(inst_list, scrapper):
                 new_scrappers_list.append(scrapper)
             else:
                 scrapper.stop()
