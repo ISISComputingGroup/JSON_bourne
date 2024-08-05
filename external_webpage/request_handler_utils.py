@@ -1,8 +1,8 @@
-from builtins import str
-import re
-from collections import OrderedDict
-import time
 import logging
+import re
+import time
+from builtins import str
+from collections import OrderedDict
 
 logger = logging.getLogger('JSON_bourne')
 

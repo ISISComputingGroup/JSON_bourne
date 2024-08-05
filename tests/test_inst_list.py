@@ -1,18 +1,16 @@
+import binascii
 import json
 import os
 import sys
-
+import unittest
 import zlib
+from builtins import bytes
 
 from CaChannel import CaChannelException
 from hamcrest import *
-import unittest
-from builtins import bytes
-import binascii
-from mock import Mock
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from external_webpage.web_scrapper_manager import WebScrapperManager, InstList
+from external_webpage.web_scrapper_manager import InstList
 
 caget_error = None
 caget_value = ""

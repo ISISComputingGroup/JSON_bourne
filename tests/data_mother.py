@@ -1,4 +1,6 @@
 from builtins import object
+
+
 class ArchiveMother(object):
     """
     Data mother for JSON objects.

@@ -1,20 +1,25 @@
 from __future__ import print_function
+
 from future import standard_library
+
 standard_library.install_aliases()
-from builtins import str
+import asyncio
 import json
 import logging
 import os
+from builtins import str
 from logging.handlers import TimedRotatingFileHandler
 
 import tornado.ioloop
 import tornado.web
-import asyncio
 
-from external_webpage.request_handler_utils import get_detailed_state_of_specific_instrument, \
-    get_summary_details_of_all_instruments, get_instrument_and_callback
-from external_webpage.web_scrapper_manager import WebScrapperManager
 from external_webpage.instrument_scapper import scraped_data, scraped_data_lock
+from external_webpage.request_handler_utils import (
+    get_detailed_state_of_specific_instrument,
+    get_instrument_and_callback,
+    get_summary_details_of_all_instruments,
+)
+from external_webpage.web_scrapper_manager import WebScrapperManager
 
 logger = logging.getLogger('JSON_bourne')
 log_filepath = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'log', 'JSON_bourne.log')

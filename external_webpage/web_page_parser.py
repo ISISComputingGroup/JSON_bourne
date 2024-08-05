@@ -17,16 +17,13 @@
 Classes for parsing web pages
 """
 
-from builtins import str
-from builtins import object
 import logging
-
 import re
+from builtins import object, str
+from collections import OrderedDict
 
 from block import Block
 from block_utils import shorten_title
-
-from collections import OrderedDict
 
 logger = logging.getLogger('JSON_bourne')
 

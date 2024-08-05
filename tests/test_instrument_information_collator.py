@@ -1,6 +1,7 @@
 import unittest
 
 from mock import Mock
+
 from external_webpage.instrument_information_collator import create_groups_dictionary
 
 

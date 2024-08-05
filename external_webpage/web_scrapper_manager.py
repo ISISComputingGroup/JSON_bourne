@@ -2,11 +2,11 @@
 Relation to web scrapper management.
 """
 from __future__ import print_function
-from builtins import range
-from builtins import object
+
 import json
 import logging
-from threading import Thread, Event
+from builtins import object, range
+from threading import Event, Thread
 from time import sleep
 
 from CaChannel import CaChannelException

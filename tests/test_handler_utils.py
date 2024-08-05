@@ -1,12 +1,15 @@
+import time
+import unittest
+
 from hamcrest import *
 
-from external_webpage.request_handler_utils import get_instrument_and_callback, \
-    get_summary_details_of_all_instruments, get_detailed_state_of_specific_instrument, \
-    get_instrument_time_since_epoch, set_time_shift
-import json
-import unittest
-import time
-
+from external_webpage.request_handler_utils import (
+    get_detailed_state_of_specific_instrument,
+    get_instrument_and_callback,
+    get_instrument_time_since_epoch,
+    get_summary_details_of_all_instruments,
+    set_time_shift,
+)
 
 CALLBACK_STR = "?callback={}&"
 INST_STR = "&Instrument={}&"

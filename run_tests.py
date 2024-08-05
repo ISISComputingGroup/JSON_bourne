@@ -1,4 +1,7 @@
 from __future__ import print_function
+
+import argparse
+
 # This file is part of the ISIS IBEX application.
 # Copyright (C) 2017 Science & Technology Facilities Council.
 # All rights reserved.
@@ -14,14 +17,14 @@ from __future__ import print_function
 # along with this program; if not, you can obtain a copy from
 # https://www.eclipse.org/org/documents/epl-v10.php or
 # http://opensource.org/licenses/eclipse-1.0.php
-
 # Add root path for access to server_commons
 import os
 import sys
+
 # Standard imports
 import unittest
+
 import xmlrunner
-import argparse
 
 DEFAULT_DIRECTORY = os.path.join('.', 'test-reports')
 

@@ -18,6 +18,7 @@ Classes for Blocks
 """
 
 from builtins import object
+
 from block_utils import format_block_value
 
 

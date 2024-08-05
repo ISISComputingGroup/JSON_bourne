@@ -18,11 +18,12 @@ Classes for getting external resources.
 """
 
 import json
-
 import logging
+
 import requests
-from external_webpage.utils import dehex_and_decompress
 from CaChannel.util import caget
+
+from external_webpage.utils import dehex_and_decompress
 
 logger = logging.getLogger('JSON_bourne')
 

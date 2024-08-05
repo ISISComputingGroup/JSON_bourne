@@ -1,16 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from builtins import str
 import os
 import sys
+from builtins import str
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import unittest
+
 from mock import MagicMock
+
 from block import Block
-from block_utils import (format_blocks, set_rc_values_for_blocks, shorten_title, format_block_value)
+from block_utils import format_block_value, format_blocks, set_rc_values_for_blocks, shorten_title
 
 
 class TestBlockUtils(unittest.TestCase):
@@ -400,7 +402,7 @@ class TestBlockUtils(unittest.TestCase):
         # Act
         try:
             set_rc_values_for_blocks({}, {})
-        except Exception as e:
+        except Exception:
             self.fail("set_rc_values_for_blocks should handle empty block list")
 
     def _assert_blocks(self, actual_blocks, expected_blocks):

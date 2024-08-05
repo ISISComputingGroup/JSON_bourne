@@ -1,9 +1,11 @@
-import unittest
-from mock import MagicMock, patch
-from external_webpage.data_source_reader import DataSourceReader
-from hamcrest import *
-import zlib
 import binascii
+import unittest
+import zlib
+
+from hamcrest import *
+from mock import MagicMock, patch
+
+from external_webpage.data_source_reader import DataSourceReader
 
 
 def patch_page_contents(request_response, json):

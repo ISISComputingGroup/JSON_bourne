@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
-import logging
 
+import logging
 from collections import OrderedDict
 
 logger = logging.getLogger('JSON_bourne')
@@ -52,7 +52,7 @@ def set_rc_values_for_blocks(blocks, run_control_pvs):
                 block.set_rc_inrange(block_object.get_value())
             elif "ENABLE.VAL" == suffix:
                 block.set_rc_enabled(block_object.get_value())
-        except KeyError as e:
+        except KeyError:
             logging.info("Could not find block but it has runcontrol pvs {}".format(name))
 
 

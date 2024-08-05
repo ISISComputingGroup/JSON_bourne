@@ -1,12 +1,12 @@
-from builtins import zip
 import os
 import sys
 import unittest
+from builtins import zip
 
 from hamcrest import *
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from external_webpage.web_page_parser import WebPageParser, BlocksParseError
+from external_webpage.web_page_parser import BlocksParseError, WebPageParser
 from tests.data_mother import ArchiveMother
 
 

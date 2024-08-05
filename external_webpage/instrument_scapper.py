@@ -1,8 +1,7 @@
-from builtins import str
-from builtins import range
 import logging
 import traceback
-from threading import Thread, Event, RLock
+from builtins import range, str
+from threading import Event, RLock, Thread
 from time import sleep
 
 from external_webpage.instrument_information_collator import InstrumentInformationCollator

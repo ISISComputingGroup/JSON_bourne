@@ -17,15 +17,13 @@
 Classes getting external resources from an instrument and formating them for the info page.
 """
 
-from builtins import str
-from builtins import object
 import logging
+from builtins import object, str
+from collections import OrderedDict
 
-from block_utils import (format_blocks, set_rc_values_for_blocks)
+from block_utils import format_blocks, set_rc_values_for_blocks
 from external_webpage.data_source_reader import DataSourceReader
 from external_webpage.web_page_parser import WebPageParser
-
-from collections import OrderedDict
 
 logger = logging.getLogger('JSON_bourne')
 
