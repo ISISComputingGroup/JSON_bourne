@@ -1,9 +1,9 @@
 from __future__ import unicode_literals
-import logging
 
+import logging
 from collections import OrderedDict
 
-logger = logging.getLogger('JSON_bourne')
+logger = logging.getLogger("JSON_bourne")
 
 
 def shorten_title(title):
@@ -19,12 +19,12 @@ def shorten_title(title):
     Returns: The last segment of the input PV address as string.
 
     """
-    title_parts = title.split(':')
+    title_parts = title.split(":")
     rc_values = ["HIGH.VAL", "LOW.VAL", "INRANGE.VAL", "ENABLE.VAL"]
     if "RC" in title_parts and title_parts[-1] in rc_values:
-        return ':'.join(title_parts[-3:])
+        return ":".join(title_parts[-3:])
     elif "DASHBOARD" in title_parts:
-        return ':'.join(title_parts[-3:])
+        return ":".join(title_parts[-3:])
     else:
         return title_parts[-1]
 
@@ -37,7 +37,7 @@ def set_rc_values_for_blocks(blocks, run_control_pvs):
         run_control_pvs: dictionary of {pv_names : block_objects} containing run control settings
     """
     for pv, block_object in run_control_pvs.items():
-        pv_parts = pv.split(':')
+        pv_parts = pv.split(":")
         name = pv_parts[0].strip()
         suffix = pv_parts[-1]
 
@@ -52,7 +52,7 @@ def set_rc_values_for_blocks(blocks, run_control_pvs):
                 block.set_rc_inrange(block_object.get_value())
             elif "ENABLE.VAL" == suffix:
                 block.set_rc_enabled(block_object.get_value())
-        except KeyError as e:
+        except KeyError:
             logging.info("Could not find block but it has runcontrol pvs {}".format(name))
 
 
@@ -89,16 +89,16 @@ def format_block_value(val, precision):
 
     # No precision specified = do not format.
     if precision is None or not isinstance(precision, int) or precision < 0:
-        return u"{}".format(val)
+        return "{}".format(val)
     try:
         float_val = float(val)
 
         if small_number_threshold < abs(float_val) < big_number_threshold or float_val == 0:
-            format_str = u"{{:.{}f}}".format(precision)
+            format_str = "{{:.{}f}}".format(precision)
         else:
-            format_str = u"{{:.{}G}}".format(precision)
+            format_str = "{{:.{}G}}".format(precision)
 
         return format_str.format(float_val)
     except (ValueError, TypeError):
         # If number does not parse as a float, or formatting failed, just return it in string form.
-        return u"{}".format(val)
+        return "{}".format(val)

@@ -18,6 +18,7 @@ Classes for Blocks
 """
 
 from builtins import object
+
 from block_utils import format_block_value
 
 
@@ -60,83 +61,83 @@ class Block(object):
             self.precision = None
 
     def get_name(self):
-        """ Returns the block status. """
+        """Returns the block status."""
         return self.name
 
     def set_name(self, name):
-        """ Sets the block status. """
+        """Sets the block status."""
         self.status = name
 
     def get_status(self):
-        """ Returns the block status. """
+        """Returns the block status."""
         return self.status
 
     def set_status(self, status):
-        """ Sets the block status. """
+        """Sets the block status."""
         self.status = status
 
     def get_value(self):
-        """ Returns the block value. """
+        """Returns the block value."""
         return self.value
 
     def set_value(self, value):
-        """ Sets the block value. """
+        """Sets the block value."""
         self.value = value
 
     def get_units(self):
-        """ Returns the units for the block. """
+        """Returns the units for the block."""
         return self.units
 
     def set_units(self, units):
-        """ Returns the units for the block. """
+        """Returns the units for the block."""
         self.units = units
 
     def get_alarm(self):
-        """ Returns the block alarm state. """
+        """Returns the block alarm state."""
         return self.alarm
 
     def set_alarm(self, alarm):
-        """ Sets the block alarm state. """
+        """Sets the block alarm state."""
         self.alarm = alarm
 
     def get_visibility(self):
-        """ Returns the block's visibility """
+        """Returns the block's visibility"""
         return self.visibility
 
     def set_visibility(self, visibility):
-        """ Sets the block's visibility. """
+        """Sets the block's visibility."""
         self.visibility = visibility
 
     def get_rc_low(self):
-        """ Returns the block's low value. """
+        """Returns the block's low value."""
         return self.low
 
     def set_rc_low(self, value):
-        """ Sets the block's low value. """
+        """Sets the block's low value."""
         self.low = value
 
     def get_rc_high(self):
-        """ Returns the block's high value. """
+        """Returns the block's high value."""
         return self.high
 
     def set_rc_high(self, value):
-        """ Sets the block's high value. """
+        """Sets the block's high value."""
         self.high = value
 
     def get_rc_inrange(self):
-        """ Returns the block's inrange status. """
+        """Returns the block's inrange status."""
         return self.inrange
 
     def set_rc_inrange(self, value):
-        """ Sets the block's inrange status. """
+        """Sets the block's inrange status."""
         self.inrange = value
 
     def get_rc_enabled(self):
-        """ Returns the block's enabled status. """
+        """Returns the block's enabled status."""
         return self.enabled
 
     def set_rc_enabled(self, value):
-        """ Sets the block's enabled status. """
+        """Sets the block's enabled status."""
         self.enabled = value
 
     def is_connected(self):
@@ -146,23 +147,23 @@ class Block(object):
         return self.status == Block.CONNECTED
 
     def get_description(self):
-        """ Returns the full description of this BoolStr object. """
+        """Returns the full description of this BoolStr object."""
 
         if self.should_format_value():
             value = format_block_value(self.value, self.precision)
         else:
             value = self.value
 
-        if self.units == u"":
-            formatted_value = u"{}".format(value)
+        if self.units == "":
+            formatted_value = "{}".format(value)
         else:
-            formatted_value = u"{value} {units}".format(value=value, units=self.units)
+            formatted_value = "{value} {units}".format(value=value, units=self.units)
 
         ans = {
             "status": self.status,
             "value": formatted_value,
             "alarm": self.alarm,
-            "visibility": self.visibility
+            "visibility": self.visibility,
         }
 
         # add rc values

@@ -1,4 +1,7 @@
 from __future__ import print_function
+
+import argparse
+
 # This file is part of the ISIS IBEX application.
 # Copyright (C) 2017 Science & Technology Facilities Council.
 # All rights reserved.
@@ -14,23 +17,29 @@ from __future__ import print_function
 # along with this program; if not, you can obtain a copy from
 # https://www.eclipse.org/org/documents/epl-v10.php or
 # http://opensource.org/licenses/eclipse-1.0.php
-
 # Add root path for access to server_commons
 import os
 import sys
+
 # Standard imports
 import unittest
+
 import xmlrunner
-import argparse
 
-DEFAULT_DIRECTORY = os.path.join('.', 'test-reports')
+DEFAULT_DIRECTORY = os.path.join(".", "test-reports")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # get output directory from command line arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument('-o', '--output_dir', nargs=1, type=str, default=[DEFAULT_DIRECTORY],
-                        help='The directory to save the test reports')
+    parser.add_argument(
+        "-o",
+        "--output_dir",
+        nargs=1,
+        type=str,
+        default=[DEFAULT_DIRECTORY],
+        help="The directory to save the test reports",
+    )
     args = parser.parse_args()
     xml_dir = args.output_dir[0]
 

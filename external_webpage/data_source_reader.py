@@ -18,13 +18,14 @@ Classes for getting external resources.
 """
 
 import json
-
 import logging
+
 import requests
-from external_webpage.utils import dehex_and_decompress
 from CaChannel.util import caget
 
-logger = logging.getLogger('JSON_bourne')
+from external_webpage.utils import dehex_and_decompress
+
+logger = logging.getLogger("JSON_bourne")
 
 # Ports for various archiver services
 PORT_INSTPV = 4812
@@ -91,8 +92,9 @@ class DataSourceReader(object):
         Returns: A converted list of block objects.
 
         """
-        url = 'http://{host}:{port}/group?name={group_name}&format=json'.format(
-            host=self._host, port=port, group_name=group_name)
+        url = "http://{host}:{port}/group?name={group_name}&format=json".format(
+            host=self._host, port=port, group_name=group_name
+        )
         try:
             page = requests.get(url, timeout=URL_GET_TIMEOUT)
             return page.json()
@@ -114,14 +116,20 @@ class DataSourceReader(object):
             config_details = json.loads(config_details)
             return config_details
         except Exception as ex:
-            logger.error(f"Error getting instrument config details from {pv}, using webserver instead. {ex}")
+            logger.error(
+                f"Error getting instrument config details from {pv}, using webserver instead. {ex}"
+            )
 
-        page = requests.get('http://{}:{}/'.format(self._host, PORT_CONFIG), timeout=URL_GET_TIMEOUT)
+        page = requests.get(
+            "http://{}:{}/".format(self._host, PORT_CONFIG), timeout=URL_GET_TIMEOUT
+        )
         content = page.content.decode("utf-8")
-        corrected_page = content.replace("'", '"')\
-            .replace("None", "null")\
-            .replace("True", "true")\
+        corrected_page = (
+            content.replace("'", '"')
+            .replace("None", "null")
+            .replace("True", "true")
             .replace("False", "false")
+        )
         try:
             return json.loads(corrected_page)
         except Exception as e:
