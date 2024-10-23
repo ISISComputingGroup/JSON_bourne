@@ -145,6 +145,5 @@ def get_detailed_state_of_specific_instrument(instrument, data, time_shift_thres
         raise ValueError(str(instrument) + " not known")
     if data[instrument] == "":
         raise ValueError("Instrument has become unavailable")
-    set_time_shift(instrument, data[instrument], time_shift_threshold)
-
+    
     return data[instrument]
